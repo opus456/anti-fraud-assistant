@@ -1,0 +1,22 @@
+services:
+  app:
+    image: fengnuan720/anti-fraud-assistant:latest
+    container_name: anti-fraud-assistant
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8000:8000"
+    volumes:
+      - app-data:/app/data
+      - app-uploads:/app/uploads
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-anti-fraud-secret-key-change-in-production}
+      - LLM_API_KEY=${LLM_API_KEY:-BKxf_NoAL7ciz_yxQsrKisME}
+      - LLM_API_URL=${LLM_API_URL:-https://api-ai.gitcode.com/v1/chat/completions}
+      - LLM_MODEL=${LLM_MODEL:-Qwen/Qwen3.5-397B-A17B}
+      - DATA_SOURCE_DIR=/app/data_source
+      - DEBUG=false
+
+volumes:
+  app-data:
+  app-uploads:
