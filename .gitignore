@@ -52,23 +52,25 @@ dist/
 .ipynb_checkpoints/
 
 # Node / frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.vite/
-frontend/.cache/
-frontend/coverage/
-frontend/*.tsbuildinfo
+node_modules/
+client-react/node_modules/
+client-react/dist/
+client-react/.vite/
+client-react/.cache/
+client-react/coverage/
+client-react/*.tsbuildinfo
+server-node/node_modules/
 
-# Backend runtime data
-backend/uploads/*
-!backend/uploads/.gitkeep
+# Runtime uploads
+server-python/uploads/*
+!server-python/uploads/.gitkeep
 
-# Backend generated data (runtime / evaluation outputs)
-backend/data/*.db
-backend/data/*.db-*
-backend/data/*.sqlite
-backend/data/*.sqlite3
-backend/data/eval/
+# Server generated data (runtime / evaluation outputs)
+server-python/data/*.db
+server-python/data/*.db-*
+server-python/data/*.sqlite
+server-python/data/*.sqlite3
+server-python/data/eval/
 
 # Root eval artifacts
 data/eval/
