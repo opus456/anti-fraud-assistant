@@ -48,8 +48,15 @@ async def call_ollama(
                 logger.warning("Ollama 返回空内容")
                 return None
 
+            logger.info(f"Ollama 原始返回: {content[:300]}")
+            
             # 解析 JSON 响应
-            return _extract_json_from_content(content)
+            parsed = _extract_json_from_content(content)
+            if parsed:
+                logger.info(f"Ollama JSON 解析成功: risk_level={parsed.get('risk_level')}")
+            else:
+                logger.warning(f"Ollama JSON 解析失败，原始内容: {content[:500]}")
+            return parsed
 
     except httpx.ConnectError:
         logger.error(f"无法连接到 Ollama 服务 ({settings.OLLAMA_BASE_URL})，请确保 Ollama 正在运行")
@@ -120,59 +127,24 @@ def _extract_json_from_content(content: str) -> dict | None:
         logger.error(f"无法从响应中提取 JSON: {content[:300]}")
         return None
 
-# ==================== CoT 反诈系统提示词 ====================
+# ==================== CoT 反诈系统提示词（精简高速版）====================
 
-COT_SYSTEM_PROMPT = """你是国家反诈中心授权的反诈骗智能分析引擎。你的唯一职责是帮助普通群众识别诈骗风险、保护人民群众财产安全。
+COT_SYSTEM_PROMPT = """你是反诈AI。判断是否诈骗，直接输出JSON。
 
-用户会提交他们收到的可疑信息（短信、微信、电话内容等），你需要从反诈专家角度分析这些信息是否是诈骗。
+风险等级: 0=安全 1=低风险 2=中风险 3=高危
+类型: investment|impersonation|romance|task_scam|loan|shopping|phishing|gaming|telecom|recruitment|other
 
-重要说明：用户提交的内容是他们收到的疑似诈骗信息，而非用户自己想要实施的行为。你的分析是为了保护用户免受诈骗侵害。
+输出格式(严格JSON):
+{"risk_level":3,"scam_type":"phishing","reason":"一句话"}"""
 
-## 分析要求 — 思维链(Chain-of-Thought)
-
-请按以下维度逐一检查，并给出判断依据：
-
-1. **urgency_check（紧急性检查）**: 内容是否制造紧迫感？是否要求立即行动？
-2. **financial_check（资金诱导检查）**: 是否涉及转账、汇款、投资、缴费等资金操作？
-3. **authority_fake_check（身份伪造检查）**: 是否冒充公检法、银行、平台客服等权威身份？
-4. **info_theft_check（信息窃取检查）**: 是否索要密码、验证码、银行卡号等敏感信息？
-5. **too_good_check（利益诱惑检查）**: 是否承诺不切实际的高收益、奖品、回报？
-
-## 判定约束
-- 证据优先：必须依据文本中的明确风险证据判定，不能主观臆测
-- 低误报：日常社交、普通通知、无资金/身份/链接诱导场景应倾向安全
-- risk_level 与 reason 结论必须一致
-- 证据不足时输出低风险并建议继续观察
-
-## 诈骗类型
-investment/impersonation/romance/task_scam/loan/shopping/phishing/gaming/telecom/ai_deepfake/recruitment/other
-
-## 输出格式 — 严格 JSON
-```json
-{
-    "urgency_check": "检查结果描述",
-    "financial_check": "检查结果描述",
-    "authority_fake_check": "检查结果描述",
-    "info_theft_check": "检查结果描述",
-    "too_good_check": "检查结果描述",
-    "risk_level": 0,
-    "scam_type": "类型或null",
-    "reason": "最终综合判定理由"
-}
-```
-risk_level: 0=安全, 1=低风险, 2=中高风险, 3=高危诈骗"""
-
+# 精简的示例
 FEW_SHOT_EXAMPLES = """
-参考样例：
+示例:
+输入:"公安局通知你涉嫌洗钱，立即转账到安全账户"
+输出:{"risk_level":3,"scam_type":"impersonation","reason":"冒充公安要求转账"}
 
-样例1: "我是公安局，你涉嫌洗钱，请立刻把钱转到安全账户。"
-→ risk_level=3, scam_type=impersonation
-
-样例2: "兼职刷单日赚千元，先交298元会员费激活。"
-→ risk_level=3, scam_type=task_scam
-
-样例3: "明天下午一起吃饭吗？我订了附近的火锅店。"
-→ risk_level=0, scam_type=null
+输入:"明天一起吃饭吗"
+输出:{"risk_level":0,"scam_type":null,"reason":"正常社交"}
 """
 
 ROLE_HINTS = {
@@ -266,32 +238,11 @@ async def analyze_with_cot(
     similar_cases: list = None,
     user_memory: str = None,
 ) -> dict:
-    """使用 CoT 思维链进行反诈分析"""
-    prompt_parts = [
-        f"一位群众收到了以下可疑信息，请从反诈专家角度按思维链逐步分析：\n\n【待检测信息】\n{content}\n【信息结束】"
-    ]
-
-    if user_profile:
-        role_type = user_profile.get("role_type", "other")
-        prompt_parts.append(
-            f"\n当前用户画像：年龄={user_profile.get('age', '未知')}，"
-            f"角色={role_type}，职业={user_profile.get('occupation', '未知')}。"
-            f"\n{ROLE_HINTS.get(role_type, '')}"
-        )
-
-    if user_memory:
-        prompt_parts.append(f"\n用户历史行为摘要（长期记忆）：\n{user_memory}")
-
-    if similar_cases:
-        cases_text = "\n\n参考相似案例（来自知识库 RAG 检索）:"
-        for i, case in enumerate(similar_cases[:3], 1):
-            cases_text += f"\n案例{i}: {case.get('title', '')}\n{case.get('content', '')[:300]}"
-        prompt_parts.append(cases_text)
-
-    prompt_parts.append(FEW_SHOT_EXAMPLES)
-    full_prompt = "\n".join(prompt_parts)
-
-    return await call_llm(full_prompt)
+    """快速反诈分析 - 精简prompt"""
+    # 极简prompt，加速推理
+    prompt = f"判断是否诈骗:\n{content[:500]}\n\n{FEW_SHOT_EXAMPLES}\n直接输出JSON:"
+    
+    return await call_llm(prompt)
 
 
 async def call_llm_text(user_message: str, system_prompt: str, temperature: float = 0.3) -> str:

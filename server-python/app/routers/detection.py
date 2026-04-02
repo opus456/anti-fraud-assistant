@@ -98,25 +98,42 @@ async def detect_multimodal(
     db: AsyncSession = Depends(get_db),
 ):
     """多模态反诈检测 — 文本 / 图片OCR / 音频转写 / 视频描述融合分析"""
-    if not any([
-        request.text.strip(),
-        request.image_ocr.strip(),
-        request.audio_transcript.strip(),
-        request.video_description.strip(),
-    ]):
-        raise HTTPException(status_code=400, detail="至少需要提供一种输入模态")
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # 检查是否有任何有效输入（包括 image_frame）
+        if not any([
+            request.text.strip(),
+            request.image_ocr.strip(),
+            request.image_frame.strip(),  # 添加 image_frame 检查
+            request.audio_transcript.strip(),
+            request.video_description.strip(),
+        ]):
+            raise HTTPException(status_code=400, detail="至少需要提供一种输入模态")
 
-    result = await fraud_detector.detect_multimodal(
-        text=request.text,
-        image_ocr=request.image_ocr or ("SCREEN_FRAME_CAPTURED" if request.image_frame else ""),
-        audio_transcript=request.audio_transcript,
-        video_description=request.video_description,
-        context=request.context,
-        user=current_user,
-        db=db,
-        session_id=str(uuid.uuid4())[:8],
-    )
-    return DetectionResult(**{k: v for k, v in result.items() if not k.startswith("_")})
+        # 如果有 image_frame 但没有 image_ocr，自动设置标记
+        image_ocr = request.image_ocr
+        if not image_ocr.strip() and request.image_frame.strip():
+            image_ocr = "SCREEN_FRAME_CAPTURED"
+            logger.debug(f"收到图片帧，大小: {len(request.image_frame)} 字符")
+
+        result = await fraud_detector.detect_multimodal(
+            text=request.text,
+            image_ocr=image_ocr,
+            audio_transcript=request.audio_transcript,
+            video_description=request.video_description,
+            context=request.context,
+            user=current_user,
+            db=db,
+            session_id=str(uuid.uuid4())[:8],
+        )
+        return DetectionResult(**{k: v for k, v in result.items() if not k.startswith("_")})
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"多模态检测异常: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"检测服务内部错误: {str(e)}")
 
 
 @router.get("/history", response_model=list[ConversationResponse], summary="检测历史")

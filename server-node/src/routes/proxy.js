@@ -16,7 +16,7 @@ function mountProxy(app, broadcastAlert) {
   // Called by the Python backend when it detects high risk (level >= 2).
   // Body: { user_id, alert_type, risk_level, message, details, ... }
   // ------------------------------------------------------------------
-  app.post('/internal/alert', express.json(), (req, res) => {
+  app.post('/internal/alert', express.json({ limit: '50mb' }), (req, res) => {
     // Verify internal shared secret to prevent unauthorized alert broadcasts
     const secret = req.headers['x-internal-secret'];
     if (secret !== INTERNAL_SECRET) {
@@ -49,10 +49,13 @@ function mountProxy(app, broadcastAlert) {
     pathRewrite: (path) => `/api${path}`,
     // Forward WebSocket upgrade requests if any sub-path needs it
     ws: false,
-    // Logging
+    // Logging - 只记录关键信息
     on: {
       proxyReq: (proxyReq, req) => {
-        console.log(`[proxy] ${req.method} ${req.originalUrl} -> ${PYTHON_API}${req.originalUrl}`);
+        // 只在非 multimodal 请求时输出日志（避免刷屏）
+        if (!req.originalUrl.includes('multimodal')) {
+          console.log(`[proxy] ${req.method} ${req.originalUrl} -> ${PYTHON_API}${req.originalUrl}`);
+        }
       },
       error: (err, req, res) => {
         console.error('[proxy] Proxy error:', err.message);
