@@ -57,6 +57,160 @@ export interface DetectionResult {
   };
 }
 
+// --------------- Detection Progress ---------------
+
+export type DetectionStage = 'idle' | 'keyword' | 'rag' | 'llm' | 'fusion' | 'complete' | 'error';
+
+export interface DetectionProgress {
+  stage: DetectionStage;
+  message: string;
+  percent: number;
+  startTime: number;
+  logs: Array<{ time: number; stage: DetectionStage; message: string }>;
+}
+
+// --------------- Detection Store ---------------
+
+interface DetectionStore {
+  // 输入状态
+  inputText: string;
+  inputImage: File | null;
+  imagePreview: string;
+  multimodal: boolean;
+  
+  // 检测状态
+  isDetecting: boolean;
+  progress: DetectionProgress;
+  result: DetectionResult | null;
+  error: string | null;
+  
+  // 历史记录
+  history: Array<{ id: string; text: string; result: DetectionResult; timestamp: number }>;
+  
+  // Actions
+  setInputText: (text: string) => void;
+  setInputImage: (file: File | null, preview: string) => void;
+  setMultimodal: (enabled: boolean) => void;
+  
+  startDetection: () => void;
+  updateProgress: (stage: DetectionStage, message: string, percent: number) => void;
+  setResult: (result: DetectionResult) => void;
+  setError: (error: string) => void;
+  resetDetection: () => void;
+  clearInput: () => void;
+}
+
+const initialProgress: DetectionProgress = {
+  stage: 'idle',
+  message: '',
+  percent: 0,
+  startTime: 0,
+  logs: [],
+};
+
+export const useDetectionStore = create<DetectionStore>((set, get) => ({
+  // 初始状态
+  inputText: '',
+  inputImage: null,
+  imagePreview: '',
+  multimodal: false,
+  isDetecting: false,
+  progress: initialProgress,
+  result: null,
+  error: null,
+  history: [],
+
+  // 输入操作
+  setInputText: (text) => set({ inputText: text }),
+  
+  setInputImage: (file, preview) => set({ inputImage: file, imagePreview: preview }),
+  
+  setMultimodal: (enabled) => set({ multimodal: enabled }),
+
+  // 检测流程控制
+  startDetection: () => {
+    const now = Date.now();
+    set({
+      isDetecting: true,
+      error: null,
+      result: null,
+      progress: {
+        stage: 'keyword',
+        message: '正在进行关键词规则扫描...',
+        percent: 10,
+        startTime: now,
+        logs: [{ time: now, stage: 'keyword', message: '开始关键词规则扫描' }],
+      },
+    });
+  },
+
+  updateProgress: (stage, message, percent) => {
+    const now = Date.now();
+    set((state) => ({
+      progress: {
+        ...state.progress,
+        stage,
+        message,
+        percent,
+        logs: [...state.progress.logs, { time: now, stage, message }],
+      },
+    }));
+  },
+
+  setResult: (result) => {
+    const state = get();
+    const historyItem = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      text: state.inputText.slice(0, 100),
+      result,
+      timestamp: Date.now(),
+    };
+    
+    set((s) => ({
+      isDetecting: false,
+      result,
+      progress: {
+        ...s.progress,
+        stage: 'complete',
+        message: '检测完成',
+        percent: 100,
+        logs: [...s.progress.logs, { time: Date.now(), stage: 'complete', message: '检测完成' }],
+      },
+      history: [historyItem, ...s.history].slice(0, 20), // 保留最近20条
+    }));
+  },
+
+  setError: (error) => {
+    set((s) => ({
+      isDetecting: false,
+      error,
+      progress: {
+        ...s.progress,
+        stage: 'error',
+        message: error,
+        logs: [...s.progress.logs, { time: Date.now(), stage: 'error', message: error }],
+      },
+    }));
+  },
+
+  resetDetection: () => {
+    set({
+      isDetecting: false,
+      progress: initialProgress,
+      result: null,
+      error: null,
+    });
+  },
+
+  clearInput: () => {
+    set({
+      inputText: '',
+      inputImage: null,
+      imagePreview: '',
+    });
+  },
+}));
+
 // --------------- Auth Store ---------------
 
 interface AuthStore {

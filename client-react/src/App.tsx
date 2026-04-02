@@ -17,6 +17,7 @@ import Profile from './pages/Profile';
 import Guardians from './pages/Guardians';
 import Reports from './pages/Reports';
 import Alerts from './pages/Alerts';
+import SmsInbox from './pages/SmsInbox';
 
 function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
   const { isAuthenticated, user } = useAuthStore();
@@ -71,6 +72,10 @@ export default function App() {
         <Route
           path="alerts"
           element={<ProtectedRoute><Alerts /></ProtectedRoute>}
+        />
+        <Route
+          path="sms-inbox"
+          element={<ProtectedRoute><SmsInbox /></ProtectedRoute>}
         />
         <Route
           path="guardians"

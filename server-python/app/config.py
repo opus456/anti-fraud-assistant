@@ -33,14 +33,14 @@ class Settings(BaseSettings):
     LLM_API_URL: str = "https://api-ai.gitcode.com/v1/chat/completions"
     LLM_API_KEY: str = ""
     LLM_MODEL: str = "Qwen/Qwen3.5-397B-A17B"
-    LLM_MAX_TOKENS: int = 4096
-    LLM_TEMPERATURE: float = 0.3
+    LLM_MAX_TOKENS: int = 512  # 减少token数量，加速响应
+    LLM_TEMPERATURE: float = 0.2  # 更低的温度，更确定性的输出
 
     # ========== Ollama 本地模型 ==========
     USE_LOCAL_LLM: bool = True  # 是否使用本地 Ollama 模型
     OLLAMA_BASE_URL: str = "http://localhost:11434"  # Ollama 服务地址
-    OLLAMA_MODEL: str = "llama3.1:8b"  # Ollama 模型名称
-    OLLAMA_TIMEOUT: float = 120.0  # Ollama 请求超时时间（本地模型可能较慢）
+    OLLAMA_MODEL: str = "qwen2.5:7b"  # Ollama 模型名称
+    OLLAMA_TIMEOUT: float = 10.0  # 10秒超时
     ALWAYS_USE_LLM: bool = True  # 每次检测都使用 LLM（提高准确率）
 
     # ========== Embedding (RAG/进化) ==========

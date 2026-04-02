@@ -112,7 +112,7 @@ class FraudDetector:
         t0 = time.time()
         text_risk = calculate_text_risk_score(content)
         pipeline_timing["keyword_ms"] = int((time.time() - t0) * 1000)
-        logger.info(f"规则引擎评分: {text_risk['total_score']}")
+        logger.debug(f"规则引擎评分: {text_risk['total_score']}")  # 改为 debug 级别
         keyword_score = text_risk.get("keyword_score", text_risk.get("total_score", 0.0))
         has_sensitive_intent = self._has_sensitive_intent(content)
 
@@ -176,7 +176,7 @@ class FraudDetector:
                         similar_cases=similar_cases,
                         user_memory=user_memory,
                     ),
-                    timeout=15.0,
+                    timeout=8.0,  # 8秒超时，给整体留2秒余量
                 )
             except asyncio.TimeoutError:
                 logger.warning("LLM CoT 分析超时(15s)")
@@ -185,7 +185,7 @@ class FraudDetector:
             finally:
                 pipeline_timing["llm_ms"] = int((time.time() - t2) * 1000)
         else:
-            logger.info(
+            logger.debug(  # 改为 debug 级别
                 "跳过 LLM: keyword_score=%.3f top_similarity=%.3f",
                 keyword_score,
                 top_similarity,

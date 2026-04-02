@@ -17,6 +17,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# 减少 SQLAlchemy 和 uvicorn 的日志输出，避免终端刷屏
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

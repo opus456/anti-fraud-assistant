@@ -104,6 +104,10 @@ function setupGateway(io) {
 
     // ---- monitor_data event ----
     // The frontend sends text/content to be analysed by the Python detection API.
+    // 限制日志输出频率，避免终端刷屏
+    let lastLogTime = 0;
+    const LOG_INTERVAL = 5000; // 每5秒最多输出一次日志
+
     socket.on('monitor_data', async (data, ack) => {
       try {
         const hasMultimodalPayload = Boolean(
@@ -135,7 +139,10 @@ function setupGateway(io) {
 
         const riskLevelNum = normalizeRiskLevel(result.risk_level);
 
+        // 只在有风险或间隔足够时输出日志
+        const now = Date.now();
         if (riskLevelNum >= 2) {
+          console.log(`[gateway] ⚠️ 检测到风险! 用户: ${userId}, 等级: ${result.risk_level}`);
           const alertPayload = {
             ...result,
             risk_level: riskLevelNum,
@@ -147,6 +154,10 @@ function setupGateway(io) {
           };
           _io.to(`user:${userId}`).emit('SHOW_WARNING', alertPayload);
           _io.to(`guardian:${userId}`).emit('GUARDIAN_ALERT', alertPayload);
+        } else if (now - lastLogTime > LOG_INTERVAL) {
+          // 安全状态，限制日志频率
+          console.log(`[gateway] 实时检测中... 用户: ${userId}, 状态: ${result.risk_level}`);
+          lastLogTime = now;
         }
 
         // Send result back to the caller
@@ -155,7 +166,12 @@ function setupGateway(io) {
         }
         socket.emit('DETECTION_RESULT', result);
       } catch (err) {
-        console.error('[gateway] monitor_data detection error:', err.message);
+        // 限制错误日志频率
+        const now = Date.now();
+        if (now - lastLogTime > LOG_INTERVAL) {
+          console.error('[gateway] monitor_data detection error:', err.message);
+          lastLogTime = now;
+        }
         if (typeof ack === 'function') {
           ack({ success: false, error: err.message });
         }

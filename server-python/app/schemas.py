@@ -96,7 +96,7 @@ class TextDetectionRequest(BaseModel):
 class MultimodalDetectionRequest(BaseModel):
     text: str = Field(default="", max_length=10000)
     image_ocr: str = Field(default="", max_length=10000)
-    image_frame: str = Field(default="", max_length=4000000)
+    image_frame: str = Field(default="", max_length=10000000)  # 增加到 10MB 以支持大图片
     audio_transcript: str = Field(default="", max_length=10000)
     video_description: str = Field(default="", max_length=10000)
     context: str = Field(default="", max_length=2000)
