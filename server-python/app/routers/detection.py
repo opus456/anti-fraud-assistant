@@ -57,8 +57,13 @@ async def detect_image(
     if len(contents) > settings.MAX_UPLOAD_SIZE:
         raise HTTPException(status_code=400, detail="文件大小超过限制(50MB)")
 
-    # 保存文件
-    file_ext = file.filename.split(".")[-1] if file.filename else "jpg"
+    # 保存文件 - 验证并清理文件扩展名防止路径注入
+    import re
+    file_ext = "jpg"  # 默认扩展名
+    if file.filename:
+        ext_match = re.match(r'^[a-zA-Z0-9]+$', file.filename.split(".")[-1])
+        if ext_match:
+            file_ext = ext_match.group(0).lower()
     file_name = f"{uuid.uuid4().hex}.{file_ext}"
     file_path = os.path.join(settings.UPLOAD_DIR, file_name)
     with open(file_path, "wb") as f:

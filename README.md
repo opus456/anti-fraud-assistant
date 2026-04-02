@@ -1,5 +1,8 @@
 # 多模态反诈智能体助手
 
+> **版本**: v2.1.0  
+> **最后更新**: 2026-04-02
+
 本项目已按 感知-决策-干预-进化 主线落地为以下模块：
 
 - 感知: Chrome 插件采集 DOM 增量文本 + 屏幕帧
@@ -112,3 +115,22 @@ npm run dev
 - PostgreSQL 需启用 pgvector 扩展，database/init.sql 已包含 CREATE EXTENSION。
 - 若 LLM/Embedding 密钥为空，系统会回退到本地可运行路径，但效果会下降。
 - 插件屏幕采集依赖用户授权，未授权时不会发送图像帧。
+- 生产环境部署前**必须**更换默认的 SECRET_KEY。
+
+## 更新日志
+
+### v2.1.0 (2026-04-02)
+- 🔒 修复文件上传路径注入安全漏洞
+- 🔒 修复 Redis 连接池竞争条件
+- 🔒 修复 Node.js 网关 userId 验证缺失
+- 🔒 修复 HTTP 代理响应头检查
+- 🧹 清理 Chrome 插件无效的 ws:// 权限声明
+- 🐛 修复 React 组件 Object URL 内存泄漏
+- 📄 新增 server-node/.env.example 配置示例
+- 📄 更新 .gitignore 添加备份文件规则
+
+### v2.0.0 (2026-03-29)
+- 🎉 项目结构重构，统一为 client-react/server-node/server-python
+- ✨ 实现完整的感知-决策-干预-进化流程
+- 🤖 集成 LangChain + CoT 推理链
+- 📱 支持 Android 移动端（Capacitor）

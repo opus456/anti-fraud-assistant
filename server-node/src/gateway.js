@@ -34,6 +34,12 @@ function broadcastAlert(userId, alertData) {
     return;
   }
 
+  // 验证 userId 有效性
+  if (!userId || (typeof userId !== 'string' && typeof userId !== 'number')) {
+    console.error('[gateway] Invalid userId in broadcastAlert:', userId);
+    return;
+  }
+
   const riskLevel = normalizeRiskLevel(alertData?.risk_level ?? alertData?.risk_level_label);
   const normalizedPayload = {
     ...alertData,

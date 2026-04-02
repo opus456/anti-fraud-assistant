@@ -3,6 +3,7 @@ Redis 客户端 - 短期记忆与会话流
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from typing import Optional
@@ -13,17 +14,21 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 _pool: Optional[aioredis.Redis] = None
+_pool_lock = asyncio.Lock()
 
 
 async def get_redis() -> aioredis.Redis:
     global _pool
     if _pool is None:
-        _pool = aioredis.from_url(
-            settings.REDIS_URL,
-            encoding="utf-8",
-            decode_responses=True,
-            max_connections=20,
-        )
+        async with _pool_lock:
+            # 双重检查，防止竞争条件
+            if _pool is None:
+                _pool = aioredis.from_url(
+                    settings.REDIS_URL,
+                    encoding="utf-8",
+                    decode_responses=True,
+                    max_connections=20,
+                )
     return _pool
 
 

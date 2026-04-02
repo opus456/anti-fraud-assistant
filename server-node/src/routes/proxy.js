@@ -59,7 +59,7 @@ function mountProxy(app, broadcastAlert) {
       },
       error: (err, req, res) => {
         console.error('[proxy] Proxy error:', err.message);
-        if (res && typeof res.status === 'function') {
+        if (res && !res.headersSent && typeof res.status === 'function') {
           res.status(502).json({ detail: 'Python backend unavailable' });
         }
       },

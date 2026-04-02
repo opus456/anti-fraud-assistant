@@ -216,11 +216,19 @@ export default function Detection() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // 释放之前的 Object URL 以防止内存泄漏
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
       setInputImage(file, URL.createObjectURL(file));
     }
   };
 
   const removeImage = () => {
+    // 释放 Object URL 以防止内存泄漏
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
     setInputImage(null, '');
     if (fileRef.current) fileRef.current.value = '';
   };

@@ -1,7 +1,8 @@
 # 多模态反诈智能体助手 - 项目深度解析文档
 
-> 生成时间: 2026-03-29
-> 项目版本: v2.0.0
+> 生成时间: 2026-04-02
+> 项目版本: v2.1.0
+> 最后审查: 2026-04-02
 
 ---
 
@@ -89,8 +90,11 @@ anti-fraud_assistant/
 ├── server-python/         # Python FastAPI AI 引擎
 ├── database/              # PostgreSQL DDL (含 pgvector)
 ├── docker-compose.yml     # PostgreSQL + Redis 基础设施
-├── run.bat / run.ps1      # Windows 启动脚本
-└── README.md              # 项目说明
+├── start.bat / stop.bat   # Windows 启动/停止脚本
+├── README.md              # 项目说明
+├── DOCKER.md              # Docker 部署指南
+├── PROJECT_ANALYSIS.md    # 项目深度解析（本文档）
+└── update.md              # 更新日志
 ```
 
 ---
