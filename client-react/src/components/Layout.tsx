@@ -1,407 +1,303 @@
-/**
- * 主布局组件 - 精简侧边栏 + 顶部用户信息栏
- * 响应式设计：桌面端侧边栏，移动端底部 5 个标签
- */
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Outlet } from 'react-router-dom';
-import { useAuthStore } from '../store';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, Outlet } from 'react-router-dom';
+import { useModeStore, UserMode } from '../store/modeStore';
 import {
-  Shield,
-  Search,
-  History,
-  BookOpen,
-  Users,
-  FileText,
-  Bell,
-  User,
-  LogOut,
-  LogIn,
-  Menu,
-  X,
-  Home,
-  Radar,
-  Eye,
-  LayoutDashboard,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  UserCircle,
-  ChevronDown,
-  Smartphone,
-} from 'lucide-react';
+  HomeIcon,
+  ShieldCheckIcon,
+  MagnifyingGlassIcon,
+  BookOpenIcon,
+  BellAlertIcon,
+  ClockIcon,
+  Cog6ToothIcon,
+  UserCircleIcon,
+  Bars3Icon,
+  XMarkIcon,
+  UserGroupIcon,
+  ShieldExclamationIcon,
+  AcademicCapIcon,
+  MagnifyingGlassCircleIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/24/outline';
 
 interface NavItem {
   path: string;
   label: string;
-  icon: React.FC<{ className?: string }>;
-  roles?: string[];
+  icon: React.ElementType;
+  modes?: UserMode[];
 }
 
-interface NavGroup {
-  title: string;
-  items: NavItem[];
-}
-
-/** 分组导航 */
-const navGroups: NavGroup[] = [
-  {
-    title: '核心功能',
-    items: [
-      { path: '/', label: '控制台', icon: Home },
-      { path: '/monitor', label: '实时监控', icon: Radar },
-      { path: '/detection', label: '智能检测', icon: Search },
-    ],
-  },
-  {
-    title: '数据分析',
-    items: [
-      { path: '/history', label: '检测记录', icon: History },
-      { path: '/visualization', label: '数据大屏', icon: Eye },
-      { path: '/alerts', label: '预警中心', icon: Bell },
-      { path: '/sms-inbox', label: '手机短信', icon: Smartphone },
-    ],
-  },
-  {
-    title: '资源中心',
-    items: [
-      { path: '/knowledge', label: '知识库', icon: BookOpen },
-      { path: '/reports', label: '安全报告', icon: FileText },
-    ],
-  },
-  {
-    title: '个人设置',
-    items: [
-      { path: '/guardians', label: '监护人', icon: Users },
-      { path: '/profile', label: '我的画像', icon: User },
-    ],
-  },
+const navItems: NavItem[] = [
+  { path: '/', label: '控制台', icon: HomeIcon },
+  { path: '/detection', label: '智能检测', icon: MagnifyingGlassIcon },
+  { path: '/monitor', label: '实时监控', icon: ShieldCheckIcon },
+  { path: '/knowledge', label: '知识库', icon: BookOpenIcon },
+  { path: '/alerts', label: '预警中心', icon: BellAlertIcon },
+  { path: '/history', label: '检测记录', icon: ClockIcon },
+  { path: '/family', label: '家庭守护', icon: UserGroupIcon },
 ];
 
-/** 角色专属入口 */
-const roleNavItems: NavItem[] = [
-  {
-    path: '/guardian-dashboard',
-    label: '监护面板',
-    icon: LayoutDashboard,
-    roles: ['guardian', 'admin'],
-  },
-  {
-    path: '/admin',
-    label: '管理后台',
-    icon: Settings,
-    roles: ['admin'],
-  },
+const elderNavItems: NavItem[] = [
+  { path: '/', label: '首页', icon: HomeIcon },
+  { path: '/monitor', label: '通话监测', icon: ShieldCheckIcon },
+  { path: '/alerts', label: '安全提醒', icon: BellAlertIcon },
 ];
 
-/** 移动端底部 5 个标签 - 保持平铺引用 */
-const mobileNavItems: NavItem[] = [
-  { path: '/', label: '控制台', icon: Home },
-  { path: '/monitor', label: '监控', icon: Radar },
-  { path: '/detection', label: '检测', icon: Search },
-  { path: '/alerts', label: '预警', icon: Bell },
-  { path: '/profile', label: '我的', icon: User },
+const minorNavItems: NavItem[] = [
+  { path: '/', label: '首页', icon: HomeIcon },
+  { path: '/detection', label: '安全检测', icon: ShieldExclamationIcon },
+  { path: '/knowledge', label: '安全课堂', icon: AcademicCapIcon },
 ];
 
-export default function Layout({ children }: { children?: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+const modeLabels: Record<UserMode, string> = {
+  standard: '标准模式',
+  elder: '长辈模式',
+  minor: '青少年模式',
+};
+
+const modeIcons: Record<UserMode, React.ElementType> = {
+  standard: ShieldCheckIcon,
+  elder: UserGroupIcon,
+  minor: AcademicCapIcon,
+};
+
+export default function Layout() {
   const location = useLocation();
-  const { user, logout } = useAuthStore();
+  const { mode, setMode, isTransitioning } = useModeStore();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [modeMenuOpen, setModeMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const modeMenuRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = '/login';
+  const getNavItems = () => {
+    switch (mode) {
+      case 'elder': return elderNavItems;
+      case 'minor': return minorNavItems;
+      default: return navItems;
+    }
   };
 
-  /** 判断当前路径是否匹配 */
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // 点击外部关闭菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+      if (modeMenuRef.current && !modeMenuRef.current.contains(event.target as Node)) {
+        setModeMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
-  /** 根据角色过滤的专属入口 */
-  const visibleRoleItems = roleNavItems.filter(
-    (item) => user?.role && item.roles?.includes(user.role),
-  );
+  const getModeClass = () => {
+    switch (mode) {
+      case 'elder': return 'elder-mode';
+      case 'minor': return 'minor-mode';
+      default: return '';
+    }
+  };
 
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 flex">
-      {/* ===== 桌面端侧边栏 ===== */}
-      <aside
-        className={`
-          fixed inset-y-0 left-0 z-50 bg-primary-950 text-white
-          transform transition-all duration-300 ease-out flex flex-col
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0
-          ${sidebarCollapsed ? 'w-20' : 'w-64'}
-        `}
-      >
+    <div className={`min-h-screen ${getModeClass()}`}>
+      {/* 毛玻璃顶部导航栏 */}
+      <nav className="navbar">
         {/* Logo */}
-        <div className={`flex items-center justify-between px-4 py-5 border-b border-primary-800/50 ${sidebarCollapsed ? 'px-3' : 'px-5'}`}>
-          <div className={`flex items-center gap-3 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}>
-            <div className="w-10 h-10 bg-gradient-to-br from-danger-500 to-danger-600 rounded-xl flex items-center justify-center shadow-lg shadow-danger-500/30">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            {!sidebarCollapsed && (
-              <div>
-                <h1 className="text-lg font-bold bg-gradient-to-r from-white to-primary-200 bg-clip-text text-transparent">反诈助手</h1>
-                <p className="text-xs text-primary-400">AI守护您的安全</p>
+        <Link to="/" className="navbar-logo">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-neon-500 flex items-center justify-center shadow-glow-cyan">
+            <ShieldCheckIcon className="w-6 h-6 text-dark" />
+          </div>
+          <span className="hidden sm:block">反诈守护</span>
+        </Link>
+
+        {/* 桌面端导航菜单 */}
+        <div className="navbar-nav">
+          {getNavItems().map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`navbar-item ${isActive(item.path) ? 'active' : ''}`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        {/* 右侧操作区 */}
+        <div className="navbar-actions">
+          {/* 搜索按钮 */}
+          <button className="navbar-icon-btn" title="搜索">
+            <MagnifyingGlassCircleIcon className="w-5 h-5" />
+          </button>
+
+          {/* 通知按钮 */}
+          <button className="navbar-icon-btn relative" title="通知">
+            <BellAlertIcon className="w-5 h-5" />
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-danger-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+              3
+            </span>
+          </button>
+
+          {/* 模式选择器 */}
+          <div className="relative" ref={modeMenuRef}>
+            <button
+              onClick={() => setModeMenuOpen(!modeMenuOpen)}
+              className="navbar-icon-btn flex items-center gap-1 !w-auto !px-3"
+              title="切换模式"
+            >
+              {(() => {
+                const ModeIcon = modeIcons[mode];
+                return <ModeIcon className="w-5 h-5" />;
+              })()}
+              <ChevronDownIcon className={`w-4 h-4 transition-transform ${modeMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {modeMenuOpen && (
+              <div className="dropdown right-0 top-full mt-2">
+                {(['standard', 'elder', 'minor'] as UserMode[]).map((m) => {
+                  const Icon = modeIcons[m];
+                  return (
+                    <button
+                      key={m}
+                      onClick={() => {
+                        setMode(m);
+                        setModeMenuOpen(false);
+                      }}
+                      className={`dropdown-item w-full ${mode === m ? 'active' : ''}`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      {modeLabels[m]}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
+
+          {/* 用户头像 */}
+          <div className="relative" ref={userMenuRef}>
+            <button
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="navbar-avatar"
+              title="用户菜单"
+            >
+              U
+            </button>
+            
+            {userMenuOpen && (
+              <div className="dropdown right-0 top-full mt-2">
+                <Link
+                  to="/profile"
+                  className="dropdown-item"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  <UserCircleIcon className="w-5 h-5" />
+                  个人资料
+                </Link>
+                <Link
+                  to="/settings"
+                  className="dropdown-item"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  <Cog6ToothIcon className="w-5 h-5" />
+                  系统设置
+                </Link>
+                <div className="divider !my-2" />
+                <button
+                  className="dropdown-item w-full text-danger-400 hover:text-danger-300"
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    // TODO: 调用登出逻辑
+                  }}
+                >
+                  退出登录
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* 移动端菜单按钮 */}
           <button
-            className="lg:hidden p-1.5 rounded-lg hover:bg-primary-800"
-            onClick={() => setSidebarOpen(false)}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="navbar-icon-btn lg:hidden"
           >
-            <X className="w-5 h-5" />
+            {mobileMenuOpen ? (
+              <XMarkIcon className="w-6 h-6" />
+            ) : (
+              <Bars3Icon className="w-6 h-6" />
+            )}
           </button>
         </div>
+      </nav>
 
-        {/* 导航菜单 */}
-        <nav className="flex-1 py-4 overflow-y-auto">
-          {navGroups.map((group, groupIndex) => (
-            <div key={groupIndex} className="mb-4">
-              {!sidebarCollapsed && (
-                <p className="px-5 mb-2 text-xs font-semibold text-primary-500 uppercase tracking-wider">
-                  {group.title}
-                </p>
-              )}
-              <div className="space-y-1 px-3">
-                {group.items.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.path);
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setSidebarOpen(false)}
-                      title={sidebarCollapsed ? item.label : undefined}
-                      className={`
-                        flex items-center gap-3 px-3 py-2.5 rounded-xl
-                        transition-all duration-200 text-sm group relative
-                        ${sidebarCollapsed ? 'justify-center' : ''}
-                        ${
-                          active
-                            ? 'bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-lg shadow-primary-500/30'
-                            : 'text-primary-300 hover:bg-primary-800/50 hover:text-white'
-                        }
-                      `}
-                    >
-                      <Icon className={`w-5 h-5 ${active ? '' : 'group-hover:scale-110 transition-transform'}`} />
-                      {!sidebarCollapsed && <span>{item.label}</span>}
-                      {/* 收起时的tooltip */}
-                      {sidebarCollapsed && (
-                        <div className="absolute left-full ml-2 px-2 py-1 bg-primary-800 text-white text-xs rounded-lg
-                                        opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all
-                                        whitespace-nowrap z-50 shadow-lg">
-                          {item.label}
-                        </div>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-
-          {/* 角色专属入口 */}
-          {visibleRoleItems.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-primary-800/50">
-              {!sidebarCollapsed && (
-                <p className="px-5 mb-2 text-xs font-semibold text-warning-500 uppercase tracking-wider">
-                  管理功能
-                </p>
-              )}
-              <div className="space-y-1 px-3">
-                {visibleRoleItems.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.path);
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setSidebarOpen(false)}
-                      title={sidebarCollapsed ? item.label : undefined}
-                      className={`
-                        flex items-center gap-3 px-3 py-2.5 rounded-xl
-                        transition-all duration-200 text-sm group relative
-                        ${sidebarCollapsed ? 'justify-center' : ''}
-                        ${
-                          active
-                            ? 'bg-gradient-to-r from-warning-600 to-warning-500 text-white shadow-lg'
-                            : 'text-primary-300 hover:bg-primary-800/50 hover:text-white'
-                        }
-                      `}
-                    >
-                      <Icon className="w-5 h-5" />
-                      {!sidebarCollapsed && <span>{item.label}</span>}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </nav>
-
-        {/* 侧边栏收起按钮（桌面端） */}
-        <button
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="hidden lg:flex items-center justify-center py-3 border-t border-primary-800/50
-                     text-primary-400 hover:text-white hover:bg-primary-800/50 transition-colors"
-        >
-          {sidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-        </button>
-      </aside>
-
-      {/* 移动端遮罩 */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* ===== 主内容区 ===== */}
-      <div className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-        {/* 顶部栏 - 移动端和桌面端都显示 */}
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm flex-shrink-0">
-          <div className="flex items-center justify-between px-4 lg:px-6 py-3">
-            {/* 左侧 - Logo和菜单 */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-xl hover:bg-slate-100 transition-colors"
-              >
-                <Menu className="w-5 h-5 text-slate-600" />
-              </button>
-              <div className="lg:hidden flex items-center gap-2">
-                <Shield className="w-6 h-6 text-danger-500" />
-                <span className="font-bold text-primary-900">反诈助手</span>
-              </div>
-              {/* 桌面端显示页面标题 */}
-              <div className="hidden lg:block">
-                <h2 className="text-lg font-semibold text-slate-800">
-                  {navGroups.flatMap(g => g.items).find(item => isActive(item.path))?.label || '控制台'}
-                </h2>
-              </div>
-            </div>
-
-            {/* 右侧 - 用户信息 */}
-            <div className="flex items-center gap-3">
-              {/* 安全状态指示器 */}
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-safe-50 border border-safe-200 rounded-full">
-                <div className="w-2 h-2 bg-safe-500 rounded-full animate-pulse" />
-                <span className="text-xs font-medium text-safe-700">系统正常</span>
-              </div>
-
-              {user ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-slate-100 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 
-                                    flex items-center justify-center text-white text-sm font-bold shadow-md">
-                      {user.nickname?.[0] || user.username?.[0] || '?'}
-                    </div>
-                    <div className="hidden sm:block text-left">
-                      <p className="text-sm font-medium text-slate-700 leading-tight">
-                        {user.nickname || user.username}
-                      </p>
-                      <p className="text-xs text-slate-400">{user.role === 'admin' ? '管理员' : user.role === 'guardian' ? '监护人' : '用户'}</p>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {/* 下拉菜单 */}
-                  {userMenuOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-slide-down">
-                        <div className="px-4 py-3 border-b border-slate-100">
-                          <p className="text-sm font-medium text-slate-800">{user.nickname || user.username}</p>
-                          <p className="text-xs text-slate-400 truncate">{user.email}</p>
-                        </div>
-                        <div className="py-1">
-                          <Link
-                            to="/profile"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                          >
-                            <UserCircle className="w-4 h-4" />
-                            我的画像
-                          </Link>
-                          <Link
-                            to="/reports"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-                          >
-                            <FileText className="w-4 h-4" />
-                            安全报告
-                          </Link>
-                        </div>
-                        <div className="border-t border-slate-100 pt-1">
-                          <button
-                            onClick={() => { handleLogout(); setUserMenuOpen(false); }}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-danger-600 hover:bg-danger-50 transition-colors w-full"
-                          >
-                            <LogOut className="w-4 h-4" />
-                            退出登录
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
+      {/* 移动端侧滑菜单 */}
+      {mobileMenuOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="fixed top-[72px] right-0 bottom-0 w-72 bg-dark-50/95 backdrop-blur-xl border-l border-card-border z-50 lg:hidden animate-fade-in">
+            <div className="p-4 space-y-1">
+              {getNavItems().map((item) => (
                 <Link
-                  to="/login"
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 
-                           hover:from-primary-700 hover:to-primary-800 text-white rounded-xl text-sm font-medium 
-                           shadow-lg shadow-primary-500/25 transition-all"
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    isActive(item.path)
+                      ? 'bg-cyan-400/10 text-cyan-400'
+                      : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'
+                  }`}
                 >
-                  <LogIn className="w-4 h-4" />
-                  <span className="hidden sm:inline">登录</span>
+                  <item.icon className="w-5 h-5" />
+                  <span className="font-medium">{item.label}</span>
                 </Link>
-              )}
+              ))}
+              
+              <div className="divider" />
+              
+              <Link
+                to="/settings"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary hover:bg-white/5 hover:text-text-primary transition-all"
+              >
+                <Cog6ToothIcon className="w-5 h-5" />
+                <span className="font-medium">设置</span>
+              </Link>
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-text-secondary hover:bg-white/5 hover:text-text-primary transition-all"
+              >
+                <UserCircleIcon className="w-5 h-5" />
+                <span className="font-medium">我的</span>
+              </Link>
             </div>
           </div>
-        </header>
+        </>
+      )}
 
-        {/* 页面内容 - 可滚动区域 */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto pb-20 lg:pb-8 scroll-smooth">
-          {children ?? <Outlet />}
-        </main>
-      </div>
-
-      {/* ===== 移动端底部导航 (5 tabs) ===== */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg">
-        <div className="flex">
-          {mobileNavItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.path);
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`
-                  flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium
-                  transition-colors relative
-                  ${active ? 'text-primary-600' : 'text-slate-400'}
-                `}
-              >
-                {active && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary-500 rounded-full" />
-                )}
-                <Icon className={`w-5 h-5 ${active ? 'scale-110' : ''} transition-transform`} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+      {/* 主内容区域 */}
+      <main 
+        className={`main-content ${isTransitioning ? 'opacity-50' : ''}`}
+        style={{ transition: 'opacity 0.15s ease' }}
+      >
+        <div className="max-w-7xl mx-auto">
+          <Outlet />
         </div>
-      </nav>
+      </main>
     </div>
   );
 }

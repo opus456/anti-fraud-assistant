@@ -1,183 +1,215 @@
-import { useState, useEffect } from 'react';
-import { Bell, Filter, CheckCircle, AlertTriangle, ShieldCheck, Info, ShieldAlert, ChevronLeft, ChevronRight } from 'lucide-react';
-import api from '../api';
-import toast from 'react-hot-toast';
+import { useState } from 'react';
+import {
+  ExclamationTriangleIcon,
+  ShieldCheckIcon,
+  BellAlertIcon,
+  PhoneIcon,
+  ChatBubbleLeftRightIcon,
+  CheckCircleIcon,
+  XMarkIcon,
+  
+} from '@heroicons/react/24/outline';
 
 interface Alert {
-  id: number;
+  id: string;
+  type: string;
   title: string;
-  description: string;
-  suggestion: string;
-  alert_type: string;
-  risk_level: number;
-  fraud_type: string | null;
-  guardian_notified: boolean;
-  is_resolved: boolean;
-  created_at: string;
+  message: string;
+  time: string;
+  level: 'high' | 'medium' | 'low';
+  status: 'pending' | 'handled' | 'dismissed';
+  source: 'call' | 'message' | 'detection';
 }
 
-const riskLevelConfig: Record<number, { label: string; color: string; bg: string; icon: React.FC<{ className?: string }> }> = {
-  0: { label: '安全', color: 'text-green-700', bg: 'bg-green-50 border-green-200', icon: ShieldCheck },
-  1: { label: '低风险', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: Info },
-  2: { label: '中风险', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', icon: AlertTriangle },
-  3: { label: '高风险', color: 'text-red-700', bg: 'bg-red-50 border-red-200', icon: ShieldAlert },
-};
+const mockAlerts: Alert[] = [
+  {
+    id: '1',
+    type: '投资诈骗',
+    title: '检测到高风险投资信息',
+    message: '来自400-888-9999的通话中提及"稳定高收益投资"，符合投资诈骗特征。',
+    time: '10分钟前',
+    level: 'high',
+    status: 'pending',
+    source: 'call',
+  },
+  {
+    id: '2',
+    type: '刷单诈骗',
+    title: '可疑兼职信息',
+    message: '短信内容包含"日结工资"、"在家赚钱"等关键词，疑似刷单诈骗。',
+    time: '1小时前',
+    level: 'medium',
+    status: 'pending',
+    source: 'message',
+  },
+  {
+    id: '3',
+    type: '冒充公检法',
+    title: '疑似冒充公检法诈骗',
+    message: '检测到通话中有"涉及案件"、"配合调查"等诱导性话术。',
+    time: '2小时前',
+    level: 'high',
+    status: 'handled',
+    source: 'call',
+  },
+];
 
 export default function Alerts() {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [filterLevel, setFilterLevel] = useState<number | null>(null);
-  const [filterResolved, setFilterResolved] = useState<boolean | null>(null);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const pageSize = 10;
+  const [alerts, setAlerts] = useState(mockAlerts);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'handled'>('all');
 
-  const fetchAlerts = async () => {
-    setLoading(true);
-    try {
-      const params: any = { page, page_size: pageSize };
-      if (filterResolved !== null) params.is_resolved = filterResolved;
-      const { data } = await api.get('/alerts/', { params });
-      const list = Array.isArray(data) ? data : data.alerts || data.items || [];
-      setAlerts(list);
-      setTotal(data.total ?? (list.length === pageSize ? page * pageSize + 1 : (page - 1) * pageSize + list.length));
-    } catch (err: any) {
-      toast.error(err.message || '获取预警列表失败');
-    } finally {
-      setLoading(false);
+  const filteredAlerts = alerts.filter(alert => {
+    if (filter === 'all') return true;
+    return alert.status === filter;
+  });
+
+  const handleAlert = (id: string, action: 'handle' | 'dismiss') => {
+    setAlerts(alerts.map(alert =>
+      alert.id === id
+        ? { ...alert, status: action === 'handle' ? 'handled' : 'dismissed' }
+        : alert
+    ));
+  };
+
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'high': return 'danger';
+      case 'medium': return 'warning';
+      case 'low': return 'safe';
+      default: return 'primary';
     }
   };
 
-  useEffect(() => {
-    fetchAlerts();
-  }, [page, filterLevel, filterResolved]);
-
-  const handleResolve = async (alertId: number) => {
-    try {
-      await api.put(`/alerts/${alertId}/resolve`);
-      setAlerts((prev) => prev.map((a) => a.id === alertId ? { ...a, is_resolved: true } : a));
-      toast.success('已标记为已处理');
-    } catch (err: any) {
-      toast.error(err.message || '操作失败');
+  const getSourceIcon = (source: string) => {
+    switch (source) {
+      case 'call': return PhoneIcon;
+      case 'message': return ChatBubbleLeftRightIcon;
+      default: return BellAlertIcon;
     }
   };
 
-  const totalPages = Math.ceil(total / pageSize);
+  const pendingCount = alerts.filter(a => a.status === 'pending').length;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-        <Bell className="w-6 h-6 text-primary-600" /> 预警中心
-      </h1>
+    <div className="space-y-6 animate-fade-in">
+      <div className="content-header">
+        <h1 className="page-title">预警中心</h1>
+        <p className="page-subtitle">查看和处理安全预警</p>
+      </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border p-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Filter className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-500 mr-2">风险等级:</span>
-          <button onClick={() => { setFilterLevel(null); setPage(1); }}
-            className={`px-3 py-1 text-xs rounded-full border ${filterLevel === null ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-gray-600 border-gray-300'}`}>
-            全部
-          </button>
-          {[0, 1, 2, 3].map((level) => {
-            const cfg = riskLevelConfig[level];
-            return (
-              <button key={level} onClick={() => { setFilterLevel(level); setPage(1); }}
-                className={`px-3 py-1 text-xs rounded-full border ${filterLevel === level ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-gray-600 border-gray-300'}`}>
-                {cfg.label}
-              </button>
-            );
-          })}
-
-          <span className="mx-2 text-gray-300">|</span>
-          <span className="text-sm text-gray-500 mr-2">状态:</span>
-          <button onClick={() => { setFilterResolved(null); setPage(1); }}
-            className={`px-3 py-1 text-xs rounded-full border ${filterResolved === null ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-gray-600 border-gray-300'}`}>
-            全部
-          </button>
-          <button onClick={() => { setFilterResolved(false); setPage(1); }}
-            className={`px-3 py-1 text-xs rounded-full border ${filterResolved === false ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-gray-600 border-gray-300'}`}>
-            未处理
-          </button>
-          <button onClick={() => { setFilterResolved(true); setPage(1); }}
-            className={`px-3 py-1 text-xs rounded-full border ${filterResolved === true ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-gray-600 border-gray-300'}`}>
-            已处理
-          </button>
+      {/* 统计卡片 */}
+      <div className="card-grid-3">
+        <div className="stat-card">
+          <div className="stat-icon bg-danger-100">
+            <ExclamationTriangleIcon className="w-6 h-6 text-danger-500" />
+          </div>
+          <div className="stat-value">{pendingCount}</div>
+          <div className="stat-label">待处理预警</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon bg-safe-100">
+            <CheckCircleIcon className="w-6 h-6 text-safe-500" />
+          </div>
+          <div className="stat-value">{alerts.filter(a => a.status === 'handled').length}</div>
+          <div className="stat-label">已处理</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon bg-primary-100">
+            <ShieldCheckIcon className="w-6 h-6 text-primary-500" />
+          </div>
+          <div className="stat-value">98%</div>
+          <div className="stat-label">防护率</div>
         </div>
       </div>
 
-      {/* Alert list */}
-      {loading ? (
-        <div className="text-center py-12 text-gray-400">加载中...</div>
-      ) : alerts.length === 0 ? (
-        <div className="text-center py-12">
-          <Bell className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-          <p className="text-gray-400">暂无预警记录</p>
+      {/* 筛选标签 */}
+      <div className="card">
+        <div className="flex items-center gap-4 mb-6">
+          <span className="text-text-muted">筛选：</span>
+          {[
+            { id: 'all', label: '全部' },
+            { id: 'pending', label: '待处理' },
+            { id: 'handled', label: '已处理' },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setFilter(item.id as typeof filter)}
+              className={`px-4 py-2 rounded-btn font-medium transition-colors ${
+                filter === item.id
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-surface-100 text-text-body hover:bg-surface-200'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
-      ) : (
-        <div className="space-y-3">
-          {alerts.map((alert) => {
-            const cfg = riskLevelConfig[alert.risk_level] || riskLevelConfig[3];
-            const Icon = cfg.icon;
+
+        {/* 预警列表 */}
+        <div className="space-y-4">
+          {filteredAlerts.map((alert) => {
+            const SourceIcon = getSourceIcon(alert.source);
+            const levelColor = getLevelColor(alert.level);
+            
             return (
-              <div key={alert.id} className={`rounded-xl border p-4 ${alert.is_resolved ? 'bg-gray-50 border-gray-200 opacity-70' : cfg.bg}`}>
+              <div
+                key={alert.id}
+                className={`p-5 rounded-card border-l-4 bg-surface-50 ${
+                  alert.level === 'high' ? 'border-danger-500' :
+                  alert.level === 'medium' ? 'border-warning-500' : 'border-safe-500'
+                }`}
+              >
                 <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                    alert.is_resolved ? 'bg-gray-200' : `${cfg.color}`
-                  }`}>
-                    <Icon className="w-5 h-5" />
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-${levelColor}-100`}>
+                    <SourceIcon className={`w-6 h-6 text-${levelColor}-500`} />
                   </div>
+                  
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className={`font-medium ${alert.is_resolved ? 'text-gray-500' : 'text-gray-800'}`}>
-                        {alert.title || alert.fraud_type || '预警信息'}
-                      </h3>
-                      <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
-                        alert.is_resolved ? 'bg-gray-200 text-gray-500' : `${cfg.color} bg-white/50`
-                      }`}>
-                        {cfg.label}
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className={`status-badge status-${levelColor}`}>
+                        {alert.type}
                       </span>
-                      {alert.is_resolved && (
-                        <span className="px-2 py-0.5 bg-green-100 text-green-600 text-xs rounded-full flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3" /> 已处理
-                        </span>
-                      )}
+                      <span className="text-sm text-text-muted">{alert.time}</span>
                     </div>
-                    <p className={`text-sm ${alert.is_resolved ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {alert.description}
-                    </p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                      <span>{new Date(alert.created_at).toLocaleString()}</span>
-                      {alert.fraud_type && <span>类型: {alert.fraud_type}</span>}
-                    </div>
+                    <h3 className="font-semibold text-text-title mb-1">{alert.title}</h3>
+                    <p className="text-text-body text-sm">{alert.message}</p>
                   </div>
-                  {!alert.is_resolved && (
-                    <button onClick={(e) => { e.stopPropagation(); handleResolve(alert.id); }}
-                      className="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-lg hover:bg-green-50 hover:border-green-300 hover:text-green-700 flex items-center gap-1 shrink-0">
-                      <CheckCircle className="w-3.5 h-3.5" /> 处理
-                    </button>
+
+                  {alert.status === 'pending' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleAlert(alert.id, 'handle')}
+                        className="btn btn-sm btn-safe"
+                      >
+                        <CheckCircleIcon className="w-4 h-4 mr-1" />
+                        处理
+                      </button>
+                      <button
+                        onClick={() => handleAlert(alert.id, 'dismiss')}
+                        className="btn btn-sm btn-ghost"
+                      >
+                        <XMarkIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {alert.status === 'handled' && (
+                    <span className="status-badge status-safe">已处理</span>
                   )}
                 </div>
               </div>
             );
           })}
-        </div>
-      )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4">
-          <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}
-            className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-30">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <span className="text-sm text-gray-600">第 {page} / {totalPages} 页</span>
-          <button onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages}
-            className="p-2 rounded-lg border hover:bg-gray-50 disabled:opacity-30">
-            <ChevronRight className="w-5 h-5" />
-          </button>
+          {filteredAlerts.length === 0 && (
+            <div className="text-center py-12">
+              <ShieldCheckIcon className="w-16 h-16 mx-auto text-surface-300 mb-4" />
+              <p className="text-text-muted">暂无预警信息</p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
+

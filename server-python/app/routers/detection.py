@@ -96,6 +96,49 @@ async def quick_detect(
     return DetectionResult(**{k: v for k, v in result.items() if not k.startswith("_")})
 
 
+@router.post("/audio", response_model=DetectionResult, summary="音频检测")
+async def detect_audio(
+    file: UploadFile = File(...),
+    context: str = Form(default=""),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """音频内容反诈检测 — 支持语音消息、通话录音等"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    allowed_types = ["audio/mpeg", "audio/mp3", "audio/wav", "audio/m4a", "audio/ogg", "audio/webm"]
+    if file.content_type and file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="不支持的音频格式，请上传 MP3/WAV/M4A/OGG 格式")
+
+    contents = await file.read()
+    if len(contents) > settings.MAX_UPLOAD_SIZE:
+        raise HTTPException(status_code=400, detail="文件大小超过限制(50MB)")
+
+    # 导入多模态服务进行语音转写
+    from app.services.multimodal_service import multimodal_service
+    
+    try:
+        transcript = await multimodal_service.transcribe_audio(contents)
+        logger.info(f"音频转写结果: {transcript[:100] if transcript else '无'}...")
+    except Exception as e:
+        logger.warning(f"音频转写失败: {e}")
+        transcript = "[音频内容待转写]"
+    
+    # 合并上下文和转写内容
+    analysis_text = f"[语音消息] {transcript}"
+    if context:
+        analysis_text = f"{context}\n{analysis_text}"
+
+    result = await fraud_detector.detect_text(
+        content=analysis_text,
+        user=current_user,
+        db=db,
+        session_id=str(uuid.uuid4())[:8],
+    )
+    return DetectionResult(**{k: v for k, v in result.items() if not k.startswith("_")})
+
+
 @router.post("/multimodal", response_model=DetectionResult, summary="多模态检测")
 async def detect_multimodal(
     request: MultimodalDetectionRequest,
@@ -111,21 +154,34 @@ async def detect_multimodal(
         if not any([
             request.text.strip(),
             request.image_ocr.strip(),
-            request.image_frame.strip(),  # 添加 image_frame 检查
+            request.image_frame.strip(),
             request.audio_transcript.strip(),
             request.video_description.strip(),
         ]):
             raise HTTPException(status_code=400, detail="至少需要提供一种输入模态")
 
-        # 如果有 image_frame 但没有 image_ocr，自动设置标记
-        image_ocr = request.image_ocr
-        if not image_ocr.strip() and request.image_frame.strip():
-            image_ocr = "SCREEN_FRAME_CAPTURED"
+        # 导入多模态服务
+        from app.services.multimodal_service import multimodal_service
+        
+        # 如果有 image_frame，使用视觉模型分析
+        image_analysis = ""
+        if request.image_frame.strip():
             logger.debug(f"收到图片帧，大小: {len(request.image_frame)} 字符")
+            try:
+                image_analysis = await multimodal_service.analyze_image(request.image_frame)
+                logger.info(f"图片分析结果: {image_analysis[:100]}...")
+            except Exception as e:
+                logger.warning(f"图片分析失败: {e}")
+                image_analysis = "[图片内容待分析]"
+        
+        # 合并OCR结果和视觉分析
+        combined_image_info = request.image_ocr
+        if image_analysis:
+            combined_image_info = f"{request.image_ocr} | {image_analysis}" if request.image_ocr.strip() else image_analysis
 
         result = await fraud_detector.detect_multimodal(
             text=request.text,
-            image_ocr=image_ocr,
+            image_ocr=combined_image_info,
             audio_transcript=request.audio_transcript,
             video_description=request.video_description,
             context=request.context,

@@ -1,194 +1,127 @@
-import { useEffect, useState } from 'react';
-import { User, Save, Loader2 } from 'lucide-react';
-import api from '../api';
+import { useState } from 'react';
+import {
+  UserCircleIcon,
+  PencilIcon,
+  ShieldCheckIcon,
+  BellIcon,
+  ClockIcon,
+  DocumentTextIcon,
+  ArrowRightOnRectangleIcon,
+  ChevronRightIcon,
+  CameraIcon,
+} from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store';
-import toast from 'react-hot-toast';
-
-const provinces = [
-  '北京', '上海', '广东', '浙江', '江苏', '四川', '湖北', '山东',
-  '河南', '福建', '湖南', '安徽', '重庆', '陕西', '辽宁', '天津',
-  '云南', '河北', '广西', '山西', '贵州', '吉林', '甘肃', '海南',
-  '江西', '黑龙江', '内蒙古', '新疆', '宁夏', '西藏', '青海',
-];
 
 export default function Profile() {
-  const { user, updateUser } = useAuthStore();
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    nickname: '', age: '', gender: '', occupation: '',
-    education: '', province: '', city: '', role_type: '',
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
+  const [profileUser] = useState({
+    name: user?.nickname || user?.username || '守护者',
+    phone: '138****5678',
+    email: user?.email || 'user@example.com',
+    role: user?.role === 'guardian' ? '监护人' : user?.role === 'admin' ? '管理员' : '家庭守护者',
+    joinDate: user?.created_at ? new Date(user.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' }) : '2024年1月',
+    stats: {
+      detections: user?.total_detections || 156,
+      blocked: user?.fraud_hits || 23,
+      protected: 4,
+    },
   });
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data } = await api.get('/auth/me');
-        const u = data.user || data;
-        setForm({
-          nickname: u.nickname || '',
-          age: u.age?.toString() || '',
-          gender: u.gender || '',
-          occupation: u.occupation || '',
-          education: u.education || '',
-          province: u.province || '',
-          city: u.city || '',
-          role_type: u.role_type || '',
-        });
-      } catch {
-        // Use store data as fallback
-        if (user) {
-          setForm({
-            nickname: user.nickname || '',
-            age: user.age?.toString() || '',
-            gender: user.gender || '',
-            occupation: user.occupation || '',
-            education: user.education || '',
-            province: user.province || '',
-            city: user.city || '',
-            role_type: user.role_type || '',
-          });
-        }
-      }
-    };
-    fetchProfile();
-  }, [user]);
+  const menuItems = [
+    { icon: ShieldCheckIcon, label: '安全中心', path: '/settings' },
+    { icon: BellIcon, label: '通知设置', path: '/settings' },
+    { icon: ClockIcon, label: '检测记录', path: '/history' },
+    { icon: DocumentTextIcon, label: '安全报告', path: '/reports' },
+  ];
 
-  const update = (field: string, value: string) => setForm((f) => ({ ...f, [field]: value }));
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const payload: any = { ...form };
-      payload.age = form.age ? parseInt(form.age, 10) : null;
-      Object.keys(payload).forEach((k) => {
-        if (payload[k] === '') payload[k] = null;
-      });
-
-      const { data } = await api.put('/auth/profile', payload);
-      updateUser(data.user || data);
-      toast.success('个人信息已更新');
-    } catch (err: any) {
-      toast.error(err.message || '更新失败');
-    } finally {
-      setLoading(false);
-    }
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-        <User className="w-6 h-6 text-primary-600" /> 我的画像
-      </h1>
-
-      {/* User info card */}
-      {user && (
-        <div className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-xl p-6 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
-              {(user.nickname || user.username)?.[0]}
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">{user.nickname || user.username}</h2>
-              <p className="text-primary-200 text-sm">{user.email}</p>
-              <div className="flex items-center gap-4 mt-2 text-sm text-primary-200">
-                <span>角色: {user.role}</span>
-                <span>检测: {user.total_detections} 次</span>
-                <span>命中: {user.fraud_hits} 次</span>
-                <span>风险分: {user.risk_score}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit form */}
-      <div className="bg-white rounded-xl shadow-sm border p-6">
-        <h3 className="font-semibold text-gray-800 mb-4">编辑个人信息</h3>
-        <form onSubmit={handleSave} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">昵称</label>
-            <input type="text" value={form.nickname} onChange={(e) => update('nickname', e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
-              placeholder="显示名称" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">年龄</label>
-              <input type="number" value={form.age} onChange={(e) => update('age', e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
-                placeholder="年龄" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">性别</label>
-              <select value={form.gender} onChange={(e) => update('gender', e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
-                <option value="">选择性别</option>
-                <option value="male">男</option>
-                <option value="female">女</option>
-                <option value="other">其他</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">职业</label>
-            <input type="text" value={form.occupation} onChange={(e) => update('occupation', e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
-              placeholder="您的职业" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">学历</label>
-            <select value={form.education} onChange={(e) => update('education', e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
-              <option value="">选择学历</option>
-              <option value="初中及以下">初中及以下</option>
-              <option value="高中">高中</option>
-              <option value="大专">大专</option>
-              <option value="本科">本科</option>
-              <option value="硕士">硕士</option>
-              <option value="博士">博士</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">身份类型</label>
-            <select value={form.role_type} onChange={(e) => update('role_type', e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
-              <option value="">选择身份</option>
-              <option value="elderly">老年人</option>
-              <option value="student">学生</option>
-              <option value="worker">上班族</option>
-              <option value="other">其他</option>
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">省份</label>
-              <select value={form.province} onChange={(e) => update('province', e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
-                <option value="">选择省份</option>
-                {provinces.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">城市</label>
-              <input type="text" value={form.city} onChange={(e) => update('city', e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
-                placeholder="城市" />
-            </div>
-          </div>
-
-          <button type="submit" disabled={loading}
-            className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50">
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {loading ? '保存中...' : '保存修改'}
-          </button>
-        </form>
+    <div className="space-y-6 animate-fade-in">
+      <div className="content-header">
+        <h1 className="page-title">个人中心</h1>
       </div>
+
+      {/* 用户信息卡 */}
+      <div className="card">
+        <div className="flex items-center gap-6">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-400 to-neon-500 flex items-center justify-center shadow-glow-cyan">
+              <UserCircleIcon className="w-16 h-16 text-dark" />
+            </div>
+            <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-cyan-400 text-dark flex items-center justify-center shadow-glow-cyan hover:bg-cyan-300 transition-colors">
+              <CameraIcon className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold text-text-primary">{profileUser.name}</h2>
+              <span className="status-badge status-cyan">{profileUser.role}</span>
+            </div>
+            <p className="text-text-secondary mt-1">{profileUser.phone}</p>
+            <p className="text-text-muted text-sm">加入于 {profileUser.joinDate}</p>
+          </div>
+
+          <button className="btn btn-outline">
+            <PencilIcon className="w-4 h-4" />
+            编辑资料
+          </button>
+        </div>
+      </div>
+
+      {/* 统计数据 */}
+      <div className="bento-grid-3">
+        <div className="stat-card text-center">
+          <div className="stat-value text-cyan-400">{profileUser.stats.detections}</div>
+          <div className="stat-label">检测次数</div>
+        </div>
+        <div className="stat-card text-center">
+          <div className="stat-value text-danger-400">{profileUser.stats.blocked}</div>
+          <div className="stat-label">拦截风险</div>
+        </div>
+        <div className="stat-card text-center">
+          <div className="stat-value text-safe-400">{profileUser.stats.protected}</div>
+          <div className="stat-label">守护家人</div>
+        </div>
+      </div>
+
+      {/* 菜单列表 */}
+      <div className="card">
+        <div className="space-y-1">
+          {menuItems.map((item, idx) => (
+            <button
+              key={idx}
+              onClick={() => navigate(item.path)}
+              className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 border border-transparent hover:border-card-border transition-all text-left group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-cyan-400/10 border border-cyan-400/20 flex items-center justify-center group-hover:bg-cyan-400/20 transition-colors">
+                <item.icon className="w-5 h-5 text-cyan-400" />
+              </div>
+              <span className="flex-1 font-medium text-text-primary">{item.label}</span>
+              <ChevronRightIcon className="w-5 h-5 text-text-muted group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 退出登录 */}
+      <button
+        onClick={handleLogout}
+        className="w-full card hover:bg-danger-500/10 hover:border-danger-500/30 transition-all group"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-danger-500/15 border border-danger-500/30 flex items-center justify-center">
+            <ArrowRightOnRectangleIcon className="w-5 h-5 text-danger-400" />
+          </div>
+          <span className="font-medium text-danger-400">退出登录</span>
+        </div>
+      </button>
     </div>
   );
 }

@@ -18,6 +18,8 @@ import Guardians from './pages/Guardians';
 import Reports from './pages/Reports';
 import Alerts from './pages/Alerts';
 import SmsInbox from './pages/SmsInbox';
+import Settings from './pages/Settings';
+import Family from './pages/Family';
 
 function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
   const { isAuthenticated, user } = useAuthStore();
@@ -88,6 +90,14 @@ export default function App() {
         <Route
           path="profile"
           element={<ProtectedRoute><Profile /></ProtectedRoute>}
+        />
+        <Route
+          path="settings"
+          element={<ProtectedRoute><Settings /></ProtectedRoute>}
+        />
+        <Route
+          path="family"
+          element={<ProtectedRoute><Family /></ProtectedRoute>}
         />
         <Route
           path="user-console"
