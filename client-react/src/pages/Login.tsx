@@ -3,11 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheckIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import api from '../api';
 import { useAuthStore } from '../store';
+import { useModeStore } from '../store/modeStore';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 export default function Login() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
+  const { setMode } = useModeStore();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -37,7 +40,18 @@ export default function Login() {
       // 使用 Zustand store 保存认证状态
       setAuth(user, access_token);
       
-      toast.success(`欢迎回来，${user.nickname || user.username}！`);
+      // 根据用户身份类型自动设置模式
+      if (user.role_type === 'elderly') {
+        setMode('elder');
+        toast.success(`欢迎回来，${user.nickname || user.username}！已为您切换到长辈模式`);
+      } else if (user.role_type === 'student') {
+        setMode('minor');
+        toast.success(`欢迎回来，${user.nickname || user.username}！已为您切换到青少年模式`);
+      } else {
+        setMode('standard');
+        toast.success(`欢迎回来，${user.nickname || user.username}！`);
+      }
+      
       navigate('/');
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '登录失败，请稍后重试';
@@ -49,30 +63,45 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-sky-50 via-white to-blue-50">
       {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-sky-200/40 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-blue-200/40 rounded-full blur-3xl" />
       </div>
       
-      <div className="w-full max-w-md relative z-10">
+      <motion.div 
+        className="w-full max-w-sm sm:max-w-md relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-400 to-neon-500 flex items-center justify-center mx-auto mb-4 shadow-glow-cyan">
-            <ShieldCheckIcon className="w-12 h-12 text-dark" />
-          </div>
-          <h1 className="text-3xl font-bold text-text-primary text-glow font-tech">
+        <div className="text-center mb-6 sm:mb-8">
+          <motion.div 
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-btn"
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <ShieldCheckIcon className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+          </motion.div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">
             反诈守护助手
           </h1>
-          <p className="text-text-muted mt-2">AI 驱动的安全防护</p>
+          <p className="text-slate-500 mt-1 sm:mt-2 text-sm sm:text-base">AI 驱动的安全防护</p>
         </div>
 
         {/* 登录表单 */}
-        <div className="card">
+        <motion.div 
+          className="card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
           <form onSubmit={handleLogin} className="space-y-5">
             {error && (
-              <div className="p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-400 text-sm">
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
                 {error}
               </div>
             )}
@@ -105,7 +134,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="w-5 h-5" />
@@ -136,24 +165,24 @@ export default function Login() {
           <div className="mt-6 flex items-center justify-between text-sm">
             <Link 
               to="/register" 
-              className="text-cyan-400 hover:text-cyan-300 transition-colors"
+              className="text-sky-600 hover:text-sky-700 transition-colors font-medium"
             >
               注册新账户
             </Link>
             <a 
               href="#" 
-              className="text-text-muted hover:text-text-secondary transition-colors"
+              className="text-slate-500 hover:text-slate-700 transition-colors"
             >
               忘记密码？
             </a>
           </div>
-        </div>
+        </motion.div>
 
         {/* 底部 */}
-        <p className="text-center text-text-muted text-sm mt-8">
+        <p className="text-center text-slate-400 text-sm mt-8">
           © 2024 反诈守护助手 · 保护您的每一次通话
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

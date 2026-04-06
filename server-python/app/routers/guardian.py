@@ -164,6 +164,61 @@ async def list_charges(
     ]
 
 
+@router.post("/notify", response_model=MessageResponse, summary="发送通知给被守护者")
+async def notify_charge(
+    data: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """作为监护人向被守护者发送通知/提醒"""
+    user_id = data.get("user_id")
+    message = data.get("message", "您的监护人发来一条安全提醒")
+
+    if not user_id:
+        raise HTTPException(status_code=400, detail="缺少 user_id")
+
+    # 验证守护关系
+    result = await db.execute(
+        select(GuardianRelation).where(
+            GuardianRelation.guardian_id == current_user.id,
+            GuardianRelation.user_id == user_id,
+            GuardianRelation.is_active == True,
+        )
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=403, detail="没有守护此用户的权限")
+
+    # TODO: 实际发送通知（集成阿里云短信/推送等）
+    # 这里先返回成功，后续可对接真实通知服务
+    return MessageResponse(message=f"通知已发送: {message[:50]}")
+
+
+@router.post("/emergency", response_model=MessageResponse, summary="紧急通报")
+async def emergency_alert(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """一键向所有监护人发送紧急求助"""
+    # 获取所有监护人
+    result = await db.execute(
+        select(GuardianRelation, User)
+        .join(User, GuardianRelation.guardian_id == User.id)
+        .where(
+            GuardianRelation.user_id == current_user.id,
+            GuardianRelation.is_active == True,
+        )
+    )
+    guardians = result.all()
+
+    if not guardians:
+        raise HTTPException(status_code=400, detail="暂无绑定的监护人")
+
+    # TODO: 实际发送紧急通知（短信/电话/推送）
+    # 这里先返回成功，后续可对接阿里云短信/语音通知
+    guardian_names = [g.nickname or g.username for _, g in guardians]
+    return MessageResponse(message=f"已向 {len(guardians)} 位监护人发送紧急求助: {', '.join(guardian_names)}")
+
+
 @router.get("/detections", summary="我守护用户的全部检测记录")
 async def list_charge_detections(
     page: int = 1,

@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore, validateStoredToken } from './store';
+import { useModeStore } from './store/modeStore';
+import { initializeSettings } from './store/settingsStore';
 import { useEffect } from 'react';
 import Layout from './components/Layout';
 import Login from './pages/Login';
@@ -29,9 +31,33 @@ function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?
 }
 
 export default function App() {
+  const { user } = useAuthStore();
+  const { setMode } = useModeStore();
+  
   useEffect(() => {
+    // 验证存储的 token
     validateStoredToken();
+    // 初始化设置（主题、字体等）
+    initializeSettings();
   }, []);
+  
+  // 当用户信息变化时，根据 role_type 校验模式
+  useEffect(() => {
+    if (user?.role_type) {
+      // 只在首次加载或用户变化时自动设置模式
+      // 如果用户手动切换过模式，则保持用户选择
+      const storedMode = localStorage.getItem('anti-fraud-mode');
+      const isFirstLoad = !storedMode || storedMode === '{}';
+      
+      if (isFirstLoad) {
+        if (user.role_type === 'elderly') {
+          setMode('elder');
+        } else if (user.role_type === 'student') {
+          setMode('minor');
+        }
+      }
+    }
+  }, [user?.role_type, user?.id, setMode]);
 
   return (
     <Routes>

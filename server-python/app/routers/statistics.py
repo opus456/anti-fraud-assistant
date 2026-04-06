@@ -13,8 +13,9 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import User, Conversation, AlertRecord, FraudStatistic
+from app.models import User, Conversation, AlertRecord, FraudStatistic, GuardianRelation
 from app.schemas import StatisticsOverview
+from app.utils.security import get_current_user
 
 router = APIRouter(prefix="/api/statistics", tags=["数据统计"])
 
@@ -72,7 +73,10 @@ FRAUD_TYPE_BASE = {
 # ==================== 1. 概览 ====================
 
 @router.get("/overview", response_model=StatisticsOverview, summary="统计概览")
-async def get_overview(db: AsyncSession = Depends(get_db)):
+async def get_overview(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     """系统整体统计概览（真实数据 + 演示基数）"""
     user_count = (await db.execute(select(func.count(User.id)))).scalar() or 0
     det_count = (await db.execute(select(func.count(Conversation.id)))).scalar() or 0
@@ -81,7 +85,46 @@ async def get_overview(db: AsyncSession = Depends(get_db)):
             select(func.count(Conversation.id)).where(Conversation.is_fraud == True)
         )
     ).scalar() or 0
-    alert_count = (await db.execute(select(func.count(AlertRecord.id)))).scalar() or 0
+    
+    # 预警统计
+    alerts_pending = (
+        await db.execute(
+            select(func.count(AlertRecord.id)).where(AlertRecord.is_resolved == False)
+        )
+    ).scalar() or 0
+    alerts_resolved = (
+        await db.execute(
+            select(func.count(AlertRecord.id)).where(AlertRecord.is_resolved == True)
+        )
+    ).scalar() or 0
+    alert_count = alerts_pending + alerts_resolved
+    
+    # 今日统计
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_det = (
+        await db.execute(
+            select(func.count(Conversation.id)).where(Conversation.created_at >= today_start)
+        )
+    ).scalar() or 0
+    today_fraud = (
+        await db.execute(
+            select(func.count(Conversation.id)).where(
+                Conversation.created_at >= today_start,
+                Conversation.is_fraud == True,
+            )
+        )
+    ).scalar() or 0
+    
+    # 守护关系数（当前用户相关）
+    guard_count = (
+        await db.execute(
+            select(func.count(GuardianRelation.id)).where(
+                GuardianRelation.guardian_id == current_user.id,
+                GuardianRelation.is_active == True,
+            )
+        )
+    ).scalar() or 0
+    
     avg_time = (
         await db.execute(select(func.avg(Conversation.response_time_ms)))
     ).scalar()
@@ -90,7 +133,14 @@ async def get_overview(db: AsyncSession = Depends(get_db)):
         total_users=max(user_count, 1),
         total_detections=det_count + 15680,
         total_fraud_detected=fraud_count + 2340,
+        fraud_detected=fraud_count + 2340,
         total_alerts=alert_count + 890,
+        alerts_pending=alerts_pending + 15,  # 基数
+        alerts_resolved=alerts_resolved + 875,
+        today_detections=today_det + random.randint(500, 800),  # 演示基数
+        today_fraud=today_fraud + random.randint(10, 30),
+        detection_rate=round((fraud_count + 2340) / max(det_count + 15680, 1) * 100, 1),
+        guard_count=guard_count,
         detection_accuracy=0.946,
         avg_response_time_ms=round(avg_time, 1) if avg_time else 320.5,
     )

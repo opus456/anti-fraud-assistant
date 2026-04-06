@@ -1,0 +1,461 @@
+[
+  {
+    "text": "周末有空一起看电影吗？",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "亲，刷单兼职了解一下？每单佣金5-50元，一天做几十单轻松日入千元。先试做一单，满意后再继续。完全正规的电商运营，真实订单有保障。",
+    "is_fraud": true,
+    "fraud_type": "task_scam",
+    "fraud_type_label": "兼职刷单诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:46:59.545121"
+  },
+  {
+    "text": "【电商退款诈骗】紧急通知：订单异常相关事宜需要您立即处理。请添加专员微信xxx了解详情。验证码，客服等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "refund_scam",
+    "fraud_type_label": "电商退款诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:32.561420"
+  },
+  {
+    "text": "您好，我们是征信修复中心。检测到您的个人征信报告存在逾期记录，将影响您的贷款和信用卡申请。现在可以帮您处理修复，费用仅需998元，成功后再付款。",
+    "is_fraud": true,
+    "fraud_type": "credit_scam",
+    "fraud_type_label": "虚假征信诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:13.786250"
+  },
+  {
+    "text": "你好，这里是某某市公安局网络安全大队，经调查发现你的身份信息涉嫌一起跨境洗钱案件。为配合调查，需要你将账户资金转入安全账户进行资金核查，否则将对你实施司法冻结。",
+    "is_fraud": true,
+    "fraud_type": "impersonation_scam",
+    "fraud_type_label": "冒充公检法诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:31.853211"
+  },
+  {
+    "text": "记得按时吃药，注意休息",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "您好，我们是征信修复中心。检测到您的个人征信报告存在逾期记录，将影响您的贷款和信用卡申请。现在可以帮您处理修复，费用仅需998元，成功后再付款。",
+    "is_fraud": true,
+    "fraud_type": "credit_scam",
+    "fraud_type_label": "虚假征信诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:07.070975"
+  },
+  {
+    "text": "帮我看一下这个方案怎么样",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "【冒充熟人诈骗】紧急通知：领导相关事宜需要您立即处理。请添加专员微信xxx了解详情。借钱，还你等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "friend_scam",
+    "fraud_type_label": "冒充熟人诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:14.662847"
+  },
+  {
+    "text": "喂，我是xxx啊，我现在出了点急事，需要借5万块钱周转一下，明天就还你。我现在不方便转账，你先转到这个卡号：xxx，回头我给你转过去。",
+    "is_fraud": true,
+    "fraud_type": "ai_voice_scam",
+    "fraud_type_label": "AI合成语音诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:21.110090"
+  },
+  {
+    "text": "亲，刷单兼职了解一下？每单佣金5-50元，一天做几十单轻松日入千元。先试做一单，满意后再继续。完全正规的电商运营，真实订单有保障。",
+    "is_fraud": true,
+    "fraud_type": "task_scam",
+    "fraud_type_label": "兼职刷单诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:46:55.687847"
+  },
+  {
+    "text": "明天的会议记得准时参加",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "明天早上一起跑步吗？",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "【虚假购物诈骗】紧急通知：物流异常相关事宜需要您立即处理。请添加专员微信xxx了解详情。低价出售，恭喜中奖等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "shopping_scam",
+    "fraud_type_label": "虚假购物诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:58.898258"
+  },
+  {
+    "text": "【网络婚恋诈骗】紧急通知：网恋相关事宜需要您立即处理。请添加专员微信xxx了解详情。带你赚钱，真心等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "romance_scam",
+    "fraud_type_label": "网络婚恋诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:48.249775"
+  },
+  {
+    "text": "【虚假购物诈骗】紧急通知：低价出售相关事宜需要您立即处理。请添加专员微信xxx了解详情。物流异常，恭喜中奖等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "shopping_scam",
+    "fraud_type_label": "虚假购物诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:06.733561"
+  },
+  {
+    "text": "【电商退款诈骗】紧急通知：赔偿相关事宜需要您立即处理。请添加专员微信xxx了解详情。客服，订单异常等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "refund_scam",
+    "fraud_type_label": "电商退款诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:38.208133"
+  },
+  {
+    "text": "【中奖信息诈骗】紧急通知：税费相关事宜需要您立即处理。请添加专员微信xxx了解详情。手续费，领取等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "lottery_scam",
+    "fraud_type_label": "中奖信息诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:45.460224"
+  },
+  {
+    "text": "【网络游戏诈骗】紧急通知：游戏充值相关事宜需要您立即处理。请添加专员微信xxx了解详情。私下交易，代充等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "game_scam",
+    "fraud_type_label": "网络游戏诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:38.342582"
+  },
+  {
+    "text": "【网络婚恋诈骗】紧急通知：交友相关事宜需要您立即处理。请添加专员微信xxx了解详情。带你赚钱，网恋等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "romance_scam",
+    "fraud_type_label": "网络婚恋诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:54.861838"
+  },
+  {
+    "text": "【电商退款诈骗】紧急通知：订单异常相关事宜需要您立即处理。请添加专员微信xxx了解详情。验证码，客服等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "refund_scam",
+    "fraud_type_label": "电商退款诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:35.603330"
+  },
+  {
+    "text": "您好，我们是征信修复中心。检测到您的个人征信报告存在逾期记录，将影响您的贷款和信用卡申请。现在可以帮您处理修复，费用仅需998元，成功后再付款。",
+    "is_fraud": true,
+    "fraud_type": "credit_scam",
+    "fraud_type_label": "虚假征信诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:10.708697"
+  },
+  {
+    "text": "今天天气真好，我们去公园散步吧",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "出差回来了，给你带了特产",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "【高薪兼职】在家做任务，日赚300-800元，简单点赞关注，多劳多得，结算即时到账。无需任何投入，新手也能轻松上手。名额有限，速来报名！加V：xxx",
+    "is_fraud": true,
+    "fraud_type": "task_scam",
+    "fraud_type_label": "兼职刷单诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:02.950265"
+  },
+  {
+    "text": "【冒充熟人诈骗】紧急通知：领导相关事宜需要您立即处理。请添加专员微信xxx了解详情。先转，老板等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "friend_scam",
+    "fraud_type_label": "冒充熟人诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:18.838671"
+  },
+  {
+    "text": "【冒充熟人诈骗】紧急通知：借钱相关事宜需要您立即处理。请添加专员微信xxx了解详情。还你，急用等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "friend_scam",
+    "fraud_type_label": "冒充熟人诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:11.238465"
+  },
+  {
+    "text": "【网络游戏诈骗】紧急通知：装备交易相关事宜需要您立即处理。请添加专员微信xxx了解详情。低价点券，代充等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "game_scam",
+    "fraud_type_label": "网络游戏诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:41.377560"
+  },
+  {
+    "text": "公司下周组织团建，你参加吗？",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "【银行贷款】无抵押、无担保，最高可贷50万，利率低至0.3%，当天放款！仅需身份证即可申请。点击链接立即申请：xxx",
+    "is_fraud": true,
+    "fraud_type": "loan_scam",
+    "fraud_type_label": "虚假贷款诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:29.495142"
+  },
+  {
+    "text": "周末有空一起看电影吗？",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "【虚假购物诈骗】紧急通知：恭喜中奖相关事宜需要您立即处理。请添加专员微信xxx了解详情。退货退款，低价出售等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "shopping_scam",
+    "fraud_type_label": "虚假购物诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:02.299753"
+  },
+  {
+    "text": "快递到了，在门卫那里",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "喂，我是xxx啊，我现在出了点急事，需要借5万块钱周转一下，明天就还你。我现在不方便转账，你先转到这个卡号：xxx，回头我给你转过去。",
+    "is_fraud": true,
+    "fraud_type": "ai_voice_scam",
+    "fraud_type_label": "AI合成语音诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:18.095161"
+  },
+  {
+    "text": "【紧急通知】您的社保卡异常，涉嫌违规操作即将被停用。请立即联系我们的工作人员处理，需要下载指定APP配合进行远程核验。",
+    "is_fraud": true,
+    "fraud_type": "impersonation_scam",
+    "fraud_type_label": "冒充公检法诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:35.137937"
+  },
+  {
+    "text": "【网络游戏诈骗】紧急通知：代充相关事宜需要您立即处理。请添加专员微信xxx了解详情。私下交易，低价点券等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "game_scam",
+    "fraud_type_label": "网络游戏诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:44.709732"
+  },
+  {
+    "text": "【中奖信息诈骗】紧急通知：领取相关事宜需要您立即处理。请添加专员微信xxx了解详情。手续费，税费等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "lottery_scam",
+    "fraud_type_label": "中奖信息诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:42.382963"
+  },
+  {
+    "text": "【紧急通知】您的社保卡异常，涉嫌违规操作即将被停用。请立即联系我们的工作人员处理，需要下载指定APP配合进行远程核验。",
+    "is_fraud": true,
+    "fraud_type": "impersonation_scam",
+    "fraud_type_label": "冒充公检法诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:28.520426"
+  },
+  {
+    "text": "出差回来了，给你带了特产",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "明天的会议记得准时参加",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "记得按时吃药，注意休息",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "您好，我是专业理财顾问，我们平台现有稳赚不赔的投资项目，日收益3%起，已有上千人获利。现在加入，首单免费体验，轻松月入过万。加我微信详细了解，机会难得，名额有限！",
+    "is_fraud": true,
+    "fraud_type": "investment_scam",
+    "fraud_type_label": "投资理财诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:46:51.733214"
+  },
+  {
+    "text": "【网络婚恋诈骗】紧急通知：真心相关事宜需要您立即处理。请添加专员微信xxx了解详情。带你赚钱，交友等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "romance_scam",
+    "fraud_type_label": "网络婚恋诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:52.204542"
+  },
+  {
+    "text": "【银行贷款】无抵押、无担保，最高可贷50万，利率低至0.3%，当天放款！仅需身份证即可申请。点击链接立即申请：xxx",
+    "is_fraud": true,
+    "fraud_type": "loan_scam",
+    "fraud_type_label": "虚假贷款诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:26.093007"
+  },
+  {
+    "text": "恭喜您被选中参加我们的内部投资计划！这是银行内部渠道，保本保息，年化收益25%以上。只需要最低1万元起投，随时可以提现。现在开户还送500元红包！",
+    "is_fraud": true,
+    "fraud_type": "investment_scam",
+    "fraud_type_label": "投资理财诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:46:43.777004"
+  },
+  {
+    "text": "喂，我是xxx啊，我现在出了点急事，需要借5万块钱周转一下，明天就还你。我现在不方便转账，你先转到这个卡号：xxx，回头我给你转过去。",
+    "is_fraud": true,
+    "fraud_type": "ai_voice_scam",
+    "fraud_type_label": "AI合成语音诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:47:25.296103"
+  },
+  {
+    "text": "生日快乐！晚上一起庆祝",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "出差回来了，给你带了特产",
+    "is_fraud": false,
+    "fraud_type": null,
+    "fraud_type_label": "正常对话",
+    "risk_level": "safe",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:49.356712"
+  },
+  {
+    "text": "【中奖信息诈骗】紧急通知：领取相关事宜需要您立即处理。请添加专员微信xxx了解详情。恭喜中奖，大奖等问题都可以帮您解决。名额有限，抓紧时间！",
+    "is_fraud": true,
+    "fraud_type": "lottery_scam",
+    "fraud_type_label": "中奖信息诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:48.841076"
+  },
+  {
+    "text": "【银行贷款】无抵押、无担保，最高可贷50万，利率低至0.3%，当天放款！仅需身份证即可申请。点击链接立即申请：xxx",
+    "is_fraud": true,
+    "fraud_type": "loan_scam",
+    "fraud_type_label": "虚假贷款诈骗",
+    "risk_level": "critical",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:48:21.800578"
+  },
+  {
+    "text": "恭喜您被选中参加我们的内部投资计划！这是银行内部渠道，保本保息，年化收益25%以上。只需要最低1万元起投，随时可以提现。现在开户还送500元红包！",
+    "is_fraud": true,
+    "fraud_type": "investment_scam",
+    "fraud_type_label": "投资理财诈骗",
+    "risk_level": "high",
+    "source": "generated",
+    "generated_at": "2026-04-04T15:46:48.126086"
+  }
+]

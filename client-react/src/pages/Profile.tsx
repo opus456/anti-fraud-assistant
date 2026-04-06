@@ -51,21 +51,21 @@ export default function Profile() {
       <div className="card">
         <div className="flex items-center gap-6">
           <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-400 to-neon-500 flex items-center justify-center shadow-glow-cyan">
-              <UserCircleIcon className="w-16 h-16 text-dark" />
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-lg">
+              <UserCircleIcon className="w-16 h-16 text-white" />
             </div>
-            <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-cyan-400 text-dark flex items-center justify-center shadow-glow-cyan hover:bg-cyan-300 transition-colors">
+            <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center shadow-lg hover:bg-sky-500 transition-colors">
               <CameraIcon className="w-4 h-4" />
             </button>
           </div>
           
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-text-primary">{profileUser.name}</h2>
-              <span className="status-badge status-cyan">{profileUser.role}</span>
+              <h2 className="text-2xl font-bold text-slate-800">{profileUser.name}</h2>
+              <span className="status-badge status-primary">{profileUser.role}</span>
             </div>
-            <p className="text-text-secondary mt-1">{profileUser.phone}</p>
-            <p className="text-text-muted text-sm">加入于 {profileUser.joinDate}</p>
+            <p className="text-slate-600 mt-1">{profileUser.phone}</p>
+            <p className="text-slate-500 text-sm">加入于 {profileUser.joinDate}</p>
           </div>
 
           <button className="btn btn-outline">
@@ -78,15 +78,15 @@ export default function Profile() {
       {/* 统计数据 */}
       <div className="bento-grid-3">
         <div className="stat-card text-center">
-          <div className="stat-value text-cyan-400">{profileUser.stats.detections}</div>
+          <div className="stat-value text-sky-600">{profileUser.stats.detections}</div>
           <div className="stat-label">检测次数</div>
         </div>
         <div className="stat-card text-center">
-          <div className="stat-value text-danger-400">{profileUser.stats.blocked}</div>
+          <div className="stat-value text-red-600">{profileUser.stats.blocked}</div>
           <div className="stat-label">拦截风险</div>
         </div>
         <div className="stat-card text-center">
-          <div className="stat-value text-safe-400">{profileUser.stats.protected}</div>
+          <div className="stat-value text-green-600">{profileUser.stats.protected}</div>
           <div className="stat-label">守护家人</div>
         </div>
       </div>
@@ -98,13 +98,13 @@ export default function Profile() {
             <button
               key={idx}
               onClick={() => navigate(item.path)}
-              className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 border border-transparent hover:border-card-border transition-all text-left group"
+              className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all text-left group"
             >
-              <div className="w-10 h-10 rounded-xl bg-cyan-400/10 border border-cyan-400/20 flex items-center justify-center group-hover:bg-cyan-400/20 transition-colors">
-                <item.icon className="w-5 h-5 text-cyan-400" />
+              <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center group-hover:bg-sky-100 transition-colors">
+                <item.icon className="w-5 h-5 text-sky-600" />
               </div>
-              <span className="flex-1 font-medium text-text-primary">{item.label}</span>
-              <ChevronRightIcon className="w-5 h-5 text-text-muted group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+              <span className="flex-1 font-medium text-slate-800">{item.label}</span>
+              <ChevronRightIcon className="w-5 h-5 text-slate-500 group-hover:text-sky-600 group-hover:translate-x-1 transition-all" />
             </button>
           ))}
         </div>
@@ -113,13 +113,13 @@ export default function Profile() {
       {/* 退出登录 */}
       <button
         onClick={handleLogout}
-        className="w-full card hover:bg-danger-500/10 hover:border-danger-500/30 transition-all group"
+        className="w-full card hover:bg-red-50 hover:border-red-200 transition-all group"
       >
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-danger-500/15 border border-danger-500/30 flex items-center justify-center">
-            <ArrowRightOnRectangleIcon className="w-5 h-5 text-danger-400" />
+          <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center">
+            <ArrowRightOnRectangleIcon className="w-5 h-5 text-red-600" />
           </div>
-          <span className="font-medium text-danger-400">退出登录</span>
+          <span className="font-medium text-red-600">退出登录</span>
         </div>
       </button>
     </div>

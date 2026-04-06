@@ -71,24 +71,24 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center px-4 py-8">
       {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 left-1/3 w-96 h-96 bg-neon-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/3 right-1/3 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 left-1/3 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 right-1/3 w-96 h-96 bg-sky-400/10 rounded-full blur-3xl" />
       </div>
       
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-cyan-400 to-neon-500 rounded-2xl mb-4 shadow-glow-cyan">
-            <ShieldCheckIcon className="w-12 h-12 text-dark" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-sky-500 to-blue-600 rounded-2xl mb-4 shadow-lg">
+            <ShieldCheckIcon className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-text-primary text-glow font-tech">创建账号</h1>
-          <p className="text-text-muted text-sm mt-2">第 {step} 步，共 2 步</p>
+          <h1 className="text-3xl font-bold text-slate-800 font-tech">创建账号</h1>
+          <p className="text-slate-500 text-sm mt-2">第 {step} 步，共 2 步</p>
         </div>
 
         <div className="card">
           {/* Progress bar */}
           <div className="flex gap-2 mb-6">
-            <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 1 ? 'bg-gradient-to-r from-cyan-400 to-neon-500 shadow-glow-cyan' : 'bg-white/10'}`} />
-            <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 2 ? 'bg-gradient-to-r from-cyan-400 to-neon-500 shadow-glow-cyan' : 'bg-white/10'}`} />
+            <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 1 ? 'bg-gradient-to-r from-sky-500 to-blue-600' : 'bg-slate-200'}`} />
+            <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 2 ? 'bg-gradient-to-r from-sky-500 to-blue-600' : 'bg-slate-200'}`} />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -175,8 +175,8 @@ export default function Register() {
             )}
           </form>
 
-          <p className="text-center text-sm text-text-muted mt-6">
-            已有账号？<Link to="/login" className="text-cyan-400 hover:text-cyan-300 ml-1 transition-colors">去登录</Link>
+          <p className="text-center text-sm text-slate-500 mt-6">
+            已有账号？<Link to="/login" className="text-sky-600 hover:text-sky-500 ml-1 transition-colors">去登录</Link>
           </p>
         </div>
       </div>
