@@ -8,7 +8,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import GuardianRelation, User, Conversation
+from app.models import GuardianRelation, User, Conversation, AlertRecord
 from app.schemas import GuardianBind, GuardianRelationResponse, MessageResponse
 from app.utils.security import get_current_user
 
@@ -158,7 +158,7 @@ async def list_charges(
             "fraud_hits": user.fraud_hits,
             "relationship": rel.relation_type,
             "is_primary": rel.is_primary,
-            "created_at": rel.created_at.isoformat() if rel.created_at else None,
+            "created_at": (rel.created_at.isoformat() + 'Z') if rel.created_at else None,
         }
         for rel, user in rows
     ]
@@ -260,8 +260,57 @@ async def list_charge_detections(
                 "risk_score": conv.risk_score,
                 "fraud_type": conv.fraud_type,
                 "response_time_ms": conv.response_time_ms,
-                "created_at": conv.created_at.isoformat() if conv.created_at else None,
+                "created_at": (conv.created_at.isoformat() + 'Z') if conv.created_at else None,
             }
         )
 
     return {"items": items, "page": page, "page_size": page_size}
+
+
+@router.get("/pending-alerts", summary="获取待处理的预警数量")
+async def get_pending_alerts(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """获取当前用户（作为监护人）未处理的预警数量"""
+    # 统计未处理的 ward_alert 类型的警报
+    result = await db.execute(
+        select(func.count(AlertRecord.id)).where(
+            AlertRecord.user_id == current_user.id,
+            AlertRecord.alert_type == "ward_alert",
+            AlertRecord.is_resolved == False,
+        )
+    )
+    pending_count = result.scalar() or 0
+    
+    # 获取最近的预警列表（最多5条）
+    alerts_result = await db.execute(
+        select(AlertRecord)
+        .where(
+            AlertRecord.user_id == current_user.id,
+            AlertRecord.alert_type == "ward_alert",
+            AlertRecord.is_resolved == False,
+        )
+        .order_by(AlertRecord.created_at.desc())
+        .limit(5)
+    )
+    recent_alerts = alerts_result.scalars().all()
+    
+    return {
+        "pending_count": pending_count,
+        "recent_alerts": [
+            {
+                "id": a.id,
+                "title": a.title,
+                "description": a.description,
+                "risk_level": a.risk_level,
+                "fraud_type": a.fraud_type,
+                "suggestion": a.suggestion,
+                "created_at": (a.created_at.isoformat() + 'Z') if a.created_at else None,
+                "ward_user_id": a.report_json.get("ward_user_id") if isinstance(a.report_json, dict) else None,
+                "ward_username": a.report_json.get("ward_username") if isinstance(a.report_json, dict) else None,
+                "ward_nickname": a.report_json.get("ward_nickname") if isinstance(a.report_json, dict) else None,
+            }
+            for a in recent_alerts
+        ],
+    }

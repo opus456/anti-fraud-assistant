@@ -28,7 +28,6 @@ langchain-core>=0.3.29,<0.4.0
 numpy>=1.26.0
 jieba==0.42.1
 scikit-learn>=1.5.0
-torch>=2.5.0
 
 # pgvector
 pgvector==0.3.6
@@ -40,6 +39,5 @@ apscheduler==3.10.4
 Pillow>=10.4.0
 
 # Environment
-python-dotenv==1.0.1
 pydantic[email]==2.9.2
 pydantic-settings==2.5.2

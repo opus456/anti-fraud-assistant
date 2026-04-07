@@ -126,26 +126,48 @@ class ConversationResponse(BaseModel):
     fraud_type: Optional[str]
     risk_level: str
     risk_score: float
+    analysis_result: Optional[dict] = None  # 包含 analysis, cot_reasoning, suggestions 等
     ai_response: str
     response_time_ms: int
     created_at: datetime
-    model_config = {"from_attributes": True}
+    
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {
+            datetime: lambda v: v.isoformat() + 'Z' if v else None
+        }
+    }
 
 
 # ==================== 预警 ====================
 
 class AlertResponse(BaseModel):
     id: int
+    user_id: int
+    username: Optional[str] = None
+    nickname: Optional[str] = None
+    conversation_id: Optional[int] = None
     alert_type: str
     risk_level: int
     fraud_type: Optional[str]
     title: str
     description: str
     suggestion: str
+    report_json: Optional[dict] = None
     guardian_notified: bool
     is_resolved: bool
+    resolved_by: Optional[int] = None
+    resolver_name: Optional[str] = None
+    resolve_note: Optional[str] = None
+    resolved_at: Optional[datetime] = None
     created_at: datetime
-    model_config = {"from_attributes": True}
+    
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {
+            datetime: lambda v: v.isoformat() + 'Z' if v else None
+        }
+    }
 
 
 # ==================== 报告 ====================

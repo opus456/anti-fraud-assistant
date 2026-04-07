@@ -50,7 +50,10 @@ class User(Base):
         back_populates="guardian", cascade="all, delete-orphan"
     )
     conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
-    alerts = relationship("AlertRecord", back_populates="user", cascade="all, delete-orphan")
+    alerts = relationship(
+        "AlertRecord", foreign_keys="AlertRecord.user_id",
+        back_populates="user", cascade="all, delete-orphan"
+    )
     reports = relationship("Report", back_populates="user", cascade="all, delete-orphan")
     memory_logs = relationship("UserMemoryLog", back_populates="user", cascade="all, delete-orphan")
 
@@ -144,10 +147,13 @@ class AlertRecord(Base):
     guardian_response = Column(Text, default="")
 
     is_resolved = Column(Boolean, default=False)
+    resolved_by = Column(Integer, ForeignKey("users.id"), nullable=True)  # 处理人ID
+    resolve_note = Column(Text, default="")  # 处理备注
     created_at = Column(DateTime, default=datetime.utcnow)
     resolved_at = Column(DateTime, nullable=True)
 
-    user = relationship("User", back_populates="alerts")
+    user = relationship("User", foreign_keys=[user_id], back_populates="alerts")
+    resolver = relationship("User", foreign_keys=[resolved_by])
 
 
 class Report(Base):

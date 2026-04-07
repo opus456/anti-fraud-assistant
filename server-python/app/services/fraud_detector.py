@@ -95,6 +95,7 @@ class FraudDetector:
         session_id: str = None,
         use_llm: bool = True,
         modality_count: int = 1,
+        preset_risk: dict = None,  # 预设风险（来自视觉分析等）
     ) -> dict:
         start_time = time.time()
         content = clean_text(content)
@@ -193,7 +194,28 @@ class FraudDetector:
 
         # ===== 4) 多源融合 =====
         t3 = time.time()
-        if cot_result and "risk_level" in cot_result:
+        
+        # 如果有预设风险（来自视觉分析），优先使用
+        if preset_risk and isinstance(preset_risk, dict) and "risk_level" in preset_risk:
+            preset_level = preset_risk.get("risk_level", 0)
+            preset_score = cot_risk_level_to_score(preset_level)
+            preset_type = preset_risk.get("scam_type")
+            preset_reason = preset_risk.get("reason", "")
+            
+            # 融合预设风险和文本分析
+            fusion_result = {
+                "total_score": max(preset_score, text_risk["total_score"]),
+                "top_fraud_type": preset_type or text_risk["top_fraud_type"],
+                "analysis": preset_reason if preset_reason else self._generate_local_analysis(text_risk),
+                "suggestions": self._generate_suggestions(text_risk),
+                "cot_reasoning": {
+                    "vision_analysis": preset_reason,
+                    "detected_text": preset_risk.get("detected_text", ""),
+                    "risk_level": preset_level,
+                },
+            }
+            logger.info(f"使用视觉预设风险: level={preset_level}, type={preset_type}")
+        elif cot_result and "risk_level" in cot_result:
             fusion_result = self._fuse_cot_results(text_risk, cot_result)
         else:
             boosted_score = text_risk["total_score"]
@@ -263,7 +285,7 @@ class FraudDetector:
         # ===== 8) 高危时通知 Node.js 网关 =====
         risk_level_num = {"safe": 0, "low": 0, "medium": 1, "high": 2, "critical": 3}.get(risk_level, 0)
         if risk_level_num >= 2 and user:
-            asyncio.create_task(self._notify_gateway(user.id, result))
+            asyncio.create_task(self._notify_gateway(user, content, result))
 
         return result
 
@@ -456,12 +478,16 @@ class FraudDetector:
                 analysis_result={
                     "analysis": result.get("analysis", ""),
                     "cot_reasoning": result.get("cot_reasoning"),
+                    "suggestions": result.get("suggestions", []),
+                    "fraud_type_label": result.get("fraud_type_label", ""),
                 },
                 matched_cases=result.get("matched_cases", []),
                 ai_response=result.get("analysis", ""),
                 response_time_ms=result.get("response_time_ms", 0),
             )
             db.add(conversation)
+            # 刷新以获取自增ID
+            await db.flush()
 
             db_user.total_detections += 1
             if result["is_fraud"]:
@@ -478,25 +504,83 @@ class FraudDetector:
                 elif risk_level_num == 3:
                     alert_type = "lock"
 
+                # 查询该用户的所有监护人
+                guardian_notified = False
+                notified_guardians = []
+                if risk_level_num >= 2:  # 中高风险时通知监护人
+                    logger.info(f"[监护人通知] 用户 {db_user.id}({db_user.username}) 检测到风险等级 {risk_level_num}，正在查询监护人...")
+                    guardian_result = await db.execute(
+                        select(GuardianRelation).where(
+                            GuardianRelation.user_id == db_user.id,
+                            GuardianRelation.is_active == True,
+                        )
+                    )
+                    guardians = guardian_result.scalars().all()
+                    logger.info(f"[监护人通知] 查询到 {len(guardians)} 位监护人")
+                    if guardians:
+                        guardian_notified = True
+                        for g in guardians:
+                            notified_guardians.append(g.guardian_id)
+                            logger.info(f"[监护人通知] 将为监护人 {g.guardian_id} 创建预警记录")
+                        logger.info(f"用户 {db_user.id} 检测到高风险，已通知 {len(guardians)} 位监护人: {notified_guardians}")
+                    else:
+                        logger.warning(f"[监护人通知] 用户 {db_user.id} 没有绑定任何监护人！")
+
                 alert = AlertRecord(
                     user_id=db_user.id,
+                    conversation_id=conversation.id,  # 关联检测记录
                     alert_type=alert_type,
                     risk_level=risk_level_num,
                     fraud_type=result.get("fraud_type"),
                     title=f"⚠️ 检测到{result.get('fraud_type_label', '可疑')}风险",
                     description=result.get("analysis", ""),
                     suggestion="\n".join(result.get("suggestions", [])),
-                    report_json=result.get("cot_reasoning", {}),
+                    report_json={
+                        "cot_reasoning": result.get("cot_reasoning", {}),
+                        "input_content": content[:2000],  # 保存原始输入内容（截断）
+                        "fraud_type_label": result.get("fraud_type_label", ""),
+                        "risk_score": result.get("risk_score", 0),
+                    },
+                    guardian_notified=guardian_notified,
                 )
                 db.add(alert)
+                await db.flush()  # 获取alert ID
+                
+                # 为每个监护人创建通知记录
+                if notified_guardians:
+                    for guardian_id in notified_guardians:
+                        guardian_alert = AlertRecord(
+                            user_id=guardian_id,  # 监护人收到的通知
+                            conversation_id=conversation.id,  # 关联检测记录
+                            alert_type="ward_alert",  # 被守护者警报
+                            risk_level=risk_level_num,
+                            fraud_type=result.get("fraud_type"),
+                            title=f"🔔 您的被守护者检测到{result.get('fraud_type_label', '可疑')}风险",
+                            description=f"被守护者（{db_user.nickname or db_user.username}）触发了安全警报。\n{result.get('analysis', '')}",
+                            suggestion="\n".join(result.get("suggestions", [])),
+                            report_json={
+                                "ward_user_id": db_user.id,
+                                "ward_username": db_user.username,
+                                "ward_nickname": db_user.nickname or db_user.username,
+                                "input_content": content[:2000],  # 保存原始输入内容（截断）
+                                "cot_reasoning": result.get("cot_reasoning"),
+                                "fraud_type_label": result.get("fraud_type_label", ""),
+                                "risk_score": result.get("risk_score", 0),
+                            },
+                        )
+                        db.add(guardian_alert)
+                        logger.info(f"[监护人通知] 已为监护人 {guardian_id} 创建预警记录")
 
             await db.commit()
+            logger.info(f"[保存结果] 检测结果已保存到数据库")
         except Exception as e:
             logger.error(f"保存检测结果失败: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             await db.rollback()
 
-    async def _notify_gateway(self, user_id: int, result: dict):
-        """通知 Node.js 网关进行实时告警"""
+    async def _notify_gateway(self, user: User, content: str, result: dict):
+        """通知 Node.js 网关进行实时告警，包含用户信息和检测内容"""
         try:
             risk_level_value = result.get("risk_level")
             risk_level_num = risk_level_value
@@ -509,18 +593,24 @@ class FraudDetector:
                 await client.post(
                     f"{settings.NODE_GATEWAY_URL}/internal/alert",
                     json={
-                        "user_id": user_id,
+                        "user_id": user.id,
+                        "username": user.username,
+                        "nickname": user.nickname or user.username,
                         "risk_level": risk_level_num,
                         "risk_level_label": result.get("risk_level"),
                         "risk_score": result.get("risk_score"),
                         "fraud_type": result.get("fraud_type"),
                         "fraud_type_label": result.get("fraud_type_label"),
                         "analysis": result.get("analysis", ""),
+                        "input_content": content[:1000],  # 发送检测的原始内容（截断）
+                        "suggestions": result.get("suggestions", []),
                         "warning_scripts": result.get("warning_scripts", []),
                         "cot_reasoning": result.get("cot_reasoning"),
+                        "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                     },
                     headers={"x-internal-secret": settings.SECRET_KEY},
                 )
+                logger.info(f"[网关通知] 已向网关发送用户 {user.id} 的高风险预警")
         except Exception as e:
             logger.warning(f"通知网关失败: {e}")
 

@@ -1,0 +1,37 @@
+# Node modules
+node_modules/
+
+# Build output (will be generated in Docker)
+dist/
+
+# Android/iOS (Capacitor)
+android/
+ios/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx

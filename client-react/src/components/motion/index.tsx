@@ -224,9 +224,10 @@ interface HoverCardProps {
   children: ReactNode;
   className?: string;
   scale?: number;
+  onClick?: () => void;
 }
 
-export function HoverCard({ children, className = '', scale = 1.02 }: HoverCardProps) {
+export function HoverCard({ children, className = '', scale = 1.02, onClick }: HoverCardProps) {
   return (
     <motion.div
       whileHover={{ 
@@ -235,6 +236,7 @@ export function HoverCard({ children, className = '', scale = 1.02 }: HoverCardP
       }}
       whileTap={{ scale: 0.98 }}
       className={className}
+      onClick={onClick}
     >
       {children}
     </motion.div>

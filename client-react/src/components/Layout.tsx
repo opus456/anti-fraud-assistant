@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { useModeStore, UserMode } from '../store/modeStore';
 import { useAuthStore } from '../store';
 import { useSettingsStore, initializeSettings } from '../store/settingsStore';
 import { NavbarAnimation, PageTransition } from './motion';
+import GuardianAlertModal from './GuardianAlertModal';
+import api from '../api';
 import {
   HomeIcon,
   ShieldCheckIcon,
@@ -21,6 +23,7 @@ import {
   MagnifyingGlassCircleIcon,
   ChevronDownIcon,
   ArrowRightOnRectangleIcon,
+  ChartBarIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavItem {
@@ -34,6 +37,7 @@ const navItems: NavItem[] = [
   { path: '/', label: '控制台', icon: HomeIcon },
   { path: '/detection', label: '智能检测', icon: MagnifyingGlassIcon },
   { path: '/monitor', label: '实时监控', icon: ShieldCheckIcon },
+  { path: '/visualization', label: '数据大屏', icon: ChartBarIcon },
   { path: '/knowledge', label: '知识库', icon: BookOpenIcon },
   { path: '/alerts', label: '预警中心', icon: BellAlertIcon },
   { path: '/history', label: '检测记录', icon: ClockIcon },
@@ -69,6 +73,7 @@ const searchableItems = [
   { label: '控制台', path: '/', keywords: ['首页', '仪表盘', 'dashboard'] },
   { label: '智能检测', path: '/detection', keywords: ['检测', '分析', 'AI', '诈骗识别'] },
   { label: '实时监控', path: '/monitor', keywords: ['监控', '通话', '短信', '监测'] },
+  { label: '数据大屏', path: '/visualization', keywords: ['数据', '大屏', '可视化', '图表', '统计'] },
   { label: '知识库', path: '/knowledge', keywords: ['知识', '学习', '案例', '教程'] },
   { label: '预警中心', path: '/alerts', keywords: ['预警', '警报', '通知', '风险'] },
   { label: '检测记录', path: '/history', keywords: ['历史', '记录', '日志'] },
@@ -89,24 +94,49 @@ export default function Layout() {
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [pendingAlerts, setPendingAlerts] = useState(0);
+  const [showGuardianAlert, setShowGuardianAlert] = useState(false);
+  const [hasCheckedAlerts, setHasCheckedAlerts] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // 初始化设置
+  // 获取待处理预警数量
+  const fetchPendingAlerts = useCallback(async () => {
+    try {
+      const res = await api.get('/guardians/pending-alerts');
+      const count = res.data?.pending_count || 0;
+      setPendingAlerts(count);
+      
+      // 首次登录检查：如果有待处理预警，显示弹窗
+      if (!hasCheckedAlerts && count > 0) {
+        setShowGuardianAlert(true);
+        setHasCheckedAlerts(true);
+      }
+    } catch {
+      // 静默失败
+    }
+  }, [hasCheckedAlerts]);
+
+  // 初始化设置和获取预警数量
   useEffect(() => {
     initializeSettings();
-  }, []);
+    fetchPendingAlerts();
+    // 每30秒刷新一次预警数量
+    const interval = setInterval(fetchPendingAlerts, 30000);
+    return () => clearInterval(interval);
+  }, [fetchPendingAlerts]);
 
   const handleLogout = () => {
     logout();
     setUserMenuOpen(false);
+    setHasCheckedAlerts(false); // 重置登录检查状态
     navigate('/login');
   };
 
-  // 处理通知按钮点击 - 跳转到家庭守护页面
+  // 处理通知按钮点击 - 跳转到预警中心
   const handleNotificationClick = () => {
-    navigate('/family');
+    navigate('/alerts');
   };
 
   // 搜索过滤
@@ -219,16 +249,18 @@ export default function Layout() {
               <MagnifyingGlassCircleIcon className="w-5 h-5" />
             </button>
 
-            {/* 通知按钮 - 点击跳转到家庭守护页面 */}
+            {/* 通知按钮 - 点击跳转到预警中心 */}
             <button 
               className="navbar-icon-btn relative" 
               title="查看风险通知"
               onClick={handleNotificationClick}
             >
               <BellAlertIcon className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-danger-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
-                3
-              </span>
+              {pendingAlerts > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-danger-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center animate-pulse">
+                  {pendingAlerts > 99 ? '99+' : pendingAlerts}
+                </span>
+              )}
             </button>
 
             {/* 模式选择器 - 移动端隐藏 */}
@@ -516,6 +548,11 @@ export default function Layout() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 监护人预警弹窗 - 登录后自动检测 */}
+      {showGuardianAlert && (
+        <GuardianAlertModal onClose={() => setShowGuardianAlert(false)} />
       )}
     </div>
   );

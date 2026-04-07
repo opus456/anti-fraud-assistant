@@ -128,6 +128,8 @@ CREATE TABLE IF NOT EXISTS alert_records (
     guardian_response TEXT    DEFAULT '',
     -- 状态
     is_resolved       BOOLEAN   DEFAULT FALSE,
+    resolved_by       INTEGER   REFERENCES users(id),  -- 处理人ID
+    resolve_note      TEXT      DEFAULT '',            -- 处理备注
     created_at        TIMESTAMP DEFAULT NOW(),
     resolved_at       TIMESTAMP
 );

@@ -48,7 +48,10 @@ async def detect_image(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """图片内容反诈检测 — 支持聊天截图、转账截图等"""
+    """图片内容反诈检测 — 使用多模态LLM分析聊天截图、转账截图等"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="不支持的图片格式，请上传 JPG/PNG/GIF/WebP 格式")
@@ -69,14 +72,41 @@ async def detect_image(
     with open(file_path, "wb") as f:
         f.write(contents)
 
-    # OCR 占位：将上下文信息传入检测引擎
-    analysis_text = f"[图片上传] {context}" if context else "[图片上传] 用户上传了一张图片进行检测"
+    # 使用多模态 LLM 分析图片
+    from app.services.llm_service import call_ollama_vision
+    
+    vision_prompt = f"请分析这张图片是否存在诈骗风险。{context}" if context else "请分析这张图片是否存在诈骗风险，识别图片中的文字内容并判断是否涉及诈骗。"
+    
+    try:
+        vision_result = await call_ollama_vision(
+            prompt=vision_prompt,
+            image_data=contents,
+            timeout=90.0,
+        )
+        logger.info(f"图片视觉分析结果: {vision_result}")
+    except Exception as e:
+        logger.warning(f"视觉分析失败: {e}")
+        vision_result = None
+
+    # 构建分析文本
+    if vision_result:
+        detected_text = vision_result.get("detected_text", "")
+        reason = vision_result.get("reason", "")
+        analysis_text = f"[图片分析] {reason}"
+        if detected_text:
+            analysis_text += f"\n识别到的文字: {detected_text}"
+        if context:
+            analysis_text = f"{context}\n{analysis_text}"
+    else:
+        analysis_text = f"[图片上传] {context}" if context else "[图片上传] 用户上传了一张图片进行检测"
 
     result = await fraud_detector.detect_text(
         content=analysis_text,
         user=current_user,
         db=db,
         session_id=str(uuid.uuid4())[:8],
+        # 如果视觉分析有结果，传入预判断的风险等级
+        preset_risk=vision_result,
     )
     return DetectionResult(**{k: v for k, v in result.items() if not k.startswith("_")})
 

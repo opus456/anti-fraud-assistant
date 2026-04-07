@@ -1,43 +1,125 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ClockIcon,
   MagnifyingGlassIcon,
   ChatBubbleLeftRightIcon,
   PhotoIcon,
   MicrophoneIcon,
-  
-  
-  TrashIcon,
   EyeIcon,
-  
+  ArrowPathIcon,
+  XMarkIcon,
+  ExclamationTriangleIcon,
+  ShieldCheckIcon,
+  LightBulbIcon,
 } from '@heroicons/react/24/outline';
+import api from '../api';
+import { ScrollReveal, StaggerContainer, StaggerItem } from '../components/motion';
 
 interface HistoryItem {
   id: string;
   type: 'text' | 'image' | 'audio';
-  content: string;
+  content: string;         // 完整输入内容
+  contentPreview: string;  // 内容预览（截断）
   riskLevel: 'safe' | 'warning' | 'danger';
   riskScore: number;
   scamType?: string;
+  scamTypeLabel?: string;
   timestamp: string;
+  rawTimestamp?: string;   // 原始时间戳
+  analysisResult?: string;
+  suggestions?: string[];
+  cotReasoning?: Record<string, unknown>;
 }
 
-const mockHistory: HistoryItem[] = [
-  { id: '1', type: 'text', content: '您好，我是XX银行客服，您的账户存在异常...', riskLevel: 'danger', riskScore: 95, scamType: '冒充银行诈骗', timestamp: '今天 10:30' },
-  { id: '2', type: 'image', content: '投资理财截图', riskLevel: 'warning', riskScore: 72, scamType: '投资诈骗', timestamp: '今天 09:15' },
-  { id: '3', type: 'text', content: '恭喜您中奖100万，请点击链接领取...', riskLevel: 'danger', riskScore: 98, scamType: '中奖诈骗', timestamp: '昨天 15:42' },
-  { id: '4', type: 'audio', content: '通话录音 - 2分34秒', riskLevel: 'safe', riskScore: 12, timestamp: '昨天 14:20' },
-  { id: '5', type: 'text', content: '你好，请问明天有空一起吃饭吗？', riskLevel: 'safe', riskScore: 3, timestamp: '昨天 10:00' },
-];
+// 格式化时间戳
+function formatTimestamp(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  
+  if (diffMins < 1) return '刚刚';
+  if (diffMins < 60) return `${diffMins}分钟前`;
+  if (diffHours < 24) return `${diffHours}小时前`;
+  if (diffDays === 1) return '昨天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// 将后端风险等级映射为前端格式
+function mapRiskLevel(level: string): 'safe' | 'warning' | 'danger' {
+  switch (level) {
+    case 'high':
+    case 'critical': return 'danger';
+    case 'medium': return 'warning';
+    case 'low':
+    default: return 'safe';
+  }
+}
 
 export default function History() {
-  const [history, setHistory] = useState(mockHistory);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'safe' | 'warning' | 'danger'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // 详情弹窗
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null);
+
+  // 加载真实检测记录
+  const loadHistory = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/detection/history?page_size=50').catch(() => null);
+      
+      if (res?.data && res.data.length > 0) {
+        // 转换后端数据格式
+        const realHistory: HistoryItem[] = res.data.map((item: any) => ({
+          id: String(item.id),
+          type: item.input_type === 'image' ? 'image' : item.input_type === 'audio' ? 'audio' : 'text',
+          content: item.input_content || '检测内容',
+          contentPreview: (item.input_content || '').substring(0, 100),
+          riskLevel: mapRiskLevel(item.risk_level),
+          riskScore: Math.round((item.risk_score || 0) * 100),
+          scamType: item.fraud_type || undefined,
+          scamTypeLabel: item.analysis_result?.fraud_type_label || item.fraud_type || undefined,
+          timestamp: formatTimestamp(item.created_at),
+          rawTimestamp: item.created_at,
+          analysisResult: item.analysis_result?.analysis || item.ai_response || '',
+          suggestions: item.analysis_result?.suggestions || [],
+          cotReasoning: item.analysis_result?.cot_reasoning,
+        }));
+        // 只显示真实数据，不再追加mock数据
+        setHistory(realHistory);
+      } else {
+        // 无真实数据时显示空列表
+        setHistory([]);
+      }
+    } catch (err) {
+      console.error('加载检测记录失败:', err);
+      setHistory([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 打开详情弹窗
+  const openDetailModal = (item: HistoryItem) => {
+    setSelectedItem(item);
+    setShowDetailModal(true);
+  };
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
 
   const filteredHistory = history.filter(item => {
     const matchesFilter = filter === 'all' || item.riskLevel === filter;
-    const matchesSearch = item.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = item.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (item.contentPreview || '').toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -49,16 +131,24 @@ export default function History() {
     }
   };
 
-  const deleteItem = (id: string) => {
-    setHistory(history.filter(item => item.id !== id));
-  };
-
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="content-header">
-        <h1 className="page-title">检测记录</h1>
-        <p className="page-subtitle">查看历史检测结果</p>
-      </div>
+    <div className="space-y-6">
+      <ScrollReveal>
+        <div className="content-header flex justify-between items-center">
+          <div>
+            <h1 className="page-title">检测记录</h1>
+            <p className="page-subtitle">查看历史检测结果（真实检测 + 示例数据）</p>
+          </div>
+          <button 
+            onClick={loadHistory} 
+            disabled={loading}
+            className="btn btn-secondary"
+          >
+            <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            刷新
+          </button>
+        </div>
+      </ScrollReveal>
 
       {/* 搜索和筛选 */}
       <div className="card">
@@ -100,74 +190,223 @@ export default function History() {
       {/* 记录列表 */}
       <div className="card">
         <div className="space-y-3">
-          {filteredHistory.map((item) => {
-            const TypeIcon = getTypeIcon(item.type);
-            
-            return (
-              <div
-                key={item.id}
-                className="flex items-center gap-4 p-4 rounded-card bg-surface-50 hover:bg-surface-100 transition-colors"
-              >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                  item.type === 'text' ? 'bg-primary-100' :
-                  item.type === 'image' ? 'bg-warning-100' : 'bg-safe-100'
-                }`}>
-                  <TypeIcon className={`w-6 h-6 ${
-                    item.type === 'text' ? 'text-primary-500' :
-                    item.type === 'image' ? 'text-warning-500' : 'text-safe-500'
-                  }`} />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <p className="text-text-title font-medium truncate">{item.content}</p>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-sm text-text-muted">{item.timestamp}</span>
-                    {item.scamType && (
-                      <span className={`status-badge text-xs ${
-                        item.riskLevel === 'danger' ? 'status-danger' :
-                        item.riskLevel === 'warning' ? 'status-warning' : 'status-safe'
-                      }`}>
-                        {item.scamType}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className={`text-lg font-bold ${
-                      item.riskLevel === 'danger' ? 'text-danger-500' :
-                      item.riskLevel === 'warning' ? 'text-warning-500' : 'text-safe-500'
-                    }`}>
-                      {item.riskScore}
-                    </div>
-                    <div className="text-xs text-text-muted">风险值</div>
-                  </div>
-                  
-                  <div className="flex gap-1">
-                    <button className="btn btn-icon btn-ghost">
-                      <EyeIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => deleteItem(item.id)}
-                      className="btn btn-icon btn-ghost text-danger-500 hover:bg-danger-50"
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-
-          {filteredHistory.length === 0 && (
+          {loading ? (
+            <div className="text-center py-12">
+              <ArrowPathIcon className="w-8 h-8 mx-auto text-primary-400 animate-spin mb-4" />
+              <p className="text-text-muted">加载中...</p>
+            </div>
+          ) : filteredHistory.length === 0 ? (
             <div className="text-center py-12">
               <ClockIcon className="w-16 h-16 mx-auto text-surface-300 mb-4" />
               <p className="text-text-muted">暂无检测记录</p>
+              <p className="text-sm text-slate-400 mt-2">使用检测功能后，记录会显示在这里</p>
             </div>
+          ) : (
+            <StaggerContainer className="space-y-3">
+              {filteredHistory.map((item) => {
+                const TypeIcon = getTypeIcon(item.type);
+                
+                return (
+                  <StaggerItem key={item.id}>
+                    <div
+                      onClick={() => openDetailModal(item)}
+                      className="flex items-center gap-4 p-4 rounded-card transition-all hover:shadow-md cursor-pointer bg-white border-l-4 border-l-primary-500 hover:bg-slate-50"
+                    >
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                        item.type === 'text' ? 'bg-primary-100' :
+                        item.type === 'image' ? 'bg-warning-100' : 'bg-safe-100'
+                      }`}>
+                        <TypeIcon className={`w-6 h-6 ${
+                          item.type === 'text' ? 'text-primary-500' :
+                          item.type === 'image' ? 'text-warning-500' : 'text-safe-500'
+                        }`} />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-text-title font-medium truncate">{item.contentPreview || item.content}</p>
+                        </div>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-sm text-text-muted">{item.timestamp}</span>
+                          {(item.scamTypeLabel || item.scamType) && (
+                            <span className={`status-badge text-xs ${
+                              item.riskLevel === 'danger' ? 'status-danger' :
+                              item.riskLevel === 'warning' ? 'status-warning' : 'status-safe'
+                            }`}>
+                              {item.scamTypeLabel || item.scamType}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${
+                            item.riskLevel === 'danger' ? 'text-danger-500' :
+                            item.riskLevel === 'warning' ? 'text-warning-500' : 'text-safe-500'
+                          }`}>
+                            {item.riskScore}
+                          </div>
+                          <div className="text-xs text-text-muted">风险值</div>
+                        </div>
+                        
+                        <div className="flex gap-1">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); openDetailModal(item); }}
+                            className="btn btn-icon btn-ghost" 
+                            title="查看详情"
+                          >
+                            <EyeIcon className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </StaggerItem>
+                );
+              })}
+            </StaggerContainer>
           )}
         </div>
       </div>
+
+      {/* 详情弹窗 */}
+      <AnimatePresence>
+        {showDetailModal && selectedItem && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowDetailModal(false)}
+          >
+            <motion.div
+              className="w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* 头部 */}
+              <div className="p-6 border-b border-slate-100 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {selectedItem.riskLevel === 'danger' ? (
+                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
+                      </div>
+                    ) : selectedItem.riskLevel === 'warning' ? (
+                      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                        <ExclamationTriangleIcon className="w-5 h-5 text-amber-600" />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <ShieldCheckIcon className="w-5 h-5 text-green-600" />
+                      </div>
+                    )}
+                    <div>
+                      <h2 className="text-lg font-semibold text-slate-800">检测详情</h2>
+                      <p className="text-sm text-slate-500">{selectedItem.timestamp}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setShowDetailModal(false)} 
+                    className="text-slate-400 hover:text-slate-600 p-2"
+                  >
+                    <XMarkIcon className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              {/* 内容区域 - 可滚动 */}
+              <div className="p-6 space-y-5 overflow-y-auto flex-1">
+                {/* 风险评估 */}
+                <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
+                  <div className="text-center">
+                    <div className={`text-3xl font-bold ${
+                      selectedItem.riskLevel === 'danger' ? 'text-red-500' :
+                      selectedItem.riskLevel === 'warning' ? 'text-amber-500' : 'text-green-500'
+                    }`}>
+                      {selectedItem.riskScore}
+                    </div>
+                    <div className="text-xs text-slate-500">风险分数</div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`px-2 py-0.5 rounded text-sm font-medium ${
+                        selectedItem.riskLevel === 'danger' ? 'bg-red-100 text-red-700' :
+                        selectedItem.riskLevel === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                      }`}>
+                        {selectedItem.riskLevel === 'danger' ? '高风险' :
+                         selectedItem.riskLevel === 'warning' ? '可疑' : '安全'}
+                      </span>
+                      {(selectedItem.scamTypeLabel || selectedItem.scamType) && (
+                        <span className="px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-sm">
+                          {selectedItem.scamTypeLabel || selectedItem.scamType}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-slate-600">
+                      检测类型: {selectedItem.type === 'text' ? '文本' : selectedItem.type === 'image' ? '图片' : '音频'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 检测内容 */}
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                    <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                    检测内容
+                  </h3>
+                  <div className="p-4 bg-slate-50 rounded-xl text-sm text-slate-700 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                    {selectedItem.content || '无内容'}
+                  </div>
+                </div>
+
+                {/* AI分析结果 */}
+                {selectedItem.analysisResult && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                      <LightBulbIcon className="w-4 h-4" />
+                      AI分析结果
+                    </h3>
+                    <div className="p-4 bg-blue-50 rounded-xl text-sm text-slate-700 whitespace-pre-wrap">
+                      {selectedItem.analysisResult}
+                    </div>
+                  </div>
+                )}
+
+                {/* 安全建议 */}
+                {selectedItem.suggestions && selectedItem.suggestions.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                      <ShieldCheckIcon className="w-4 h-4" />
+                      安全建议
+                    </h3>
+                    <ul className="space-y-2">
+                      {selectedItem.suggestions.map((suggestion, idx) => (
+                        <li key={idx} className="flex items-start gap-2 p-3 bg-green-50 rounded-lg text-sm text-slate-700">
+                          <span className="text-green-500 mt-0.5">•</span>
+                          {suggestion}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* 底部 */}
+              <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end flex-shrink-0">
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  className="btn btn-primary"
+                >
+                  关闭
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

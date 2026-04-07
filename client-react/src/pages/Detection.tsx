@@ -211,6 +211,7 @@ export default function Detection() {
       case 'medium': return '可疑';
       case 'danger':
       case 'high': return '高风险';
+      case 'critical': return '极高风险';
       default: return '未知';
     }
   };
@@ -222,7 +223,8 @@ export default function Detection() {
       case 'warning':
       case 'medium': return 'warning';
       case 'danger':
-      case 'high': return 'danger';
+      case 'high':
+      case 'critical': return 'danger';
       default: return 'safe';
     }
   };
@@ -285,7 +287,7 @@ export default function Detection() {
               <textarea
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
-                placeholder="请粘贴可疑的聊天记录、短信内容或其他文本...&#10;&#10;例如：&#10;「恭喜您中奖100万，请点击链接领取...」&#10;「我是公安局的，你的账户涉嫌洗钱...」"
+                placeholder="请粘贴可疑的聊天记录、短信内容或其他文本..."
                 className="input min-h-[220px] resize-none"
                 disabled={isAnalyzing}
               />

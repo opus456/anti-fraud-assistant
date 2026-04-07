@@ -23,6 +23,7 @@ interface GuardianAlert {
   fraud_type_label: string;
   message: string;
   reason?: string;
+  input_content?: string;
   screenshot?: string;
   created_at: string;
   resolved: boolean;
@@ -150,13 +151,14 @@ export default function GuardianDashboard() {
       });
 
       const list: AlertApiItem[] = Array.isArray(data) ? data : [];
-      const mapped: GuardianAlert[] = list.map((item) => ({
+      const mapped: GuardianAlert[] = list.map((item: any) => ({
         id: item.id,
-        charge_username: item.user_id ? `用户#${item.user_id}` : '被监护用户',
+        charge_username: item.nickname || item.username || (item.user_id ? `用户#${item.user_id}` : '被监护用户'),
         risk_level: normalizeRiskLevel(item.risk_level),
-        fraud_type_label: item.fraud_type || '未知',
+        fraud_type_label: item.report_json?.fraud_type_label || item.fraud_type || '未知',
         message: item.title || item.description || '检测到可疑行为',
         reason: item.description || '',
+        input_content: item.report_json?.input_content || '',
         screenshot: '',
         created_at: item.created_at,
         resolved: item.is_resolved,
@@ -173,19 +175,23 @@ export default function GuardianDashboard() {
     const normalizedRiskLevel = normalizeRiskLevel(data.risk_level ?? data.risk_level_label);
     const newAlert: GuardianAlert = {
       id: Date.now(),
-      charge_username: data.username || (data.user_id ? `用户#${data.user_id}` : '未知'),
+      charge_username: data.nickname || data.username || (data.user_id ? `用户#${data.user_id}` : '未知'),
       risk_level: normalizedRiskLevel,
-      fraud_type_label: data.fraud_type_label || '未知',
-      message: data.message || data.reason || '检测到可疑行为',
-      reason: data.reason || data.analysis || '',
+      fraud_type_label: data.fraud_type_label || data.fraud_type || '未知',
+      message: data.analysis || data.message || data.reason || '检测到可疑行为',
+      reason: data.analysis || data.reason || '',
+      input_content: data.input_content || '',
       screenshot: data.screenshot || data.image_frame || data.image || '',
-      created_at: new Date().toISOString(),
+      created_at: data.created_at || new Date().toISOString(),
       resolved: false,
     };
     setAlerts((prev) => [newAlert, ...prev]);
     setAlertMode(true);
     fetchPendingAlerts();
-    toast.error(`紧急预警: ${newAlert.charge_username} 可能遭遇诈骗！`);
+    toast.error(`紧急预警: ${newAlert.charge_username} 可能遭遇诈骗！`, {
+      duration: 10000,
+      icon: '🚨',
+    });
   }, []);
 
   useEffect(() => {

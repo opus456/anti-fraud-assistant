@@ -1,0 +1,138 @@
+# 反诈智能体助手 - 服务器部署配置
+# 使用方法: 
+#   1. 复制此文件和 .env.example 到服务器
+#   2. 重命名 .env.example 为 .env 并修改配置
+#   3. 运行: docker compose -f docker-compose.deploy.yml up -d
+
+services:
+  # ==================== 基础设施 ====================
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: antifraud-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-antifraud}
+      POSTGRES_USER: ${POSTGRES_USER:-antifraud}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-antifraud123}
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-antifraud}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - antifraud-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: antifraud-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - antifraud-network
+
+  # ==================== 应用服务 ====================
+  python-backend:
+    image: fengnuan720/antifraud-python:latest
+    container_name: antifraud-python
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-antifraud}:${POSTGRES_PASSWORD:-antifraud123}@postgres:5432/${POSTGRES_DB:-antifraud}
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production-please}
+      DEBUG: ${DEBUG:-false}
+      USE_LOCAL_LLM: ${USE_LOCAL_LLM:-true}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://172.17.0.1:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-gemma4:e4b}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_API_URL: ${LLM_API_URL:-https://api-ai.gitcode.com/v1/chat/completions}
+      EMBEDDING_API_URL: ${EMBEDDING_API_URL:-https://api-ai.gitcode.com/v1}
+      ACCESS_TOKEN: ${ACCESS_TOKEN:-}
+      NODE_GATEWAY_URL: http://gateway:3001
+      TZ: Asia/Shanghai
+    ports:
+      - "8000:8000"
+    volumes:
+      - python-uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - antifraud-network
+
+  gateway:
+    image: fengnuan720/antifraud-node:latest
+    container_name: antifraud-gateway
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      PYTHON_API: http://python-backend:8000
+      JWT_SECRET: ${SECRET_KEY:-change-this-in-production-please}
+      NODE_ENV: production
+      TZ: Asia/Shanghai
+    ports:
+      - "3001:3001"
+    depends_on:
+      python-backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - antifraud-network
+
+  frontend:
+    image: fengnuan720/antifraud-frontend:latest
+    container_name: antifraud-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - antifraud-network
+
+# ==================== 数据卷 ====================
+volumes:
+  pgdata:
+    name: antifraud-pgdata
+  redisdata:
+    name: antifraud-redisdata
+  python-uploads:
+    name: antifraud-uploads
+
+# ==================== 网络 ====================
+networks:
+  antifraud-network:
+    name: antifraud-network
+    driver: bridge

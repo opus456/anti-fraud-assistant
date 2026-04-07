@@ -1,7 +1,7 @@
 """
 Embedding 服务
 - 优先使用 LangChain OpenAIEmbeddings 生成 1024 维向量
-- 失败时回退到基于哈希 + PyTorch 的稳定向量，保证流程不中断
+- 失败时回退到基于哈希 + NumPy 的稳定向量，保证流程不中断
 """
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import hashlib
 import logging
 from typing import List
 
-import torch
+import numpy as np
 from langchain_openai import OpenAIEmbeddings
 
 from app.config import settings
@@ -49,10 +49,10 @@ class EmbeddingService:
     def _local_fallback_embedding(text: str, dim: int = 1024) -> List[float]:
         # 使用文本哈希作为种子，生成稳定随机向量，并做 L2 归一化
         digest = hashlib.sha256(text.encode("utf-8")).digest()
-        seed = int.from_bytes(digest[:8], byteorder="big", signed=False)
-        gen = torch.Generator().manual_seed(seed)
-        vec = torch.randn(dim, generator=gen, dtype=torch.float32)
-        vec = torch.nn.functional.normalize(vec, p=2, dim=0)
+        seed = int.from_bytes(digest[:8], byteorder="big", signed=False) % (2**32)
+        rng = np.random.default_rng(seed)
+        vec = rng.standard_normal(dim).astype(np.float32)
+        vec = vec / np.linalg.norm(vec)  # L2 归一化
         return vec.tolist()
 
     async def embed_text(self, text: str) -> List[float]:

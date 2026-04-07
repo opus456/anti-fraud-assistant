@@ -35,9 +35,18 @@ async def get_db():
 
 
 async def init_db():
-    """应用启动时确保表结构存在(DDL 由 init.sql 处理，这里做兼容)"""
+    """应用启动时确保表结构存在"""
     async with engine.begin() as conn:
+        # 首先确保 pgvector 扩展已启用
+        try:
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+            logger.info("pgvector 扩展已启用")
+        except Exception as e:
+            logger.warning(f"创建 pgvector 扩展失败: {e}")
+        
+        # 然后创建表结构
         await conn.run_sync(Base.metadata.create_all)
+        logger.info("数据库表结构已初始化")
 
 
 async def check_db_connection() -> bool:

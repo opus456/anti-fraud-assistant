@@ -56,7 +56,7 @@ async def list_pending(
             "scam_type": e.scam_type,
             "category": e.category,
             "source": e.source,
-            "created_at": e.created_at.isoformat() if e.created_at else None,
+            "created_at": (e.created_at.isoformat() + 'Z') if e.created_at else None,
         }
         for e in entries
     ]

@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+.env.*
+.venv
+venv/
+ENV/
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test data (will be mounted as volume)
+test_data/
+knowledge_data/
+
+# Finetune data (development only, not needed in production)
+finetune_data/
+
+# Development scripts (not needed in production)
+scripts/
+
+# Data source (initialization data, mounted as volume if needed)
+data_source/
+
+# Uploads
+uploads/
+
+# Git
+.git
+.gitignore

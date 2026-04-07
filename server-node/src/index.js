@@ -54,6 +54,13 @@ const { mountProxy } = require('./routes/proxy');
 mountProxy(app, broadcastAlert);
 
 // ---------------------------------------------------------------------------
+// Health check endpoint for Docker
+// ---------------------------------------------------------------------------
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'gateway', timestamp: new Date().toISOString() });
+});
+
+// ---------------------------------------------------------------------------
 // Start listening
 // ---------------------------------------------------------------------------
 server.on('error', (err) => {

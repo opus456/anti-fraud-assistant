@@ -39,8 +39,9 @@ class Settings(BaseSettings):
     # ========== Ollama 本地模型 ==========
     USE_LOCAL_LLM: bool = True  # 是否使用本地 Ollama 模型
     OLLAMA_BASE_URL: str = "http://localhost:11434"  # Ollama 服务地址
-    OLLAMA_MODEL: str = "qwen2.5:7b"  # Ollama 模型名称
-    OLLAMA_TIMEOUT: float = 10.0  # 10秒超时
+    OLLAMA_MODEL: str = "gemma4:e4b"  # 本地多模态模型 (支持文本/图像/音频)
+    OLLAMA_VISION_MODEL: str = "gemma4:e4b"  # 视觉模型 (多模态分析)
+    OLLAMA_TIMEOUT: float = 90.0  # 90秒超时 (多模态需要更长时间)
     ALWAYS_USE_LLM: bool = True  # 每次检测都使用 LLM（提高准确率）
 
     # ========== Embedding (RAG/进化) ==========

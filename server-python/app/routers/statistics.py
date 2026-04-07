@@ -363,7 +363,7 @@ async def get_realtime_data(db: AsyncSession = Depends(get_db)):
                 "risk_level": d.risk_level or "safe",
                 "risk_score": d.risk_score,
                 "response_time_ms": d.response_time_ms,
-                "created_at": d.created_at.isoformat() if d.created_at else None,
+                "created_at": (d.created_at.isoformat() + 'Z') if d.created_at else None,
             }
             for d in recent_detections
         ],
@@ -373,7 +373,7 @@ async def get_realtime_data(db: AsyncSession = Depends(get_db)):
                 "alert_type": a.alert_type,
                 "risk_level": a.risk_level,
                 "title": a.title,
-                "created_at": a.created_at.isoformat() if a.created_at else None,
+                "created_at": (a.created_at.isoformat() + 'Z') if a.created_at else None,
             }
             for a in active_alerts
         ],

@@ -227,8 +227,9 @@ export default function Alerts() {
     setSearchParams(searchParams);
   };
 
-  // 格式化时间
+  // 格式化时间 - 正确处理UTC时间
   const formatTime = (dateStr: string): string => {
+    // 后端返回的是UTC时间（带Z后缀），JavaScript会自动转为本地时间
     const date = new Date(dateStr);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -452,7 +453,7 @@ export default function Alerts() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className={`p-4 sm:p-5 rounded-xl border-l-4 bg-slate-50 hover:bg-slate-100 transition-colors ${levelStyles.border}`}
+                      className={`p-4 sm:p-5 rounded-xl border-l-4 bg-slate-50 hover:bg-slate-100 transition-all duration-200 hover:shadow-sm ${levelStyles.border}`}
                     >
                       <div className="flex flex-col sm:flex-row items-start gap-4">
                         {/* 图标 */}

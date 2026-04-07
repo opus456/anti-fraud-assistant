@@ -95,10 +95,10 @@ function StandardDashboard() {
       const alerts: RecentAlert[] = (alertsRes.data || []).slice(0, 3).map((alert: { id: number; fraud_type?: string; risk_level: string; message?: string; created_at: string }) => ({
         id: alert.id,
         type: alert.fraud_type || '风险预警',
-        title: `检测到${alert.risk_level === 'high' ? '高' : alert.risk_level === 'medium' ? '中' : '低'}风险`,
+        title: `检测到${alert.risk_level === 'high' || alert.risk_level === 'critical' ? '高' : alert.risk_level === 'medium' ? '中' : '低'}风险`,
         message: alert.message || '系统已自动处理',
         time: formatRelativeTime(alert.created_at),
-        level: (alert.risk_level === 'high' ? 'danger' : alert.risk_level === 'medium' ? 'warning' : 'safe') as RecentAlert['level'],
+        level: (alert.risk_level === 'high' || alert.risk_level === 'critical' ? 'danger' : alert.risk_level === 'medium' ? 'warning' : 'safe') as RecentAlert['level'],
         created_at: alert.created_at,
       }));
       
