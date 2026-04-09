@@ -26,9 +26,19 @@ interface AlertRecord {
   username?: string;
   nickname?: string;
   fraud_type: string;
-  risk_level: 'high' | 'medium' | 'low';
+  risk_level: number;  // 0=安全, 1=中风险, 2=高风险, 3=极高风险
   risk_score: number;
   message: string;
+  title?: string;
+  description?: string;
+  alert_type?: string;
+  report_json?: {
+    input_content?: string;
+    fraud_type_label?: string;
+    ward_nickname?: string;
+    ward_username?: string;
+    [key: string]: any;
+  };
   source: 'call' | 'message' | 'detection' | 'manual';
   is_resolved: boolean;
   guardian_notified: boolean;
@@ -68,8 +78,14 @@ export default function Alerts() {
       const res = await api.get('/alerts/').catch(() => null);
       
       if (res?.data && res.data.length > 0) {
-        setAlerts(res.data);
-        calculateStats(res.data);
+        // 映射后端数据到前端格式
+        const mappedAlerts = res.data.map((item: any) => ({
+          ...item,
+          message: item.description || item.title || '检测到可疑行为',
+          source: 'detection' as const,
+        }));
+        setAlerts(mappedAlerts);
+        calculateStats(mappedAlerts);
       } else {
         // 如果没有数据，使用占位数据
         const mockAlerts: AlertRecord[] = [
@@ -79,7 +95,7 @@ export default function Alerts() {
             nickname: '爷爷',
             username: 'grandpa',
             fraud_type: '投资诈骗',
-            risk_level: 'high',
+            risk_level: 2,  // 高风险
             risk_score: 0.92,
             message: '来自400-888-9999的通话中提及"稳定高收益投资"，符合投资诈骗特征。已自动拦截并通知监护人。',
             source: 'call',
@@ -93,7 +109,7 @@ export default function Alerts() {
             nickname: '奶奶',
             username: 'grandma',
             fraud_type: '刷单诈骗',
-            risk_level: 'medium',
+            risk_level: 1,  // 中风险
             risk_score: 0.68,
             message: '短信内容包含"日结工资"、"在家赚钱"等关键词，疑似刷单诈骗。',
             source: 'message',
@@ -107,7 +123,7 @@ export default function Alerts() {
             nickname: '爷爷',
             username: 'grandpa',
             fraud_type: '冒充公检法',
-            risk_level: 'high',
+            risk_level: 3,  // 极高风险
             risk_score: 0.88,
             message: '检测到通话中有"涉及案件"、"配合调查"等诱导性话术。已标记并发送预警。',
             source: 'call',
@@ -134,8 +150,8 @@ export default function Alerts() {
       total: data.length,
       pending: data.filter(a => !a.is_resolved).length,
       resolved: data.filter(a => a.is_resolved).length,
-      high_risk: data.filter(a => a.risk_level === 'high').length,
-      medium_risk: data.filter(a => a.risk_level === 'medium').length,
+      high_risk: data.filter(a => a.risk_level >= 2).length,  // 2=高风险, 3=极高风险
+      medium_risk: data.filter(a => a.risk_level === 1).length,  // 1=中风险
     });
   };
 
@@ -244,17 +260,33 @@ export default function Alerts() {
     return date.toLocaleDateString('zh-CN');
   };
 
-  // 风险等级样式
-  const getLevelStyles = (level: string) => {
-    switch (level) {
-      case 'high':
+  // 风险等级样式 - 支持数字和字符串类型
+  const getLevelStyles = (level: number | string) => {
+    // 标准化为数字
+    let numLevel: number;
+    if (typeof level === 'string') {
+      const levelMap: Record<string, number> = { safe: 0, low: 0, medium: 1, high: 2, critical: 3 };
+      numLevel = levelMap[level] ?? 0;
+    } else {
+      numLevel = level;
+    }
+
+    switch (numLevel) {
+      case 3:
         return {
           badge: 'bg-red-100 text-red-700 border-red-200',
           icon: 'bg-red-100 border-red-200 text-red-600',
           border: 'border-l-red-500',
+          label: '极高风险',
+        };
+      case 2:
+        return {
+          badge: 'bg-orange-100 text-orange-700 border-orange-200',
+          icon: 'bg-orange-100 border-orange-200 text-orange-600',
+          border: 'border-l-orange-500',
           label: '高风险',
         };
-      case 'medium':
+      case 1:
         return {
           badge: 'bg-amber-100 text-amber-700 border-amber-200',
           icon: 'bg-amber-100 border-amber-200 text-amber-600',
@@ -263,10 +295,10 @@ export default function Alerts() {
         };
       default:
         return {
-          badge: 'bg-blue-100 text-blue-700 border-blue-200',
-          icon: 'bg-blue-100 border-blue-200 text-blue-600',
-          border: 'border-l-blue-500',
-          label: '低风险',
+          badge: 'bg-green-100 text-green-700 border-green-200',
+          icon: 'bg-green-100 border-green-200 text-green-600',
+          border: 'border-l-green-500',
+          label: '安全',
         };
     }
   };
