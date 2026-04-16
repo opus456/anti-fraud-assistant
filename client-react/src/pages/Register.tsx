@@ -126,9 +126,14 @@ export default function Register() {
           initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
           {/* Logo */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
-                <img src={logo} alt="御见" className="w-16 h-16 rounded-xl object-cover shadow-lg shadow-red-500/20 logo-img" />
-              <span className="text-lg font-bold text-slate-800">创建账号</span>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="logo-mark logo-mark-lg">
+                <img src={logo} alt="御见" className="logo-mark-img" />
+              </div>
+              <div className="leading-none">
+                <span className="text-xl font-black text-slate-900 tracking-tight"><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500"></span>御见</span>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">创建账号</div>
+              </div>
             </div>
             {/* 步骤指示器 */}
             <div className="flex items-center gap-0 mb-2">

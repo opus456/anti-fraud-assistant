@@ -1,5 +1,23 @@
 {
-	"appId": "com.antifraud.assistant",
-	"appName": "Anti Fraud Assistant",
-	"webDir": "dist"
+	"appId": "com.pojiefraud.assistant",
+	"appName": "御见",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https",
+		"allowNavigation": [
+			"*"
+		]
+	},
+	"android": {
+		"path": "android"
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 3000,
+			"launchAutoHide": true,
+			"backgroundColor": "#007AFF",
+			"showSpinner": true,
+			"spinnerColor": "white"
+		}
+	}
 }

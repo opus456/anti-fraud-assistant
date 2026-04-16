@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ScrollReveal, StaggerContainer, StaggerItem } from '../components/motion';
 import {
   BellIcon,
@@ -11,7 +11,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../store';
-import { useSettingsStore } from '../store/settingsStore';
+import { useSettingsStore, type AppSettings } from '../store/settingsStore';
 import api from '../api';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -33,7 +33,7 @@ export default function Settings() {
   const [profileForm, setProfileForm] = useState({
     nickname: user?.nickname || '',
     email: user?.email || '',
-    age: user?.age || '',
+    age: user?.age?.toString() || '',
     gender: user?.gender || '',
     role_type: user?.role_type || '',
     occupation: user?.occupation || '',
@@ -83,7 +83,7 @@ export default function Settings() {
     setProfileForm({
       nickname: user?.nickname || '',
       email: user?.email || '',
-      age: user?.age || '',
+      age: user?.age?.toString() || '',
       gender: user?.gender || '',
       role_type: user?.role_type || '',
       occupation: user?.occupation || '',

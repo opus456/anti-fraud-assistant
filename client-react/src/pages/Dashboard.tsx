@@ -43,7 +43,7 @@ function SafetyRing({ score, size = 96 }: { score: number; size?: number }) {
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="transform -rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="6" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#E2E8F0" strokeWidth="6" />
         <motion.circle
           cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="6"
           strokeLinecap="round" strokeDasharray={circumference}
@@ -53,8 +53,8 @@ function SafetyRing({ score, size = 96 }: { score: number; size?: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-bold text-white">{score}</span>
-        <span className="text-[10px] text-white/50 uppercase tracking-wider">安全分</span>
+        <span className="text-3xl font-black text-slate-800 tracking-tighter drop-shadow-sm">{score}</span>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">安全跑分</span>
       </div>
     </div>
   );
@@ -123,63 +123,84 @@ function StandardDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* ====== Hero Section: 核心态势感知 ====== */}
+      {/* ====== Hero Section: 核心态势感知 (浅色高亮高反差版) ====== */}
       <ScrollReveal>
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0a1e3d] via-[#0d2847] to-[#0a2540] p-6 sm:p-8">
-          {/* 背景装饰 */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-sky-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-          <div className="absolute bottom-0 left-0 w-60 h-60 bg-blue-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
-          {/* 半透明盾牌水印 */}
-          <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-40 h-40 sm:w-56 sm:h-56 text-white/[0.03]" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
-            <div className="flex-1">
-              <p className="text-white/40 text-sm mb-2 font-medium">AI Guardian · 态势感知</p>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
-                您好，{userName}！今天 AI 已拦截{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-300 text-4xl sm:text-5xl font-black">
+        <div className="relative overflow-hidden rounded-[24px] bg-white border border-white/40 shadow-[0_20px_50px_rgba(0,122,255,0.08)] p-8 sm:p-10 z-10 backdrop-blur-xl">
+          {/* 超强视觉冲击光影特效 */}
+          <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(0,122,255,0.15),transparent_50%)] pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-cyan-400/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute top-1/2 right-10 w-64 h-64 bg-blue-500/10 rounded-full blur-[60px] pointer-events-none mix-blend-multiply" />
+          
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 relative z-20">
+            <div className="flex-1 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50/80 border border-blue-100 text-blue-600 text-xs font-semibold tracking-wide uppercase shadow-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                AI Agent 实时防护中
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                您好，{userName}！<br className="hidden sm:block" />
+                系统已成功拦截 <br className="sm:hidden" />
+                <span className="inline-block px-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-500 text-5xl sm:text-6xl font-black drop-shadow-sm filter mt-2">
                   <AnimatedCounter value={todayFraud} />
                 </span>
-                {' '}次风险
+                次风险
               </h1>
-              <p className="text-white/40 text-sm">
-                累计检测 {stats?.total_detections || 0} 次 · 守护 {stats?.guard_count || 0} 人 · 待处理 {stats?.alerts_pending || 0} 条预警
+              <p className="text-slate-500 text-sm sm:text-base font-medium max-w-lg">
+                大模型驱动的多模态意图识别正在为您的每一次通信保驾护航。守护 <span className="font-bold text-slate-700">{stats?.guard_count || 0}</span> 人，累计检测 <span className="font-bold text-slate-700">{stats?.total_detections || 0}</span> 次。
               </p>
             </div>
-            <SafetyRing score={safetyScore} />
+            
+            {/* 炫酷的安全分展示 */}
+            <div className="relative shrink-0 flex flex-col items-center p-6 rounded-2xl bg-gradient-to-b from-slate-50 to-white border border-slate-100 shadow-xl shadow-blue-500/5 group hover:scale-105 transition-transform duration-500 ease-out">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,122,255,0.03)_0%,transparent_100%)] rounded-2xl pointer-events-none" />
+              <SafetyRing score={safetyScore} size={140} />
+              <div className="mt-4 flex items-center justify-center gap-2 h-8 px-4 rounded-full bg-slate-100 text-xs font-bold text-slate-700">
+                环境极度安全
+              </div>
+            </div>
           </div>
         </div>
       </ScrollReveal>
 
-      {/* ====== 数据看板：3 个极简卡片 ====== */}
-      <StaggerContainer className="grid grid-cols-3 gap-3 sm:gap-4">
+      {/* ====== 数据看板：全玻璃通透面板 ====== */}
+      <StaggerContainer className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: '今日检测', value: stats?.today_detections || 0, icon: MagnifyingGlassIcon, change: '+12%', up: true, iconColor: 'text-sky-500', iconBg: 'bg-sky-50' },
-          { label: '总检测量', value: stats?.total_detections || 0, icon: PhoneIcon, change: '+8%', up: true, iconColor: 'text-emerald-500', iconBg: 'bg-emerald-50' },
-          { label: '待处理', value: stats?.alerts_pending || 0, icon: BellAlertIcon, change: stats?.alerts_pending ? `${stats.alerts_pending}条` : '无', up: (stats?.alerts_pending || 0) === 0, iconColor: 'text-amber-500', iconBg: 'bg-amber-50' },
-        ].map((stat, idx) => (
-          <StaggerItem key={idx}>
-            <Link to={idx === 2 ? '/alerts?filter=pending' : '/history'}>
-              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-100 hover:border-sky-200 transition-all hover:shadow-md cursor-pointer group">
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className={`w-9 h-9 rounded-lg ${stat.iconBg} flex items-center justify-center`}>
-                    <stat.icon className={`w-4.5 h-4.5 ${stat.iconColor}`} />
+          { label: '今日检测', value: stats?.today_detections || 0, icon: MagnifyingGlassIcon, change: '+12.5%', up: true, color: 'blue' },
+          { label: '风险占比', value: ((stats?.today_fraud || 0) / (stats?.today_detections || 1) * 100).toFixed(1) + '%', icon: ShieldCheckIcon, change: '-2.1%', up: true, color: 'emerald' },
+          { label: '待处理预警', value: stats?.alerts_pending || 0, icon: BellAlertIcon, change: stats?.alerts_pending ? `需立即跟进` : '全部已处理', up: (stats?.alerts_pending || 0) === 0, color: 'amber' },
+        ].map((stat, idx) => {
+          const isWarning = stat.color === 'amber' && !stat.up;
+          return (
+            <StaggerItem key={idx}>
+              <Link to={idx === 2 ? '/alerts?filter=pending' : '/history'}>
+                <div className={`relative overflow-hidden p-6 rounded-[20px] bg-white/80 backdrop-blur-md border hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group ${isWarning ? 'border-amber-200' : 'border-slate-100 hover:border-blue-200'}`}>
+                  {/* 角落流光 */}
+                  <div className={`absolute -right-10 -top-10 w-24 h-24 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity bg-${stat.color}-500`} />
+                  
+                  <div className="flex items-center justify-between mb-4 relative z-10">
+                    <div className={`flex items-center justify-center w-12 h-12 rounded-[14px] bg-gradient-to-br from-${stat.color}-50 to-${stat.color}-100/50 border border-${stat.color}-100 shadow-sm`}>
+                      <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
+                    </div>
+                    {isWarning && <span className="absolute top-0 right-0 w-3 h-3 bg-amber-500 rounded-full animate-ping" />}
                   </div>
-                  <span className="text-sm text-slate-500">{stat.label}</span>
+                  
+                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider relative z-10">{stat.label}</p>
+                  <h3 className="text-4xl font-extrabold text-slate-900 mt-2 mb-1 relative z-10 tracking-tight">
+                    {typeof stat.value === 'number' ? <AnimatedCounter value={stat.value} /> : stat.value}
+                  </h3>
+                  
+                  <div className={`flex items-center gap-1.5 text-xs font-bold relative z-10 ${stat.up ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {stat.up ? <ArrowTrendingUpIcon className="w-4 h-4" /> : <ArrowTrendingDownIcon className="w-4 h-4" />}
+                    {stat.change}
+                  </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-slate-800">
-                  <AnimatedCounter value={stat.value} />
-                </div>
-                <div className={`text-xs mt-1 flex items-center gap-1 ${stat.up ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {stat.up ? <ArrowTrendingUpIcon className="w-3 h-3" /> : <ArrowTrendingDownIcon className="w-3 h-3" />}
-                  {stat.change}
-                </div>
-              </div>
-            </Link>
-          </StaggerItem>
-        ))}
+              </Link>
+            </StaggerItem>
+          );
+        })}
       </StaggerContainer>
 
       {/* ====== 快捷入口：轻量级图标网格 ====== */}

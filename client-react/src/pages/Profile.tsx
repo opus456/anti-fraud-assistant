@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import {
   UserCircleIcon,
-  PencilIcon,
   ShieldCheckIcon,
   BellIcon,
   ClockIcon,
   DocumentTextIcon,
   ArrowRightOnRectangleIcon,
-  ChevronRightIcon,
   CameraIcon,
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
@@ -30,7 +28,7 @@ export default function Profile() {
   });
 
   const menuItems = [
-    { icon: ShieldCheckIcon, label: '安全中心', path: '/settings' },
+    { icon: ShieldCheckIcon, label: '用户资料', path: '/settings' },
     { icon: BellIcon, label: '通知设置', path: '/settings' },
     { icon: ClockIcon, label: '检测记录', path: '/history' },
     { icon: DocumentTextIcon, label: '安全报告', path: '/reports' },

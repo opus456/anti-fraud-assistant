@@ -8,14 +8,13 @@ import {
   PhoneIcon,
   ChatBubbleLeftRightIcon,
   CheckCircleIcon,
-  XMarkIcon,
   FunnelIcon,
   MagnifyingGlassIcon,
   UserIcon,
   ClockIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
-import { ScrollReveal, StaggerContainer, StaggerItem, HoverCard, AnimatedCounter } from '../components/motion';
+import { ScrollReveal, StaggerContainer, StaggerItem, AnimatedCounter } from '../components/motion';
 import api from '../api';
 import toast from 'react-hot-toast';
 
@@ -347,62 +346,62 @@ export default function Alerts() {
         </div>
       </ScrollReveal>
 
-      {/* 统计卡片 */}
+      {/* 统计卡片：高对比玻璃拟态质感 */}
       <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StaggerItem>
-          <div onClick={() => handleFilterChange('pending')} className="cursor-pointer">
-            <HoverCard 
-              className={`stat-card ${filter === 'pending' ? 'ring-2 ring-amber-400' : ''}`}
-            >
-              <div className="stat-icon bg-amber-100">
-                <ExclamationTriangleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
-              </div>
-              <div className="stat-value text-xl sm:text-2xl text-amber-600">
-                <AnimatedCounter value={stats.pending} />
-              </div>
-              <div className="stat-label text-xs sm:text-sm">待处理</div>
-            </HoverCard>
+          <div onClick={() => handleFilterChange('pending')} className="cursor-pointer group">
+            <div className={`relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border transition-all duration-300 transform group-hover:-translate-y-1 ${filter === 'pending' ? 'border-amber-400 shadow-lg shadow-amber-500/10' : 'border-slate-100/60 hover:shadow-xl hover:border-amber-200'}`}>
+               <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-amber-400/20 blur-xl group-hover:scale-150 transition-transform"></div>
+               <div className="flex flex-col gap-2 relative z-10">
+                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center border border-amber-200/50 shadow-inner">
+                   <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 drop-shadow-sm" />
+                 </div>
+                 <div className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1"><AnimatedCounter value={stats.pending} /></div>
+                 <div className="text-xs font-semibold text-slate-500 uppercase tracking-widest">待处理</div>
+               </div>
+            </div>
           </div>
         </StaggerItem>
         <StaggerItem>
-          <div onClick={() => handleFilterChange('resolved')} className="cursor-pointer">
-            <HoverCard 
-              className={`stat-card ${filter === 'resolved' ? 'ring-2 ring-green-400' : ''}`}
-            >
-              <div className="stat-icon bg-green-100">
-                <CheckCircleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-              </div>
-              <div className="stat-value text-xl sm:text-2xl text-green-600">
-                <AnimatedCounter value={stats.resolved} />
-              </div>
-              <div className="stat-label text-xs sm:text-sm">已处理</div>
-            </HoverCard>
+          <div onClick={() => handleFilterChange('resolved')} className="cursor-pointer group">
+            <div className={`relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border transition-all duration-300 transform group-hover:-translate-y-1 ${filter === 'resolved' ? 'border-emerald-400 shadow-lg shadow-emerald-500/10' : 'border-slate-100/60 hover:shadow-xl hover:border-emerald-200'}`}>
+               <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-emerald-400/20 blur-xl group-hover:scale-150 transition-transform"></div>
+               <div className="flex flex-col gap-2 relative z-10">
+                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center border border-emerald-200/50 shadow-inner">
+                   <CheckCircleIcon className="w-5 h-5 text-emerald-600 drop-shadow-sm" />
+                 </div>
+                 <div className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1"><AnimatedCounter value={stats.resolved} /></div>
+                 <div className="text-xs font-semibold text-slate-500 uppercase tracking-widest">已处理</div>
+               </div>
+            </div>
           </div>
         </StaggerItem>
         <StaggerItem>
-          <HoverCard className="stat-card">
-            <div className="stat-icon bg-red-100">
-              <ShieldCheckIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
+          <div className="group">
+            <div className="relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border border-slate-100/60 hover:shadow-xl hover:border-rose-200 transition-all duration-300 transform group-hover:-translate-y-1">
+               <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-rose-400/20 blur-xl group-hover:scale-150 transition-transform"></div>
+               <div className="flex flex-col gap-2 relative z-10">
+                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center border border-rose-200/50 shadow-inner">
+                   <ShieldCheckIcon className="w-5 h-5 text-rose-600 drop-shadow-sm" />
+                 </div>
+                 <div className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1"><AnimatedCounter value={stats.high_risk} /></div>
+                 <div className="text-xs font-semibold text-slate-500 uppercase tracking-widest">高风险</div>
+               </div>
             </div>
-            <div className="stat-value text-xl sm:text-2xl text-red-600">
-              <AnimatedCounter value={stats.high_risk} />
-            </div>
-            <div className="stat-label text-xs sm:text-sm">高风险</div>
-          </HoverCard>
+          </div>
         </StaggerItem>
         <StaggerItem>
-          <div onClick={() => handleFilterChange('all')} className="cursor-pointer">
-            <HoverCard 
-              className={`stat-card ${filter === 'all' ? 'ring-2 ring-sky-400' : ''}`}
-            >
-              <div className="stat-icon bg-sky-100">
-                <BellAlertIcon className="w-5 h-5 sm:w-6 sm:h-6 text-sky-600" />
-              </div>
-              <div className="stat-value text-xl sm:text-2xl">
-                <AnimatedCounter value={stats.total} />
-              </div>
-              <div className="stat-label text-xs sm:text-sm">全部</div>
-            </HoverCard>
+          <div onClick={() => handleFilterChange('all')} className="cursor-pointer group">
+            <div className={`relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border transition-all duration-300 transform group-hover:-translate-y-1 ${filter === 'all' ? 'border-sky-400 shadow-lg shadow-sky-500/10' : 'border-slate-100/60 hover:shadow-xl hover:border-sky-200'}`}>
+               <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-sky-400/20 blur-xl group-hover:scale-150 transition-transform"></div>
+               <div className="flex flex-col gap-2 relative z-10">
+                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center border border-sky-200/50 shadow-inner">
+                   <BellAlertIcon className="w-5 h-5 text-sky-600 drop-shadow-sm" />
+                 </div>
+                 <div className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1"><AnimatedCounter value={stats.total} /></div>
+                 <div className="text-xs font-semibold text-slate-500 uppercase tracking-widest">全部记录</div>
+               </div>
+            </div>
           </div>
         </StaggerItem>
       </StaggerContainer>
@@ -482,105 +481,118 @@ export default function Alerts() {
                     <motion.div
                       key={alert.id}
                       layout
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className={`p-4 sm:p-5 rounded-xl border-l-4 bg-slate-50 hover:bg-slate-100 transition-all duration-200 hover:shadow-sm ${levelStyles.border}`}
+                      whileHover={{ scale: 1.01, translateY: -2 }}
+                      transition={{ duration: 0.2 }}
+                      className={`relative overflow-hidden p-5 sm:p-6 rounded-[20px] bg-white border border-slate-100/80 shadow-[0_4px_24px_rgba(0,122,255,0.04)] hover:shadow-[0_12px_40px_rgba(0,122,255,0.08)] transition-all flex flex-col sm:flex-row gap-5 ${levelStyles.border.replace('border-l-','border-l-[6px] ')}`}
                     >
-                      <div className="flex flex-col sm:flex-row items-start gap-4">
-                        {/* 图标 */}
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border ${levelStyles.icon}`}>
+                      {/* 背景高亮 */}
+                      {alert.risk_level >= 2 && !alert.is_resolved && (
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-2xl pointer-events-none animate-pulse-soft" />
+                      )}
+                      
+                      {/* 侧边高亮边条 */}
+                      <div className="flex flex-col sm:flex-row items-start gap-5 flex-1 relative z-10 w-full">
+                        {/* 炫酷动画图标 */}
+                        <div className={`relative w-14 h-14 rounded-[16px] flex items-center justify-center flex-shrink-0 shadow-sm ${levelStyles.icon.replace('border','border border-white/50 bg-gradient-to-br from-white to-')}`}>
                           <SourceIcon className="w-6 h-6" />
+                          {!alert.is_resolved && <span className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white animate-pulse ${alert.risk_level >= 2 ? 'bg-red-500' : 'bg-amber-500'}`} />}
                         </div>
                         
-                        {/* 内容 */}
-                        <div className="flex-1 min-w-0">
+                        {/* 内容排版 */}
+                        <div className="flex-1 min-w-0 w-full">
                           {/* 头部信息 */}
-                          <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${levelStyles.badge}`}>
+                          <div className="flex flex-wrap items-center gap-2.5 mb-3">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border shadow-sm ${levelStyles.badge}`}>
                               {levelStyles.label}
                             </span>
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">
+                            <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-gradient-to-r from-slate-100 to-slate-50 text-slate-700 border border-slate-200/60 shadow-sm">
                               {alert.fraud_type}
                             </span>
                             {alert.guardian_notified && (
-                              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-700">
-                                已通知监护人
+                              <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-gradient-to-r from-sky-100 to-blue-50 text-sky-700 border border-sky-200/60 shadow-sm">
+                                已推送监护人
                               </span>
                             )}
                             {alert.is_resolved && (
-                              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                已处理
+                              <span className="px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-gradient-to-r from-emerald-100 to-green-50 text-emerald-700 border border-emerald-200/60 shadow-sm">
+                                处理完毕
                               </span>
                             )}
                           </div>
                           
                           {/* 用户信息 */}
                           {(alert.nickname || alert.username) && (
-                            <div className="flex items-center gap-2 mb-2 text-sm text-slate-500">
-                              <UserIcon className="w-4 h-4" />
-                              <span>被守护者: {alert.nickname || alert.username}</span>
+                            <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-slate-500">
+                              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-400"><UserIcon className="w-3 h-3" /></div>
+                              <span className="text-slate-700">守护对象: <span className="text-slate-900">{alert.nickname || alert.username}</span></span>
                             </div>
                           )}
                           
-                          {/* 消息内容 */}
-                          <p className="text-slate-700 text-sm sm:text-base mb-2">{alert.message}</p>
+                          {/* 消息内容 - 更强的排版结构 */}
+                          <div className="bg-slate-50/50 border border-slate-100 p-3.5 rounded-xl mb-4">
+                            <p className="text-slate-800 text-sm sm:text-base font-medium leading-relaxed">{alert.message}</p>
+                          </div>
                           
                           {/* 时间信息 */}
-                          <div className="flex items-center gap-4 text-xs text-slate-400">
-                            <span className="flex items-center gap-1">
-                              <ClockIcon className="w-3.5 h-3.5" />
+                          <div className="flex flex-wrap items-center gap-4 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                            <span className="flex items-center gap-1.5 opacity-80">
+                              <ClockIcon className="w-4 h-4" />
                               {formatTime(alert.created_at)}
                             </span>
                             {alert.resolved_at && (
-                              <span className="flex items-center gap-1">
-                                <CheckCircleIcon className="w-3.5 h-3.5 text-green-500" />
-                                处理于 {formatTime(alert.resolved_at)}
+                              <span className="flex items-center gap-1.5 text-emerald-600/80">
+                                <CheckCircleIcon className="w-4 h-4" />
+                                完成于 {formatTime(alert.resolved_at)}
                               </span>
                             )}
                           </div>
                         </div>
 
-                        {/* 操作按钮 */}
-                        <div className="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
+                        {/* 操作按钮组 (移动端全宽，PC列排) */}
+                        <div className="flex flex-row sm:flex-col gap-2.5 w-full sm:w-32 mt-2 sm:mt-0 relative z-10 shrink-0 border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 sm:pl-5">
                           {!alert.is_resolved && (
                             <>
                               <button
                                 onClick={() => handleResolve(alert.id)}
                                 disabled={processing === alert.id}
-                                className="flex-1 sm:flex-none btn btn-safe text-sm py-2"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-b from-white to-slate-50 border border-slate-200 text-slate-700 hover:text-emerald-600 hover:border-emerald-300 hover:shadow-md transition-all disabled:opacity-50"
                               >
                                 {processing === alert.id ? (
                                   <ArrowPathIcon className="w-4 h-4 animate-spin" />
                                 ) : (
                                   <CheckCircleIcon className="w-4 h-4" />
                                 )}
-                                <span className="sm:hidden md:inline">处理</span>
+                                标记安全
                               </button>
+                              
                               {!alert.guardian_notified && (
                                 <button
                                   onClick={() => handleNotifyGuardian(alert)}
-                                  className="flex-1 sm:flex-none btn btn-outline text-sm py-2"
+                                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-b from-blue-500 to-blue-600 border border-blue-600 shadow-[0_4px_12px_rgba(0,122,255,0.25)] text-white hover:shadow-[0_6px_20px_rgba(0,122,255,0.4)] transition-all"
                                 >
                                   <BellAlertIcon className="w-4 h-4" />
-                                  <span className="sm:hidden md:inline">通知</span>
+                                  立即通知
                                 </button>
                               )}
+                              
                               <button
                                 onClick={() => handleDismiss(alert.id)}
                                 disabled={processing === alert.id}
-                                className="btn btn-ghost text-red-500 hover:bg-red-50 text-sm py-2"
+                                className="sm:mt-auto flex items-center justify-center py-2.5 px-4 rounded-xl font-bold text-xs text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
                               >
-                                <XMarkIcon className="w-4 h-4" />
+                                忽略此条
                               </button>
                             </>
                           )}
                           {alert.is_resolved && (
                             <Link
                               to={`/history?id=${alert.id}`}
-                              className="btn btn-ghost text-sm py-2"
+                              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm bg-white border border-slate-200 text-sky-600 hover:bg-sky-50 shadow-sm transition-all"
                             >
-                              查看详情
+                              查看记录详情
                             </Link>
                           )}
                         </div>

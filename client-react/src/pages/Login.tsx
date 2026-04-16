@@ -155,14 +155,16 @@ export default function Login() {
         >
           {/* Logo mark */}
           <div className="mb-10">
-            <div className="flex items-center gap-3 mb-8">
-              <img src={logo} alt="御见" className="w-16 h-16 rounded-xl object-cover shadow-lg float-shield hover-glow logo-img" />
-              <div>
-                <span className="text-lg font-bold text-slate-800">御见</span>
-                <div className="text-sm text-slate-400">识破每一次骗局</div>
+            <div className="flex items-center gap-4 mb-8">
+              <div className="logo-mark logo-mark-lg">
+                <img src={logo} alt="御见" className="logo-mark-img w-full h-full object-contain" />
+              </div>
+              <div className="leading-none">
+                <span className="text-xl font-black text-slate-900 tracking-tight"><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500"></span>御见</span>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">AI Guardian</div>
               </div>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">
               识破每一次骗局
             </h2>
             <p className="text-slate-400 text-sm">

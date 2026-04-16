@@ -226,11 +226,13 @@ export default function Layout() {
       <NavbarAnimation>
         <nav className="navbar">
           {/* Logo */}
-          <Link to="/" className="navbar-logo">
-            <img src={logo} alt="御见" className="w-14 h-14 rounded-xl object-cover shadow-button float-shield hover-glow" />
-            <div className="hidden sm:flex flex-col leading-tight">
-              <span className="font-bold">御见</span>
-              <span className="text-sm text-slate-500">识破每一次骗局</span>
+          <Link to="/" className="navbar-logo group">
+            <div className="logo-mark">
+              <img src={logo} alt="御见" className="logo-mark-img" />
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="font-black text-[1.05rem] sm:text-[1.15rem] text-slate-900 tracking-tight"><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500"></span>御见</span>
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">AI Guardian</span>
             </div>
           </Link>
 

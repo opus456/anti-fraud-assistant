@@ -84,3 +84,5 @@ data/eval/
 
 # Docker local overrides
 docker-compose.override.yml
+
+animation/

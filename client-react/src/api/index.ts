@@ -1,10 +1,13 @@
 import axios from 'axios';
 import { io, Socket } from 'socket.io-client';
 
-// --------------- Axios Instance ---------------
+// =============== API 网络配置 ===============
+// 通过环境变量支持移动端 APK 或自定义后端地址
+// 在 .env 文件中可设置 VITE_API_BASE_URL=http://<你电脑IP>:8000/api
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   timeout: 300000,
 });
 
@@ -71,9 +74,11 @@ api.interceptors.response.use(
 
 export default api;
 
-// --------------- Socket.io Client ---------------
+// =============== Socket.io Client ===============
+const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL || 
+                    (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace('/api', '') : '');
 
-export const socket: Socket = io('/', {
+export const socket: Socket = io(WS_BASE_URL || '/', {
   autoConnect: false,
   transports: ['websocket', 'polling'],
 });
