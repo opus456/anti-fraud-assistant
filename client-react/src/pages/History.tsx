@@ -14,7 +14,7 @@ import {
   LightBulbIcon,
 } from '@heroicons/react/24/outline';
 import api from '../api';
-import { ScrollReveal, StaggerContainer, StaggerItem } from '../components/motion';
+import { ScrollReveal, StaggerContainer, StaggerItem, AnimatedCounter } from '../components/motion';
 
 interface HistoryItem {
   id: string;
@@ -133,20 +133,25 @@ export default function History() {
 
   return (
     <div className="space-y-6">
+      {/* Hero Banner - 靛蓝色 */}
       <ScrollReveal>
-        <div className="content-header flex justify-between items-center">
-          <div>
-            <h1 className="page-title">检测记录</h1>
-            <p className="page-subtitle">查看历史检测结果（真实检测 + 示例数据）</p>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#312e81] via-[#3730a3] to-[#1e1b4b] p-6 sm:p-8">
+          <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+          <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-40 h-40 sm:w-52 sm:h-52 text-white/[0.03]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
+            <div className="flex-1">
+              <p className="text-white/40 text-sm mb-2 font-medium">Detection History · 检测日志</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-snug">
+                检测记录 ·{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300 text-4xl sm:text-5xl font-black">
+                  <AnimatedCounter value={history.length} />
+                </span>
+                {' '}条
+              </h1>
+              <p className="text-white/40 text-sm">查看所有历史检测结果与 AI 分析详情</p>
+            </div>
+            <button onClick={loadHistory} disabled={loading} className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur rounded-xl text-white text-sm transition-all flex items-center gap-2"><ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />刷新</button>
           </div>
-          <button 
-            onClick={loadHistory} 
-            disabled={loading}
-            className="btn btn-secondary"
-          >
-            <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-            刷新
-          </button>
         </div>
       </ScrollReveal>
 

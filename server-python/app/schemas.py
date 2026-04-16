@@ -11,7 +11,7 @@ from typing import Optional, Any
 # ==================== 用户 ====================
 
 class UserRegister(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50)
+    username: str = Field(..., min_length=2, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=6, max_length=100)
     nickname: str = ""

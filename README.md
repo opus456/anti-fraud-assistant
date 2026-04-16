@@ -1,35 +1,49 @@
-# 多模态反诈智能体助手
+# 破局 - 识破每一次骗局
 
-> **版本**: v2.1.0  
-> **最后更新**: 2026-04-02
+> **版本**: v2.2.0  
+> **最后更新**: 2026-04-15  
+> **核心概念**: 用 AI 守护，让诈骗无所遁形
 
-本项目已按 感知-决策-干预-进化 主线落地为以下模块：
+本项目基于 **感知-决策-干预-进化** 设计理念，为用户和家人构建全方位反诈防线。
 
-- 感知: Chrome 插件采集 DOM 增量文本 + 屏幕帧
-- 决策: Python FastAPI + LangChain + PyTorch + pgvector RAG + CoT 分析
-- 干预: Node.js 网关实时联动用户与监护人告警
-- 进化: 管理员审核新型案例后写入知识库并生成向量
+## 架构特色
 
-## 当前工程结构
+- **感知**: Chrome 插件采集 DOM 增量文本 + 屏幕帧
+- **决策**: Python FastAPI + LangChain + PyTorch + pgvector RAG + CoT 分析
+- **干预**: Node.js 网关实时联动用户与监护人告警
+- **进化**: 管理员审核新型案例后写入知识库并生成向量
 
-- client-react: 三端 Web 前端 (用户/监护人/管理员)
-- extension: Chrome Manifest V3 插件
-- server-node: Express + Socket.io 网关
-- server-python: FastAPI AI 引擎
-- database: PostgreSQL DDL (含 pgvector HNSW 索引)
-- docker-compose.yml: PostgreSQL + Redis 基础设施
+## 工程结构
 
-说明: 已删除旧的重复目录 frontend 与 backend，避免双套代码并存导致维护混乱。
+- `client-react`: 三端 Web 前端 (用户/监护人/管理员) + 移动应用
+- `extension`: Chrome Manifest V3 插件
+- `server-node`: Express + Socket.io 网关
+- `server-python`: FastAPI AI 引擎
+- `database`: PostgreSQL DDL (含 pgvector HNSW 索引)
+- `docker-compose.yml`: PostgreSQL + Redis 基础设施
 
 ## 技术栈
 
-- 前端: React + Tailwind CSS + Zustand + ECharts
-- 插件: Chrome Extension Manifest V3
-- 网关: Node.js + Express + Socket.io
-- AI 后端: Python + FastAPI + LangChain + PyTorch
-- 存储: PostgreSQL (pgvector) + Redis
+- **前端**: React 18 + TypeScript + Vite + TailwindCSS + Zustand + ECharts
+- **移动**: React + Capacitor (iOS/Android)
+- **插件**: Chrome Extension Manifest V3
+- **网关**: Node.js + Express + Socket.io
+- **AI 后端**: Python + FastAPI + LangChain + OpenAI/Ollama
+- **存储**: PostgreSQL (pgvector) + Redis
 
 ## 快速启动
+
+### 1) 查看完成度报告（重要！）
+
+请先阅读 [COMPLETION_REPORT.md](COMPLETION_REPORT.md) 了解项目当前的完成情况、修复的问题和可用的功能。
+
+### 2) 快速参考
+
+- 📖 快速使用指南: [QUICK_START.md](QUICK_START.md)
+- 📱 Android编译指南: [ANDROID_BUILD.md](ANDROID_BUILD.md)
+- 📝 版本更新记录: [CHANGELOG.md](CHANGELOG.md)
+- 📊 项目完成报告: [COMPLETION_REPORT.md](COMPLETION_REPORT.md)
+- 📋 改动总结: [UPDATE_SUMMARY.md](UPDATE_SUMMARY.md)
 
 ### 1) 启动数据库与 Redis
 
@@ -67,11 +81,38 @@ npm run dev
 
 默认地址: http://localhost:5173
 
-### 5) 安装 Chrome 插件
+### 5) 构建 Android 应用
 
-1. 打开 Chrome 扩展管理页
-2. 开启开发者模式
-3. 加载已解压扩展，选择 extension 目录
+```bash
+cd client-react
+
+# 构建 Web 应用
+npm run build
+
+# 自动编译 APK（一行命令）
+# Windows 用户：
+..\build-android-debug.bat
+
+# Mac/Linux 用户：
+../build-android-debug.sh
+
+# 或手动步骤：
+npx cap sync android
+cd android
+./gradlew assembleDebug  # 生成 app-debug.apk
+```
+
+详见 [ANDROID_BUILD.md](ANDROID_BUILD.md) 完整指南
+
+### 6) 在手机上运行
+
+```bash
+# 使用 ADB 安装到已连接的 Android 设备
+adb install -r client-react/android/app/build/outputs/apk/debug/app-debug.apk
+
+# 启动应用
+adb shell am start -n com.pojiefraud.assistant/.MainActivity
+```
 
 ## 关键环境变量
 

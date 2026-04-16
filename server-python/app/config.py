@@ -12,8 +12,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
     # ========== 应用基础 ==========
-    APP_NAME: str = "反诈智能体助手"
-    APP_VERSION: str = "2.0.0"
+    APP_NAME: str = "破局 - 识破每一次骗局"
+    APP_VERSION: str = "2.2.0"
     DEBUG: bool = True
     HOST: str = "0.0.0.0"
     PORT: int = 8000
@@ -64,6 +64,14 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:3001",
         "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        # 支持局域网访问
+        "http://192.168.*",
+        "http://10.0.*",
+        # 支持 Android 应用
+        "capacitor://localhost",
+        "ionic://localhost",
     ]
 
     # ========== Node.js 网关回调 ==========

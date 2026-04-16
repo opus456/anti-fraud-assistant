@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
-import { useModeStore, UserMode } from '../store/modeStore';
+import { useModeStore, UserMode, getButtonClasses } from '../store/modeStore';
 import { useAuthStore } from '../store';
 import { useSettingsStore, initializeSettings } from '../store/settingsStore';
 import { NavbarAnimation, PageTransition } from './motion';
@@ -25,6 +25,7 @@ import {
   ArrowRightOnRectangleIcon,
   ChartBarIcon,
 } from '@heroicons/react/24/outline';
+import logo from '../assets/logo.png';
 
 interface NavItem {
   path: string;
@@ -33,21 +34,20 @@ interface NavItem {
   modes?: UserMode[];
 }
 
+// 主导航菜单 - 精简版，重点功能
 const navItems: NavItem[] = [
-  { path: '/', label: '控制台', icon: HomeIcon },
+  { path: '/', label: '首页', icon: HomeIcon },
   { path: '/detection', label: '智能检测', icon: MagnifyingGlassIcon },
-  { path: '/monitor', label: '实时监控', icon: ShieldCheckIcon },
-  { path: '/visualization', label: '数据大屏', icon: ChartBarIcon },
-  { path: '/knowledge', label: '知识库', icon: BookOpenIcon },
   { path: '/alerts', label: '预警中心', icon: BellAlertIcon },
-  { path: '/history', label: '检测记录', icon: ClockIcon },
   { path: '/family', label: '家庭守护', icon: UserGroupIcon },
+  { path: '/knowledge', label: '知识库', icon: BookOpenIcon },
+  { path: '/visualization', label: '数据大屏', icon: ChartBarIcon },
 ];
 
 const elderNavItems: NavItem[] = [
   { path: '/', label: '首页', icon: HomeIcon },
-  { path: '/monitor', label: '通话监测', icon: ShieldCheckIcon },
   { path: '/alerts', label: '安全提醒', icon: BellAlertIcon },
+  { path: '/knowledge', label: '安全课堂', icon: AcademicCapIcon },
 ];
 
 const minorNavItems: NavItem[] = [
@@ -70,16 +70,16 @@ const modeIcons: Record<UserMode, React.ElementType> = {
 
 // 搜索项目配置
 const searchableItems = [
-  { label: '控制台', path: '/', keywords: ['首页', '仪表盘', 'dashboard'] },
-  { label: '智能检测', path: '/detection', keywords: ['检测', '分析', 'AI', '诈骗识别'] },
-  { label: '实时监控', path: '/monitor', keywords: ['监控', '通话', '短信', '监测'] },
+  { label: '首页', path: '/', keywords: ['首页', '仪表盘', 'dashboard', '首页'] },
+  { label: '智能检测', path: '/detection', keywords: ['检测', '分析', 'AI', '诈骗识别', '风险分析'] },
+  { label: '知识库', path: '/knowledge', keywords: ['知识', '学习', '案例', '教程', '骗术分析'] },
+  { label: '预警中心', path: '/alerts', keywords: ['预警', '警报', '通知', '风险', '提醒'] },
+  { label: '个人资料', path: '/profile', keywords: ['资料', '账户', '个人', '设置'] },
+  { label: '系统设置', path: '/settings', keywords: ['设置', '配置', '偏好', '系统'] },
+  { label: '实时监控', path: '/monitor', keywords: ['监控', '通话', '短信', '监测', '实时'] },
+  { label: '检测记录', path: '/history', keywords: ['历史', '记录', '日志', '检测记录'] },
   { label: '数据大屏', path: '/visualization', keywords: ['数据', '大屏', '可视化', '图表', '统计'] },
-  { label: '知识库', path: '/knowledge', keywords: ['知识', '学习', '案例', '教程'] },
-  { label: '预警中心', path: '/alerts', keywords: ['预警', '警报', '通知', '风险'] },
-  { label: '检测记录', path: '/history', keywords: ['历史', '记录', '日志'] },
   { label: '家庭守护', path: '/family', keywords: ['家庭', '监护', '守护', '成员'] },
-  { label: '个人资料', path: '/profile', keywords: ['资料', '账户', '个人'] },
-  { label: '系统设置', path: '/settings', keywords: ['设置', '配置', '偏好'] },
 ];
 
 export default function Layout() {
@@ -92,6 +92,7 @@ export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [pendingAlerts, setPendingAlerts] = useState(0);
@@ -99,6 +100,7 @@ export default function Layout() {
   const [hasCheckedAlerts, setHasCheckedAlerts] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const modeMenuRef = useRef<HTMLDivElement>(null);
+  const quickMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // 获取待处理预警数量
@@ -161,16 +163,20 @@ export default function Layout() {
     }
   }, [searchOpen]);
 
-  // ESC 关闭搜索
+  // 全局 ESC 快捷键：关闭所有浮层
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSearchOpen(false);
+      if (e.key === 'Escape') {
+        setSearchOpen(false);
+        setQuickOpen(false);
+        setModeMenuOpen(false);
+        setUserMenuOpen(false);
+        setMobileMenuOpen(false);
+      }
     };
-    if (searchOpen) {
-      document.addEventListener('keydown', handleEsc);
-      return () => document.removeEventListener('keydown', handleEsc);
-    }
-  }, [searchOpen]);
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, []);
 
   const getNavItems = () => {
     switch (mode) {
@@ -192,6 +198,9 @@ export default function Layout() {
       }
       if (modeMenuRef.current && !modeMenuRef.current.contains(event.target as Node)) {
         setModeMenuOpen(false);
+      }
+      if (quickMenuRef.current && !quickMenuRef.current.contains(event.target as Node)) {
+        setQuickOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -218,10 +227,11 @@ export default function Layout() {
         <nav className="navbar">
           {/* Logo */}
           <Link to="/" className="navbar-logo">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shadow-btn">
-              <ShieldCheckIcon className="w-6 h-6 text-white" />
+            <img src={logo} alt="御见" className="w-14 h-14 rounded-xl object-cover shadow-button float-shield hover-glow" />
+            <div className="hidden sm:flex flex-col leading-tight">
+              <span className="font-bold">御见</span>
+              <span className="text-sm text-slate-500">识破每一次骗局</span>
             </div>
-            <span className="hidden sm:block">反诈守护</span>
           </Link>
 
           {/* 桌面端导航菜单 */}
@@ -262,6 +272,50 @@ export default function Layout() {
                 </span>
               )}
             </button>
+
+            {/* 快捷入口（所有模式可见，但内容随模式调整） */}
+            {(['standard','elder','minor'] as UserMode[]).includes(mode) && (
+              <div className="relative hidden sm:block" ref={quickMenuRef}>
+                <button
+                  onClick={() => setQuickOpen(!quickOpen)}
+                  className="navbar-icon-btn flex items-center gap-2 !w-auto !px-3"
+                  aria-haspopup="menu"
+                  aria-expanded={quickOpen}
+                  title="快捷入口"
+                >
+                  <ChartBarIcon className="w-5 h-5" />
+                  <span className="hidden md:block text-sm">快捷</span>
+                  <ChevronDownIcon className={`w-4 h-4 transition-transform ${quickOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {quickOpen && (
+                  <div className="absolute right-0 top-full mt-2 min-w-[220px] bg-white border border-slate-100 rounded-lg shadow-lg py-1 z-50">
+                    {mode === 'elder' ? (
+                      <>
+                        <Link to="/alerts" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>一键求助 / 通知</Link>
+                        <Link to="/monitor" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>实时监控</Link>
+                        <Link to="/family" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>家庭守护</Link>
+                        <Link to="/history" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>检测记录</Link>
+                      </>
+                    ) : mode === 'minor' ? (
+                      <>
+                        <Link to="/knowledge" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>安全课堂</Link>
+                        <Link to="/detection" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>充值/交易监控</Link>
+                        <Link to="/family" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>家长提醒</Link>
+                        <Link to="/visualization" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>数据大屏</Link>
+                      </>
+                    ) : (
+                      <>
+                        <Link to="/family" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>家庭守护</Link>
+                        <Link to="/monitor" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>实时监控</Link>
+                        <Link to="/history" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>检测记录</Link>
+                        <Link to="/reports" className="block px-3 py-2 hover:bg-slate-50 text-sm" onClick={() => setQuickOpen(false)}>报表</Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 模式选择器 - 移动端隐藏 */}
             <div className="relative hidden sm:block" ref={modeMenuRef}>
@@ -310,7 +364,7 @@ export default function Layout() {
               </button>
               
               {userMenuOpen && (
-                <div className="dropdown right-0 top-full mt-2">
+                <div className="dropdown user-dropdown right-0 top-full mt-2">
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900">{user?.username || '用户'}</p>
                     <p className="text-xs text-gray-500">{user?.email || ''}</p>
@@ -410,6 +464,72 @@ export default function Layout() {
                 })}
               </div>
             </div>
+            {/* 移动端快捷入口（所有模式） */}
+            {(['standard','elder','minor'] as UserMode[]).includes(mode) && (
+              <div className="p-3 border-b border-slate-100">
+                <p className="text-xs text-slate-400 uppercase tracking-wider px-2 mb-2">快捷入口</p>
+                <div className="space-y-1">
+                  {mode === 'elder' ? (
+                    <>
+                      <Link to="/alerts" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'primary')} w-full justify-start gap-3`}>
+                        <BellAlertIcon className="w-5 h-5" />
+                        <span className="font-medium">一键求助 / 通知</span>
+                      </Link>
+                      <Link to="/monitor" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
+                        <ChartBarIcon className="w-5 h-5" />
+                        <span className="font-medium">实时监控</span>
+                      </Link>
+                      <Link to="/family" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
+                        <UserGroupIcon className="w-5 h-5" />
+                        <span className="font-medium">家庭守护</span>
+                      </Link>
+                      <Link to="/history" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
+                        <ClockIcon className="w-5 h-5" />
+                        <span className="font-medium">检测记录</span>
+                      </Link>
+                    </>
+                  ) : mode === 'minor' ? (
+                    <>
+                      <Link to="/knowledge" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
+                        <AcademicCapIcon className="w-5 h-5" />
+                        <span className="font-medium">安全课堂</span>
+                      </Link>
+                      <Link to="/detection" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
+                        <MagnifyingGlassIcon className="w-5 h-5" />
+                        <span className="font-medium">安全检测</span>
+                      </Link>
+                      <Link to="/family" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
+                        <UserGroupIcon className="w-5 h-5" />
+                        <span className="font-medium">家长提醒</span>
+                      </Link>
+                      <Link to="/visualization" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
+                        <ChartBarIcon className="w-5 h-5" />
+                        <span className="font-medium">数据大屏</span>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/detection" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'primary')} w-full justify-start gap-3`}>
+                        <MagnifyingGlassIcon className="w-5 h-5" />
+                        <span className="font-medium">智能检测</span>
+                      </Link>
+                      <Link to="/alerts" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
+                        <BellAlertIcon className="w-5 h-5" />
+                        <span className="font-medium">预警中心</span>
+                      </Link>
+                      <Link to="/family" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
+                        <UserGroupIcon className="w-5 h-5" />
+                        <span className="font-medium">家庭守护</span>
+                      </Link>
+                      <Link to="/visualization" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
+                        <ChartBarIcon className="w-5 h-5" />
+                        <span className="font-medium">数据大屏</span>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
             
             {/* 导航菜单项 */}
             <div className="p-3 space-y-1">

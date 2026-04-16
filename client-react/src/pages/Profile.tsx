@@ -43,68 +43,49 @@ export default function Profile() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="content-header">
-        <h1 className="page-title">个人中心</h1>
-      </div>
-
-      {/* 用户信息卡 */}
-      <div className="card">
-        <div className="flex items-center gap-6">
+      {/* Hero Banner - 蓝色 */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0a1e3d] via-[#0d2847] to-[#0a2540] p-6 sm:p-8">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-sky-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-40 h-40 sm:w-52 sm:h-52 text-white/[0.03]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 relative z-10">
           <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-lg">
-              <UserCircleIcon className="w-16 h-16 text-white" />
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-xl shadow-blue-500/25">
+              <UserCircleIcon className="w-12 h-12 text-white" />
             </div>
-            <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-sky-600 text-white flex items-center justify-center shadow-lg hover:bg-sky-500 transition-colors">
-              <CameraIcon className="w-4 h-4" />
+            <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center shadow-lg hover:bg-sky-400 transition-colors">
+              <CameraIcon className="w-3.5 h-3.5" />
             </button>
           </div>
-          
           <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-slate-800">{profileUser.name}</h2>
-              <span className="status-badge status-primary">{profileUser.role}</span>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-2xl font-bold text-white">{profileUser.name}</h1>
+              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-white/70 text-xs font-medium">{profileUser.role}</span>
             </div>
-            <p className="text-slate-600 mt-1">{profileUser.phone}</p>
-            <p className="text-slate-500 text-sm">加入于 {profileUser.joinDate}</p>
+            <p className="text-white/40 text-sm">{profileUser.email} · 加入于 {profileUser.joinDate}</p>
+            <div className="flex items-center gap-6 mt-3">
+              <div><span className="text-2xl font-bold text-white">{profileUser.stats.detections}</span><span className="text-white/40 text-xs ml-1.5">检测</span></div>
+              <div><span className="text-2xl font-bold text-red-400">{profileUser.stats.blocked}</span><span className="text-white/40 text-xs ml-1.5">拦截</span></div>
+              <div><span className="text-2xl font-bold text-emerald-400">{profileUser.stats.protected}</span><span className="text-white/40 text-xs ml-1.5">守护</span></div>
+            </div>
           </div>
-
-          <button className="btn btn-outline">
-            <PencilIcon className="w-4 h-4" />
-            编辑资料
-          </button>
         </div>
+
+        {/* 编辑资料按钮：已移动到设置页顶部卡片右上（此处不再显示） */}
       </div>
 
-      {/* 统计数据 */}
-      <div className="bento-grid-3">
-        <div className="stat-card text-center">
-          <div className="stat-value text-sky-600">{profileUser.stats.detections}</div>
-          <div className="stat-label">检测次数</div>
-        </div>
-        <div className="stat-card text-center">
-          <div className="stat-value text-red-600">{profileUser.stats.blocked}</div>
-          <div className="stat-label">拦截风险</div>
-        </div>
-        <div className="stat-card text-center">
-          <div className="stat-value text-green-600">{profileUser.stats.protected}</div>
-          <div className="stat-label">守护家人</div>
-        </div>
-      </div>
-
-      {/* 菜单列表 */}
+      {/* 菜单列表：紧凑网格，避免卡片垂直撑开 */}
       <div className="card">
-        <div className="space-y-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {menuItems.map((item, idx) => (
             <button
               key={idx}
               onClick={() => navigate(item.path)}
-              className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all text-left group"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all text-center"
             >
-              <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center group-hover:bg-sky-100 transition-colors">
-                <item.icon className="w-5 h-5 text-sky-600" />
+              <div className="w-12 h-12 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center group-hover:bg-sky-100 transition-colors">
+                <item.icon className="w-6 h-6 text-sky-600" />
               </div>
-              <span className="flex-1 font-medium text-slate-800">{item.label}</span>
-              <ChevronRightIcon className="w-5 h-5 text-slate-500 group-hover:text-sky-600 group-hover:translate-x-1 transition-all" />
+              <span className="font-medium text-slate-800">{item.label}</span>
             </button>
           ))}
         </div>

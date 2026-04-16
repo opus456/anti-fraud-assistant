@@ -13,6 +13,13 @@ import time
 import asyncio
 import httpx
 import statistics
+import sys
+
+# 尝试将 stdout 设置为 UTF-8，避免 Windows 控制台因 emoji 等字符抛出 UnicodeEncodeError
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
 from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass, field
@@ -76,12 +83,13 @@ class TestResult:
 
 async def test_detection_api(text: str, timeout: float = 30.0) -> tuple[Optional[dict], float]:
     """调用检测API并返回结果和响应时间"""
-    url = f"{API_BASE_URL}/api/detection/text"
-    
+    # 使用无需认证的快速检测接口，POST 字段为 `content`
+    url = f"{API_BASE_URL}/api/detection/quick"
+
     start_time = time.time()
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.post(url, json={"text": text})
+            response = await client.post(url, json={"content": text})
             response.raise_for_status()
             elapsed = time.time() - start_time
             return response.json(), elapsed
@@ -275,15 +283,17 @@ async def quick_smoke_test():
 
 async def main():
     import argparse
-    
+
+    # 在函数开始处声明使用模块级的 API_BASE_URL，
+    # 避免在使用前才声明 global 导致的 SyntaxError
+    global API_BASE_URL
+
     parser = argparse.ArgumentParser(description="反诈智能体测试脚本")
     parser.add_argument("--smoke", action="store_true", help="仅运行冒烟测试")
     parser.add_argument("--max-samples", type=int, default=None, help="最大测试样本数")
     parser.add_argument("--api-url", type=str, default=API_BASE_URL, help="API基础URL")
-    
+
     args = parser.parse_args()
-    
-    global API_BASE_URL
     API_BASE_URL = args.api_url
     
     print("=" * 60)

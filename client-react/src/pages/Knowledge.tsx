@@ -78,17 +78,16 @@ export default function Knowledge() {
 
   return (
     <div className="space-y-6">
-      {/* 页面标题 */}
+      {/* Hero Banner - 紫色 */}
       <ScrollReveal>
-        <div className="card bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">反诈知识库</h1>
-              <p className="text-slate-600 text-sm sm:text-base">学习防骗知识，提高安全意识</p>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <BookOpenIcon className="w-5 h-5" />
-              <span>{knowledgeArticles.length} 篇内容</span>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#4c1d95] via-[#5b21b6] to-[#3b0764] p-6 sm:p-8">
+          <div className="absolute top-0 right-0 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+          <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-40 h-40 sm:w-52 sm:h-52 text-white/[0.03]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
+            <div className="flex-1">
+              <p className="text-white/40 text-sm mb-2 font-medium">Knowledge Base · 安全知识</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">反诈知识库</h1>
+              <p className="text-white/40 text-sm">学习防骗知识，提高安全意识 · {knowledgeArticles.length} 篇内容</p>
             </div>
           </div>
         </div>

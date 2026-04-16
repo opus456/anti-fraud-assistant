@@ -89,6 +89,17 @@ async def update_profile(
         raise HTTPException(status_code=404, detail="用户不存在")
 
     update_data = data.model_dump(exclude_unset=True)
+    
+    # 如果要更新邮箱，检查是否已被他人使用
+    if "email" in update_data:
+        existing_email = await db.execute(
+            select(User).where(
+                (User.email == update_data["email"]) & (User.id != current_user.id)
+            )
+        )
+        if existing_email.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="该邮箱已被其他用户使用")
+    
     for field, value in update_data.items():
         setattr(user, field, value)
 
