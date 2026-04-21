@@ -37,6 +37,11 @@ apscheduler==3.10.4
 
 # Image processing
 Pillow>=10.4.0
+pytesseract>=0.3.10
+
+# Audio processing
+SpeechRecognition>=3.10.0
+pydub>=0.25.1
 
 # Environment
 pydantic[email]==2.9.2

@@ -418,7 +418,7 @@ async def call_llm_text(user_message: str, system_prompt: str, temperature: floa
 
 async def generate_report_content(stats: dict, user_profile: dict = None) -> str:
     """使用 LLM 生成安全监测报告 - 优先使用本地 Ollama"""
-    report_prompt = f"""请根据以下数据生成一份安全监测报告（Markdown格式）：
+    report_prompt = f"""请根据以下数据生成一份安全监测报告，使用纯中文，不要包含任何代码块标记。
 
 统计数据：
 - 检测总次数: {stats.get('total_detections', 0)}
@@ -427,22 +427,20 @@ async def generate_report_content(stats: dict, user_profile: dict = None) -> str
 - 诈骗类型分布: {json.dumps(stats.get('fraud_type_summary', {}), ensure_ascii=False)}
 - 时间范围: {stats.get('period', '')}
 
-请生成包含以下部分的报告：
-1. 安全概况总结
-2. 风险趋势分析
-3. 主要诈骗类型分析
-4. 个性化防御建议
-5. 安全提醒
+要求：
+1. 直接输出报告正文，不要用```包裹
+2. 使用中文标题（一、二、三…）
+3. 数据用表格展示
+4. 包含：安全概况、风险分析、诈骗类型分析、防御建议、安全提醒
+5. 语气专业严肃"""
 
-请用严肃专业的语气，直接输出 Markdown 报告内容，不要输出 JSON。"""
-
-    system_prompt = "你是一个专业的反诈安全分析师，负责生成安全监测报告。请用专业、严肃的语气撰写报告。"
+    system_prompt = "你是反诈安全分析师。直接输出报告正文，不要输出JSON，不要用代码块包裹，不要输出思考过程。"
 
     # 优先使用本地 Ollama
     if settings.USE_LOCAL_LLM:
         result = await call_ollama_text(report_prompt, system_prompt, temperature=0.5)
         if result:
-            return result
+            return _clean_report_content(result)
         logger.warning("Ollama 生成报告失败，尝试回退到远程 API")
 
     # 回退到远程 API
@@ -485,10 +483,23 @@ async def generate_report_content(stats: dict, user_profile: dict = None) -> str
 
             choice = result["choices"][0]
             msg = choice.get("message") or choice.get("delta", {})
-            return msg.get("content", "")
+            return _clean_report_content(msg.get("content", ""))
     except Exception as e:
         logger.error(f"生成报告失败: {e}")
         return _generate_template_report(stats)
+
+
+def _clean_report_content(content: str) -> str:
+    """清理 LLM 输出中的脏字符"""
+    import re
+    # 去除 <think>...</think> 思考标签
+    content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
+    # 去除开头/结尾的 ```markdown ``` 代码块包裹
+    content = re.sub(r'^```\s*(?:markdown|md)?\s*\n', '', content.strip())
+    content = re.sub(r'\n```\s*$', '', content.strip())
+    # 去除残留的 HTML 标签
+    content = re.sub(r'</?(?:br|div|span|p)\s*/?\s*>', '', content)
+    return content.strip()
 
 
 def _generate_template_report(stats: dict) -> str:
@@ -498,42 +509,82 @@ def _generate_template_report(stats: dict) -> str:
     period = stats.get("period", "")
     risk_summary = stats.get("risk_summary", {})
     fraud_type_summary = stats.get("fraud_type_summary", {})
+    fraud_rate = fraud / max(total, 1) * 100
 
+    # 风险等级中文映射
+    risk_labels = {
+        "safe": "安全", "low": "低风险", "medium": "中风险",
+        "high": "高风险", "critical": "极高风险",
+    }
+    risk_lines = ""
+    for level, count in sorted(risk_summary.items(), key=lambda x: x[1], reverse=True):
+        label = risk_labels.get(level, level)
+        pct = count / max(total, 1) * 100
+        risk_lines += f"| {label} | {count} | {pct:.1f}% |\n"
+
+    # 诈骗类型中文映射
+    type_labels = {
+        "impersonation": "冒充身份诈骗", "investment": "投资理财诈骗",
+        "loan": "贷款代办诈骗", "shopping": "网购退款诈骗",
+        "romance": "情感交友诈骗", "gambling": "赌博诈骗",
+        "telecom": "电信诈骗", "phishing": "钓鱼链接诈骗",
+        "identity_theft": "身份盗用", "other": "其他类型",
+    }
     type_lines = ""
-    if fraud_type_summary:
-        for ft, c in fraud_type_summary.items():
-            type_lines += f"| {ft} | {c} |\n"
+    for ft, c in sorted(fraud_type_summary.items(), key=lambda x: x[1], reverse=True):
+        label = type_labels.get(ft, ft)
+        type_lines += f"| {label} | {c} |\n"
 
-    return f"""# 安全监测报告
+    # 安全评级
+    if fraud_rate <= 5:
+        safety_grade, grade_desc = "优秀", "您的安全意识较强，继续保持良好习惯。"
+    elif fraud_rate <= 15:
+        safety_grade, grade_desc = "良好", "整体安全状况良好，但仍需提高警惕。"
+    elif fraud_rate <= 30:
+        safety_grade, grade_desc = "一般", "存在一定风险暴露，建议加强安全防范。"
+    else:
+        safety_grade, grade_desc = "警告", "风险暴露较高，请立即加强安全防护措施。"
 
-## 一、安全概况
+    return f"""## 一、安全概况
 
 | 指标 | 数值 |
-|------|------|
-| 检测总次数 | {total} |
-| 发现诈骗 | {fraud} |
-| 安全检测 | {safe} |
+|:-----|-----:|
 | 监测周期 | {period} |
+| 检测总次数 | {total} 次 |
+| 安全检测 | {safe} 次 |
+| 风险拦截 | {fraud} 次 |
+| 诈骗检出率 | {fraud_rate:.1f}% |
+| 安全评级 | {safety_grade} |
 
-## 二、风险分析
+{grade_desc}
 
-在监测期间共进行了 {total} 次内容检测，其中 {fraud} 次检测到了诈骗风险。
-诈骗检出率为 {(fraud / max(total, 1) * 100):.1f}%。
+## 二、风险等级分析
 
-### 风险等级分布
-{json.dumps(risk_summary, ensure_ascii=False, indent=2) if risk_summary else '暂无数据'}
+在本周期内共进行 **{total}** 次内容安全检测，系统成功识别并拦截了 **{fraud}** 次潜在诈骗风险。
 
-### 诈骗类型分布
-{type_lines if type_lines else '暂无数据'}
+| 风险等级 | 次数 | 占比 |
+|:---------|-----:|-----:|
+{risk_lines if risk_lines else "| 暂无数据 | - | - |\n"}
 
-## 三、防御建议
+## 三、诈骗类型分析
 
-1. 不要轻信陌生人发来的投资、兼职信息
-2. 涉及转账汇款的操作务必核实对方身份
-3. 不要向任何人透露验证码、密码等信息
-4. 如遇可疑情况，立即拨打 96110 反诈热线
-5. 下载并使用国家反诈中心 APP
+{f'''以下为本周期内检出的主要诈骗类型：
 
----
-*本报告由反诈智能体助手自动生成*
+| 诈骗类型 | 检出次数 |
+|:---------|--------:|
+{type_lines}''' if type_lines else '本周期内未检出明确的诈骗类型，安全状况良好。'}
+
+## 四、防御建议
+
+1. **警惕冒充身份**：公检法机关不会通过电话或网络要求转账汇款，接到此类电话请立即挂断。
+2. **核实交易信息**：涉及转账、汇款操作前，务必通过官方渠道核实对方身份。
+3. **保护个人信息**：切勿向任何人透露验证码、银行密码、身份证号等敏感信息。
+4. **谨慎点击链接**：不要轻易点击来源不明的链接，特别是要求输入个人信息的网页。
+5. **及时举报**：如遇可疑情况，立即拨打 **96110** 全国反诈热线进行咨询举报。
+
+## 五、安全提醒
+
+请持续使用反诈智能体助手进行日常内容检测，养成良好的安全习惯。如有任何疑问，可随时使用智能对话功能进行咨询。
+
+> 本报告由反诈智能体助手自动生成，仅供参考。
 """

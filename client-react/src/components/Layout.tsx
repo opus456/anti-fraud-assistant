@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
-import { useModeStore, UserMode, getButtonClasses } from '../store/modeStore';
+import { useModeStore, UserMode } from '../store/modeStore';
 import { useAuthStore } from '../store';
 import { useSettingsStore, initializeSettings } from '../store/settingsStore';
 import { NavbarAnimation, PageTransition } from './motion';
 import GuardianAlertModal from './GuardianAlertModal';
 import api from '../api';
+import toast from 'react-hot-toast';
 import {
   HomeIcon,
   ShieldCheckIcon,
@@ -97,11 +98,27 @@ export default function Layout() {
   const [searchQuery, setSearchQuery] = useState('');
   const [pendingAlerts, setPendingAlerts] = useState(0);
   const [showGuardianAlert, setShowGuardianAlert] = useState(false);
+  const [sosLoading, setSosLoading] = useState(false);
   const [hasCheckedAlerts, setHasCheckedAlerts] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const quickMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // 一键求助
+  const handleSOS = async () => {
+    if (!confirm('确定要向所有监护人发送紧急求助吗？')) return;
+    setSosLoading(true);
+    try {
+      const res = await api.post('/guardians/emergency');
+      toast.success(res.data?.message || '已向所有监护人发送紧急求助');
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || '求助发送失败，请检查是否已绑定监护人';
+      toast.error(msg);
+    } finally {
+      setSosLoading(false);
+    }
+  };
 
   // 获取待处理预警数量
   const fetchPendingAlerts = useCallback(async () => {
@@ -418,19 +435,19 @@ export default function Layout() {
       {mobileMenuOpen && (
         <>
           <div
-            className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40 md:hidden"
+            className="fixed inset-0 bg-slate-900/40 z-40 md:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="fixed top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-white/98 backdrop-blur-xl border-l border-sky-100 z-50 md:hidden shadow-2xl overflow-y-auto">
+          <div className="fixed top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-white border-l border-gray-200 z-50 md:hidden shadow-lg overflow-y-auto">
             {/* 移动端菜单头部 - 用户信息 */}
-            <div className="p-4 bg-gradient-to-br from-sky-50 to-white border-b border-sky-100">
+            <div className="p-4 bg-gray-50 border-b border-gray-200">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
                   {user?.username?.charAt(0).toUpperCase() || 'U'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-800 truncate">{user?.username || '用户'}</p>
-                  <p className="text-sm text-slate-500 truncate">{user?.email || ''}</p>
+                  <p className="font-semibold text-gray-900 truncate text-sm">{user?.username || '用户'}</p>
+                  <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
@@ -442,8 +459,8 @@ export default function Layout() {
             </div>
 
             {/* 模式选择器 - 移动端专用 */}
-            <div className="p-3 border-b border-slate-100">
-              <p className="text-xs text-slate-400 uppercase tracking-wider px-2 mb-2">模式选择</p>
+            <div className="p-3 border-b border-gray-200">
+              <p className="text-xs text-gray-400 uppercase tracking-wider px-2 mb-2">模式选择</p>
               <div className="flex gap-2">
                 {(['standard', 'elder', 'minor'] as UserMode[]).map((m) => {
                   const Icon = modeIcons[m];
@@ -453,14 +470,14 @@ export default function Layout() {
                       onClick={() => {
                         setMode(m);
                       }}
-                      className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${
+                      className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-lg transition-all text-center ${
                         mode === m 
-                          ? 'bg-sky-500 text-white shadow-md' 
-                          : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
-                      <Icon className="w-5 h-5" />
-                      <span className="text-xs font-medium">{modeLabels[m].split('模式')[0]}</span>
+                      <Icon className="w-4 h-4" />
+                      <span className="text-[10px] font-medium leading-tight">{m === 'standard' ? '标准' : m === 'elder' ? '长辈' : '青少年'}</span>
                     </button>
                   );
                 })}
@@ -468,64 +485,64 @@ export default function Layout() {
             </div>
             {/* 移动端快捷入口（所有模式） */}
             {(['standard','elder','minor'] as UserMode[]).includes(mode) && (
-              <div className="p-3 border-b border-slate-100">
-                <p className="text-xs text-slate-400 uppercase tracking-wider px-2 mb-2">快捷入口</p>
+              <div className="p-3 border-b border-gray-200">
+                <p className="text-xs text-gray-400 uppercase tracking-wider px-2 mb-2">快捷入口</p>
                 <div className="space-y-1">
                   {mode === 'elder' ? (
                     <>
-                      <Link to="/alerts" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'primary')} w-full justify-start gap-3`}>
-                        <BellAlertIcon className="w-5 h-5" />
-                        <span className="font-medium">一键求助 / 通知</span>
+                      <Link to="/alerts" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-600 text-white w-full text-sm">
+                        <BellAlertIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">一键求助</span>
                       </Link>
-                      <Link to="/monitor" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
-                        <ChartBarIcon className="w-5 h-5" />
-                        <span className="font-medium">实时监控</span>
+                      <Link to="/monitor" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 text-gray-700 w-full text-sm">
+                        <ChartBarIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">实时监控</span>
                       </Link>
-                      <Link to="/family" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
-                        <UserGroupIcon className="w-5 h-5" />
-                        <span className="font-medium">家庭守护</span>
+                      <Link to="/family" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 text-gray-700 w-full text-sm">
+                        <UserGroupIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">家庭守护</span>
                       </Link>
-                      <Link to="/history" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
-                        <ClockIcon className="w-5 h-5" />
-                        <span className="font-medium">检测记录</span>
+                      <Link to="/history" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 text-gray-700 w-full text-sm">
+                        <ClockIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">检测记录</span>
                       </Link>
                     </>
                   ) : mode === 'minor' ? (
                     <>
-                      <Link to="/knowledge" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
-                        <AcademicCapIcon className="w-5 h-5" />
-                        <span className="font-medium">安全课堂</span>
+                      <Link to="/knowledge" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 text-gray-700 w-full text-sm">
+                        <AcademicCapIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">安全课堂</span>
                       </Link>
-                      <Link to="/detection" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
-                        <MagnifyingGlassIcon className="w-5 h-5" />
-                        <span className="font-medium">安全检测</span>
+                      <Link to="/detection" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 text-gray-700 w-full text-sm">
+                        <MagnifyingGlassIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">安全检测</span>
                       </Link>
-                      <Link to="/family" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
-                        <UserGroupIcon className="w-5 h-5" />
-                        <span className="font-medium">家长提醒</span>
+                      <Link to="/family" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 text-gray-700 w-full text-sm">
+                        <UserGroupIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">家长提醒</span>
                       </Link>
-                      <Link to="/visualization" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
-                        <ChartBarIcon className="w-5 h-5" />
-                        <span className="font-medium">数据大屏</span>
+                      <Link to="/visualization" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 text-gray-700 w-full text-sm">
+                        <ChartBarIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">数据大屏</span>
                       </Link>
                     </>
                   ) : (
                     <>
-                      <Link to="/detection" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'primary')} w-full justify-start gap-3`}>
-                        <MagnifyingGlassIcon className="w-5 h-5" />
-                        <span className="font-medium">智能检测</span>
+                      <Link to="/detection" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-blue-600 text-white w-full text-sm">
+                        <MagnifyingGlassIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">智能检测</span>
                       </Link>
-                      <Link to="/alerts" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
-                        <BellAlertIcon className="w-5 h-5" />
-                        <span className="font-medium">预警中心</span>
+                      <Link to="/alerts" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 text-gray-700 w-full text-sm">
+                        <BellAlertIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">预警中心</span>
                       </Link>
-                      <Link to="/family" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
-                        <UserGroupIcon className="w-5 h-5" />
-                        <span className="font-medium">家庭守护</span>
+                      <Link to="/family" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 text-gray-700 w-full text-sm">
+                        <UserGroupIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">家庭守护</span>
                       </Link>
-                      <Link to="/visualization" onClick={() => setMobileMenuOpen(false)} className={`${getButtonClasses(mode,'secondary')} w-full justify-start gap-3`}>
-                        <ChartBarIcon className="w-5 h-5" />
-                        <span className="font-medium">数据大屏</span>
+                      <Link to="/visualization" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-100 text-gray-700 w-full text-sm">
+                        <ChartBarIcon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium truncate">数据大屏</span>
                       </Link>
                     </>
                   )}
@@ -535,52 +552,52 @@ export default function Layout() {
             
             {/* 导航菜单项 */}
             <div className="p-3 space-y-1">
-              <p className="text-xs text-slate-400 uppercase tracking-wider px-2 mb-2">导航菜单</p>
+              <p className="text-xs text-gray-400 uppercase tracking-wider px-2 mb-2">导航菜单</p>
               {getNavItems().map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
                     isActive(item.path)
-                      ? 'bg-sky-50 text-sky-600 shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
-                  <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-medium text-sm truncate">{item.label}</span>
                   {isActive(item.path) && (
-                    <div className="ml-auto w-2 h-2 rounded-full bg-sky-500" />
+                    <div className="ml-auto w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
                   )}
                 </Link>
               ))}
             </div>
             
             {/* 设置和账户 */}
-            <div className="p-3 border-t border-slate-100">
-              <p className="text-xs text-slate-400 uppercase tracking-wider px-2 mb-2">账户设置</p>
+            <div className="p-3 border-t border-gray-200">
+              <p className="text-xs text-gray-400 uppercase tracking-wider px-2 mb-2">账户设置</p>
               <Link
                 to="/profile"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
               >
-                <UserCircleIcon className="w-5 h-5" />
-                <span className="font-medium">个人资料</span>
+                <UserCircleIcon className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium text-sm">个人资料</span>
               </Link>
               <Link
                 to="/settings"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
               >
-                <Cog6ToothIcon className="w-5 h-5" />
-                <span className="font-medium">系统设置</span>
+                <Cog6ToothIcon className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium text-sm">系统设置</span>
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-danger-500 hover:bg-danger-50 transition-all w-full"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 transition-all w-full"
               >
-                <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                <span className="font-medium">退出登录</span>
+                <ArrowRightOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium text-sm">退出登录</span>
               </button>
             </div>
           </div>
@@ -671,6 +688,21 @@ export default function Layout() {
           </div>
         </div>
       )}
+
+      {/* 一键求助浮动按钮 */}
+      <button
+        onClick={handleSOS}
+        disabled={sosLoading}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 active:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group disabled:opacity-60"
+        title="一键求助"
+      >
+        {sosLoading ? (
+          <svg className="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+        ) : (
+          <span className="text-xl font-black">SOS</span>
+        )}
+        <span className="absolute bottom-full mb-2 right-0 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">一键求助</span>
+      </button>
 
       {/* 监护人预警弹窗 - 登录后自动检测 */}
       {showGuardianAlert && (

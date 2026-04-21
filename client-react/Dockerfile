@@ -7,8 +7,8 @@ WORKDIR /app
 # 复制依赖文件
 COPY package*.json ./
 
-# 安装依赖
-RUN npm ci && npm cache clean --force
+# 安装依赖 (使用 --legacy-peer-deps 解决 Vite 版本冲突)
+RUN npm ci --legacy-peer-deps && npm cache clean --force
 
 # 复制源代码
 COPY . .

@@ -3,6 +3,8 @@
 """
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -213,9 +215,30 @@ async def emergency_alert(
     if not guardians:
         raise HTTPException(status_code=400, detail="暂无绑定的监护人")
 
-    # TODO: 实际发送紧急通知（短信/电话/推送）
-    # 这里先返回成功，后续可对接阿里云短信/语音通知
-    guardian_names = [g.nickname or g.username for _, g in guardians]
+    # 为每位监护人创建一条 ward_alert 类型的预警记录
+    guardian_names = []
+    for rel, guardian in guardians:
+        guardian_names.append(guardian.nickname or guardian.username)
+        alert = AlertRecord(
+            user_id=guardian.id,  # 预警接收方是监护人
+            alert_type="ward_alert",
+            risk_level=3,
+            title=f"紧急求助：{current_user.nickname or current_user.username} 发来一键求助",
+            description=f"您守护的用户 {current_user.nickname or current_user.username} 触发了一键紧急求助，请立即联系确认安全。",
+            suggestion="请立即拨打对方电话确认安全状况，必要时联系当地警方。",
+            report_json={
+                "ward_user_id": current_user.id,
+                "ward_username": current_user.username,
+                "ward_nickname": current_user.nickname or current_user.username,
+                "emergency_time": datetime.utcnow().isoformat(),
+            },
+            guardian_notified=True,
+            is_resolved=False,
+            created_at=datetime.utcnow(),
+        )
+        db.add(alert)
+
+    await db.commit()
     return MessageResponse(message=f"已向 {len(guardians)} 位监护人发送紧急求助: {', '.join(guardian_names)}")
 
 

@@ -166,6 +166,36 @@ SAFE_CONTEXT_KEYWORDS = [
     "做饭", "加班", "开会", "出差", "学习", "考试",
 ]
 
+# ==================== 反诈提示/安全通知语境词 ====================
+# 当文本是"安全提醒"或"防诈提示"时，虽然提到了诈骗关键词，
+# 但语义是否定/警告，不应判定为诈骗。
+
+ADVISORY_KEYWORDS = [
+    "切勿", "请勿", "不要", "严禁", "谨防", "警惕",
+    "提高警惕", "规范操作", "注意安全",
+    "官方App", "官方应用", "官方客服", "官方网址", "官方页面",
+    "正规渠道", "正规客服", "客服热线", "官方热线",
+    "营业网点", "站内公告",
+    "如有疑问", "如您发现", "建议直接", "建议先",
+    "不收取", "不会要求", "不会以", "不会通过",
+    "无报名费", "无押金", "无需缴纳",
+    "请勿轻信", "核实消息",
+]
+
+NEGATION_PATTERNS = [
+    # "切勿/请勿/不要" + 诈骗动作 → 安全提醒
+    r"(切勿|请勿|不要|勿).{0,15}(点击|泄露|透露|提供|转账|汇款|下载|扫码|填写|轻信|相信)",
+    # "不会" + 要求/收取 → 官方声明
+    r"不会.{0,15}(要求|收取|索取|以.{0,15}名义)",
+    r"不会.{0,10}通过.{0,15}(联系|发放|发送|要求)",
+    # "无/不收" + 费用名目 → 正规招聘/服务
+    r"(无|不收|不需要|无需).{0,8}(报名费|押金|垫付|培训费|手续费|保证金|认证金|验证金)",
+    # "官方/正规" + 渠道 → 引导正规操作
+    r"(官方|正规).{0,8}(App|应用|客服|渠道|网站|页面|热线|网点)",
+    # 综合安全提醒
+    r"(提高警惕|谨防.{0,5}诈骗|规范操作|保护.{0,8}安全|保障.{0,8}安全)",
+]
+
 HIGH_RISK_PATTERNS = [
     {
         "name": "social_security_remote_assist",
@@ -338,6 +368,19 @@ def calculate_text_risk_score(text: str) -> dict:
     if combo_score >= 0.3:
         total_score = max(total_score, 0.68)
 
+    # ========== 反诈提示语境识别（降低安全通知的误报） ==========
+    # 检测"切勿泄露验证码"、"不会要求您转账"等否定/警告语境
+    advisory_hits = [kw for kw in ADVISORY_KEYWORDS if kw in text]
+    negation_matches = [p for p in NEGATION_PATTERNS if re.search(p, text)]
+    advisory_strength = min(
+        len(advisory_hits) * 0.12 + len(negation_matches) * 0.15, 0.8
+    )
+
+    if advisory_strength >= 0.2:
+        # 强反诈提示语境 → 大幅降低风险分数
+        reduction = max(0.15, 1.0 - advisory_strength * 1.2)
+        total_score *= reduction
+
     total_score = round(max(min(total_score, 1.0), 0.0), 3)
 
     top_fraud_type = max(fraud_scores, key=fraud_scores.get) if fraud_scores else None
@@ -355,8 +398,10 @@ def calculate_text_risk_score(text: str) -> dict:
         "credential_hits": credential_hits,
         "remote_hits": remote_hits,
         "safe_score": safe_score,
+        "advisory_strength": advisory_strength,
         "fraud_scores": fraud_scores,
         "urgent_signals": urgent_signals,
         "safe_context_hits": safe_hits,
+        "advisory_hits": advisory_hits,
         "top_fraud_type": top_fraud_type,
     }

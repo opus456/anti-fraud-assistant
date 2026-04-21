@@ -49,8 +49,9 @@ async def detect_image(
     db: AsyncSession = Depends(get_db),
 ):
     """图片内容反诈检测 — 使用多模态LLM分析聊天截图、转账截图等"""
-    import logging
+    import logging, time as _time, base64
     logger = logging.getLogger(__name__)
+    _t0 = _time.time()
     
     allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
     if file.content_type not in allowed_types:
@@ -72,42 +73,29 @@ async def detect_image(
     with open(file_path, "wb") as f:
         f.write(contents)
 
-    # 使用多模态 LLM 分析图片
-    from app.services.llm_service import call_ollama_vision
-    
-    vision_prompt = f"请分析这张图片是否存在诈骗风险。{context}" if context else "请分析这张图片是否存在诈骗风险，识别图片中的文字内容并判断是否涉及诈骗。"
-    
-    try:
-        vision_result = await call_ollama_vision(
-            prompt=vision_prompt,
-            image_data=contents,
-            timeout=90.0,
-        )
-        logger.info(f"图片视觉分析结果: {vision_result}")
-    except Exception as e:
-        logger.warning(f"视觉分析失败: {e}")
-        vision_result = None
+    import asyncio
+    from app.services.multimodal_service import multimodal_service
 
-    # 构建分析文本
-    if vision_result:
-        detected_text = vision_result.get("detected_text", "")
-        reason = vision_result.get("reason", "")
-        analysis_text = f"[图片分析] {reason}"
-        if detected_text:
-            analysis_text += f"\n识别到的文字: {detected_text}"
-        if context:
-            analysis_text = f"{context}\n{analysis_text}"
-    else:
-        analysis_text = f"[图片上传] {context}" if context else "[图片上传] 用户上传了一张图片进行检测"
+    image_b64 = base64.b64encode(contents).decode('utf-8')
 
+    # 直接走 OCR（Ollama vision 不可用时白等 3s，去掉）
+    ocr_result = await multimodal_service.analyze_image(image_b64)
+    _t_ocr = _time.time()
+    logger.info(f"OCR耗时: {(_t_ocr-_t0)*1000:.0f}ms 结果: {ocr_result[:120] if ocr_result else 'N/A'}")
+
+    analysis_text = f"[图片OCR分析] {ocr_result}"
+    if context:
+        analysis_text = f"{context}\n{analysis_text}"
+
+    # 图片检测用关键词引擎即可，跳过 LLM CoT 省 ~8s
     result = await fraud_detector.detect_text(
         content=analysis_text,
         user=current_user,
         db=db,
         session_id=str(uuid.uuid4())[:8],
-        # 如果视觉分析有结果，传入预判断的风险等级
-        preset_risk=vision_result,
+        use_llm=False,
     )
+    logger.info(f"图片检测总耗时: {(_time.time()-_t0)*1000:.0f}ms")
     return DetectionResult(**{k: v for k, v in result.items() if not k.startswith("_")})
 
 
@@ -160,11 +148,13 @@ async def detect_audio(
     if context:
         analysis_text = f"{context}\n{analysis_text}"
 
+    # 音频检测用关键词引擎即可，跳过 LLM CoT 省耗时
     result = await fraud_detector.detect_text(
         content=analysis_text,
         user=current_user,
         db=db,
         session_id=str(uuid.uuid4())[:8],
+        use_llm=False,
     )
     return DetectionResult(**{k: v for k, v in result.items() if not k.startswith("_")})
 

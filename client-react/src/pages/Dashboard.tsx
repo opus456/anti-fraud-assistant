@@ -26,12 +26,12 @@ interface RecentAlert {
 }
 
 const quickActions = [
-  { label: '智能检测', icon: MagnifyingGlassIcon, path: '/detection', desc: '文本/图片/音频', color: 'from-blue-500 to-sky-400', bg: 'bg-blue-50' },
-  { label: '实时监控', icon: ShieldCheckIcon, path: '/monitor', desc: '通话与消息监测', color: 'from-emerald-500 to-green-400', bg: 'bg-emerald-50' },
-  { label: '预警中心', icon: BellAlertIcon, path: '/alerts', desc: '安全提醒', color: 'from-amber-500 to-orange-400', bg: 'bg-amber-50' },
-  { label: '知识库', icon: BookOpenIcon, path: '/knowledge', desc: '反诈案例', color: 'from-violet-500 to-purple-400', bg: 'bg-violet-50' },
-  { label: '检测记录', icon: ClockIcon, path: '/history', desc: '历史记录', color: 'from-cyan-500 to-teal-400', bg: 'bg-cyan-50' },
-  { label: '家庭守护', icon: UserGroupIcon, path: '/family', desc: '成员管理', color: 'from-pink-500 to-rose-400', bg: 'bg-pink-50' },
+  { label: '智能检测', icon: MagnifyingGlassIcon, path: '/detection', desc: '文本/图片/音频', color: 'bg-blue-500', bg: 'bg-blue-50' },
+  { label: '实时监控', icon: ShieldCheckIcon, path: '/monitor', desc: '通话与消息监测', color: 'bg-emerald-500', bg: 'bg-emerald-50' },
+  { label: '预警中心', icon: BellAlertIcon, path: '/alerts', desc: '安全提醒', color: 'bg-amber-500', bg: 'bg-amber-50' },
+  { label: '知识库', icon: BookOpenIcon, path: '/knowledge', desc: '反诈案例', color: 'bg-violet-500', bg: 'bg-violet-50' },
+  { label: '检测记录', icon: ClockIcon, path: '/history', desc: '历史记录', color: 'bg-cyan-500', bg: 'bg-cyan-50' },
+  { label: '家庭守护', icon: UserGroupIcon, path: '/family', desc: '成员管理', color: 'bg-pink-500', bg: 'bg-pink-50' },
 ];
 
 // 安全评分环形图
@@ -53,8 +53,8 @@ function SafetyRing({ score, size = 96 }: { score: number; size?: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-black text-slate-800 tracking-tighter drop-shadow-sm">{score}</span>
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">安全跑分</span>
+        <span className="text-3xl font-black text-gray-800 tracking-tighter">{score}</span>
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">安全跑分</span>
       </div>
     </div>
   );
@@ -110,13 +110,15 @@ function StandardDashboard() {
 
   const userName = user?.nickname || user?.username || '守护者';
   const todayFraud = stats?.today_fraud || 0;
-  const safetyScore = Math.min(100, Math.max(0, 100 - (todayFraud * 2) - (stats?.alerts_pending || 0) * 5));
+  // 安全分数：基础 80 分，仅根据真实未处理预警微调（每个 -2），不受演示基数影响
+  const realPending = Math.max(0, (stats?.alerts_pending || 0) - 15); // 减去后端演示基数
+  const safetyScore = Math.min(100, Math.max(60, 80 - realPending * 2));
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-40 bg-slate-100 rounded-2xl animate-pulse" />
-        <div className="grid grid-cols-3 gap-4">{[1,2,3].map(i => <div key={i} className="h-24 bg-slate-100 rounded-2xl animate-pulse" />)}</div>
+        <div className="h-40 bg-gray-100 rounded-lg animate-pulse" />
+        <div className="grid grid-cols-3 gap-4">{[1,2,3].map(i => <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />)}</div>
       </div>
     );
   }
@@ -125,40 +127,37 @@ function StandardDashboard() {
     <div className="space-y-6">
       {/* ====== Hero Section: 核心态势感知 (浅色高亮高反差版) ====== */}
       <ScrollReveal>
-        <div className="relative overflow-hidden rounded-[24px] bg-white border border-white/40 shadow-[0_20px_50px_rgba(0,122,255,0.08)] p-8 sm:p-10 z-10 backdrop-blur-xl">
-          {/* 超强视觉冲击光影特效 */}
-          <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(0,122,255,0.15),transparent_50%)] pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-cyan-400/10 rounded-full blur-[80px] pointer-events-none" />
-          <div className="absolute top-1/2 right-10 w-64 h-64 bg-blue-500/10 rounded-full blur-[60px] pointer-events-none mix-blend-multiply" />
+        <div className="relative overflow-hidden rounded-lg bg-white border border-gray-200 p-8 sm:p-10 z-10">
+          {/* 柔和背景点缀 */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
           
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 relative z-20">
             <div className="flex-1 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50/80 border border-blue-100 text-blue-600 text-xs font-semibold tracking-wide uppercase shadow-sm">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold tracking-wide uppercase">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                 </span>
                 AI Agent 实时防护中
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
                 您好，{userName}！<br className="hidden sm:block" />
                 系统已成功拦截 <br className="sm:hidden" />
-                <span className="inline-block px-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-500 text-5xl sm:text-6xl font-black drop-shadow-sm filter mt-2">
+                <span className="inline-block text-blue-600 text-5xl sm:text-6xl font-black mt-2">
                   <AnimatedCounter value={todayFraud} />
                 </span>
                 次风险
               </h1>
-              <p className="text-slate-500 text-sm sm:text-base font-medium max-w-lg">
-                大模型驱动的多模态意图识别正在为您的每一次通信保驾护航。守护 <span className="font-bold text-slate-700">{stats?.guard_count || 0}</span> 人，累计检测 <span className="font-bold text-slate-700">{stats?.total_detections || 0}</span> 次。
+              <p className="text-gray-500 text-sm sm:text-base font-medium max-w-lg">
+                大模型驱动的多模态意图识别正在为您的每一次通信保驾护航。守护 <span className="font-bold text-gray-700">{stats?.guard_count || 0}</span> 人，累计检测 <span className="font-bold text-gray-700">{stats?.total_detections || 0}</span> 次。
               </p>
             </div>
             
-            {/* 炫酷的安全分展示 */}
-            <div className="relative shrink-0 flex flex-col items-center p-6 rounded-2xl bg-gradient-to-b from-slate-50 to-white border border-slate-100 shadow-xl shadow-blue-500/5 group hover:scale-105 transition-transform duration-500 ease-out">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,122,255,0.03)_0%,transparent_100%)] rounded-2xl pointer-events-none" />
+            {/* 安全分展示 */}
+            <div className="relative shrink-0 flex flex-col items-center p-6 rounded-lg bg-gray-50 border border-gray-200">
               <SafetyRing score={safetyScore} size={140} />
-              <div className="mt-4 flex items-center justify-center gap-2 h-8 px-4 rounded-full bg-slate-100 text-xs font-bold text-slate-700">
-                环境极度安全
+              <div className={`mt-4 flex items-center justify-center gap-2 h-8 px-4 rounded-md text-xs font-bold ${safetyScore >= 70 ? 'bg-green-50 text-green-700' : safetyScore >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}>
+                {safetyScore >= 70 ? '环境安全' : safetyScore >= 50 ? '存在风险' : '需要关注'}
               </div>
             </div>
           </div>
@@ -176,19 +175,16 @@ function StandardDashboard() {
           return (
             <StaggerItem key={idx}>
               <Link to={idx === 2 ? '/alerts?filter=pending' : '/history'}>
-                <div className={`relative overflow-hidden p-6 rounded-[20px] bg-white/80 backdrop-blur-md border hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group ${isWarning ? 'border-amber-200' : 'border-slate-100 hover:border-blue-200'}`}>
-                  {/* 角落流光 */}
-                  <div className={`absolute -right-10 -top-10 w-24 h-24 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity bg-${stat.color}-500`} />
-                  
+                <div className={`relative overflow-hidden p-6 rounded-lg bg-white border hover:shadow-md transition-all duration-200 cursor-pointer group ${isWarning ? 'border-amber-200' : 'border-gray-200 hover:border-blue-300'}`}>
                   <div className="flex items-center justify-between mb-4 relative z-10">
-                    <div className={`flex items-center justify-center w-12 h-12 rounded-[14px] bg-gradient-to-br from-${stat.color}-50 to-${stat.color}-100/50 border border-${stat.color}-100 shadow-sm`}>
+                    <div className={`flex items-center justify-center w-12 h-12 rounded-lg bg-${stat.color}-50 border border-${stat.color}-100`}>
                       <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
                     </div>
                     {isWarning && <span className="absolute top-0 right-0 w-3 h-3 bg-amber-500 rounded-full animate-ping" />}
                   </div>
                   
-                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider relative z-10">{stat.label}</p>
-                  <h3 className="text-4xl font-extrabold text-slate-900 mt-2 mb-1 relative z-10 tracking-tight">
+                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider relative z-10">{stat.label}</p>
+                  <h3 className="text-4xl font-extrabold text-gray-900 mt-2 mb-1 relative z-10 tracking-tight">
                     {typeof stat.value === 'number' ? <AnimatedCounter value={stat.value} /> : stat.value}
                   </h3>
                   
@@ -205,20 +201,20 @@ function StandardDashboard() {
 
       {/* ====== 快捷入口：轻量级图标网格 ====== */}
       <ScrollReveal delay={0.15}>
-        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">快捷入口</h2>
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">快捷入口</h2>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           {quickActions.map((action, idx) => (
             <Link to={action.path} key={idx}>
               <motion.div
-                className="flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl hover:bg-white/70 hover:shadow-sm hover:backdrop-blur transition-all group cursor-pointer"
+                className="flex flex-col items-center text-center p-3 sm:p-4 rounded-lg hover:bg-white hover:shadow-sm transition-all group cursor-pointer"
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center mb-2.5 shadow-lg group-hover:shadow-xl transition-shadow`}>
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-lg ${action.color} flex items-center justify-center mb-2.5`}>
                   <action.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                 </div>
-                <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">{action.label}</span>
-                <span className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">{action.desc}</span>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{action.label}</span>
+                <span className="text-[11px] text-gray-400 mt-0.5 hidden sm:block">{action.desc}</span>
               </motion.div>
             </Link>
           ))}
@@ -228,25 +224,25 @@ function StandardDashboard() {
       {/* ====== 双列：预警 + 系统状态 ====== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <ScrollReveal delay={0.25}>
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-100">
+          <div className="p-5 sm:p-6 rounded-lg bg-white border border-gray-200">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-slate-800">最近预警</h2>
-              <Link to="/alerts" className="text-xs text-sky-500 hover:text-sky-600 transition-colors font-medium">查看全部 →</Link>
+              <h2 className="text-base font-semibold text-gray-800">最近预警</h2>
+              <Link to="/alerts" className="text-xs text-blue-500 hover:text-blue-600 transition-colors font-medium">查看全部 →</Link>
             </div>
             <div className="space-y-2.5">
               {recentAlerts.map(alert => (
                 <Link to={`/alerts?id=${alert.id}`} key={alert.id}>
-                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all cursor-pointer group">
+                  <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all cursor-pointer group">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                       alert.level === 'danger' ? 'bg-red-100' : alert.level === 'warning' ? 'bg-amber-100' : 'bg-green-100'
                     }`}>
                       {alert.level === 'safe' ? <CheckCircleIcon className="w-4 h-4 text-green-600" /> : <ExclamationTriangleIcon className={`w-4 h-4 ${alert.level === 'danger' ? 'text-red-600' : 'text-amber-600'}`} />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-700 truncate">{alert.type}</p>
-                      <p className="text-xs text-slate-400 truncate">{alert.message}</p>
+                      <p className="text-sm font-medium text-gray-700 truncate">{alert.type}</p>
+                      <p className="text-xs text-gray-400 truncate">{alert.message}</p>
                     </div>
-                    <span className="text-[10px] text-slate-300 flex-shrink-0">{alert.time}</span>
+                    <span className="text-[10px] text-gray-300 flex-shrink-0">{alert.time}</span>
                   </div>
                 </Link>
               ))}
@@ -255,9 +251,9 @@ function StandardDashboard() {
         </ScrollReveal>
 
         <ScrollReveal delay={0.3}>
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-100">
+          <div className="p-5 sm:p-6 rounded-lg bg-white border border-gray-200">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-slate-800">系统状态</h2>
+              <h2 className="text-base font-semibold text-gray-800">系统状态</h2>
               <span className="flex items-center gap-1.5 text-xs text-emerald-500 font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />运行中
               </span>
@@ -268,20 +264,20 @@ function StandardDashboard() {
                 { icon: ServerIcon, color: 'text-blue-500', label: '知识库同步', status: '已更新' },
                 { icon: SignalIcon, color: 'text-purple-500', label: '实时监控', status: '运行中' },
               ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
+                <div key={i} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
                   <div className="flex items-center gap-2.5">
                     <item.icon className={`w-4 h-4 ${item.color}`} />
-                    <span className="text-sm text-slate-600">{item.label}</span>
+                    <span className="text-sm text-gray-600">{item.label}</span>
                   </div>
                   <span className="text-xs text-emerald-500 font-medium">{item.status}</span>
                 </div>
               ))}
-              <Link to="/family" className="flex items-center justify-between py-3 hover:bg-slate-50 -mx-2 px-2 rounded-lg transition-colors">
+              <Link to="/family" className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors">
                 <div className="flex items-center gap-2.5">
-                  <UserGroupIcon className="w-4 h-4 text-sky-500" />
-                  <span className="text-sm text-slate-600">家庭守护</span>
+                  <UserGroupIcon className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm text-gray-600">家庭守护</span>
                 </div>
-                <span className="text-xs text-sky-500 font-medium">{stats?.guard_count || 0} 人守护</span>
+                <span className="text-xs text-blue-500 font-medium">{stats?.guard_count || 0} 人守护</span>
               </Link>
             </div>
           </div>
@@ -304,41 +300,41 @@ function ElderDashboard() {
   return (
     <div className="space-y-8">
       <ScrollReveal>
-        <div className="rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 text-center py-12 px-6">
-          <div className="w-24 h-24 rounded-full bg-green-100 border-2 border-green-300 flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div className="rounded-lg bg-green-50 border border-green-200 text-center py-12 px-6">
+          <div className="w-24 h-24 rounded-lg bg-green-100 border border-green-300 flex items-center justify-center mx-auto mb-4">
             <CheckCircleIcon className="w-14 h-14 text-green-600" />
           </div>
-          <h1 className="text-elder-2xl font-bold text-slate-800">{userName}，当前安全</h1>
-          <p className="text-elder-base mt-2 text-slate-600">系统正在保护您的通话和消息安全</p>
+          <h1 className="text-elder-2xl font-bold text-gray-800">{userName}，当前安全</h1>
+          <p className="text-elder-base mt-2 text-gray-600">系统正在保护您的通话和消息安全</p>
         </div>
       </ScrollReveal>
       <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StaggerItem>
-          <Link to="/monitor" className="block p-8 bg-white rounded-2xl border-2 border-sky-200 shadow-card hover:shadow-card-hover hover:border-sky-300 transition-all text-center group">
-            <div className="w-20 h-20 rounded-2xl bg-sky-100 flex items-center justify-center mx-auto mb-4 group-hover:bg-sky-200 transition-colors"><PhoneIcon className="w-10 h-10 text-sky-600" /></div>
-            <div className="text-elder-xl font-bold text-slate-800">通话监测</div>
-            <div className="text-elder-base text-slate-500 mt-2">实时保护您的通话安全</div>
+          <Link to="/monitor" className="block p-8 bg-white rounded-lg border border-blue-200 hover:border-blue-300 transition-all text-center group">
+            <div className="w-20 h-20 rounded-lg bg-blue-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-100 transition-colors"><PhoneIcon className="w-10 h-10 text-blue-600" /></div>
+            <div className="text-elder-xl font-bold text-gray-800">通话监测</div>
+            <div className="text-elder-base text-gray-500 mt-2">实时保护您的通话安全</div>
           </Link>
         </StaggerItem>
         <StaggerItem>
-          <Link to="/family" className="block p-8 bg-white rounded-2xl border-2 border-red-200 shadow-card hover:shadow-card-hover hover:border-red-300 transition-all text-center group">
-            <div className="w-20 h-20 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4 group-hover:bg-red-200 transition-colors"><BellAlertIcon className="w-10 h-10 text-red-600" /></div>
-            <div className="text-elder-xl font-bold text-slate-800">一键求助</div>
-            <div className="text-elder-base text-slate-500 mt-2">遇到可疑情况立即求助</div>
+          <Link to="/family" className="block p-8 bg-white rounded-lg border border-red-200 hover:border-red-300 transition-all text-center group">
+            <div className="w-20 h-20 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-red-100 transition-colors"><BellAlertIcon className="w-10 h-10 text-red-600" /></div>
+            <div className="text-elder-xl font-bold text-gray-800">一键求助</div>
+            <div className="text-elder-base text-gray-500 mt-2">遇到可疑情况立即求助</div>
           </Link>
         </StaggerItem>
       </StaggerContainer>
       <ScrollReveal delay={0.2}>
         <div className="card">
-          <h2 className="text-elder-xl font-bold text-slate-800 mb-6 text-center">家人守护</h2>
+          <h2 className="text-elder-xl font-bold text-gray-800 mb-6 text-center">家人守护</h2>
           {guardians.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-8">
               {guardians.map((g, idx) => (
                 <div key={idx} className="text-center">
-                  <div className="w-20 h-20 rounded-full bg-sky-100 border-2 border-sky-200 flex items-center justify-center mx-auto mb-3">
-                    <span className="text-2xl font-bold text-sky-600">{g.nickname?.charAt(0) || g.username?.charAt(0) || '?'}</span>
+                  <div className="w-20 h-20 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl font-bold text-blue-600">{g.nickname?.charAt(0) || g.username?.charAt(0) || '?'}</span>
                   </div>
-                  <div className="text-elder-base font-medium text-slate-800">{g.nickname || g.username}</div>
+                  <div className="text-elder-base font-medium text-gray-800">{g.nickname || g.username}</div>
                   <div className="text-green-600 text-sm flex items-center justify-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> 在线守护中
                   </div>
@@ -346,7 +342,7 @@ function ElderDashboard() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8"><UserGroupIcon className="w-16 h-16 mx-auto text-slate-200 mb-4" /><p className="text-slate-500 text-elder-base">暂无守护者</p><Link to="/family" className="inline-block mt-4 text-sky-600 hover:text-sky-700">去添加守护者 →</Link></div>
+            <div className="text-center py-8"><UserGroupIcon className="w-16 h-16 mx-auto text-gray-200 mb-4" /><p className="text-gray-500 text-elder-base">暂无守护者</p><Link to="/family" className="inline-block mt-4 text-blue-600 hover:text-blue-700">去添加守护者 →</Link></div>
           )}
         </div>
       </ScrollReveal>
@@ -362,26 +358,26 @@ function MinorDashboard() {
   return (
     <div className="space-y-6">
       <ScrollReveal>
-        <div className="p-8 text-center rounded-2xl bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200">
-          <h1 className="text-xl font-bold text-slate-800 mb-4">{userName}的安全分数</h1>
+        <div className="p-8 text-center rounded-lg bg-teal-50 border border-teal-200">
+          <h1 className="text-xl font-bold text-gray-800 mb-4">{userName}的安全分数</h1>
           <div className="relative w-32 h-32 mx-auto mb-4">
             <svg className="w-full h-full transform -rotate-90">
               <circle cx="64" cy="64" r="56" fill="none" stroke="#E0F2FE" strokeWidth="8" />
               <circle cx="64" cy="64" r="56" fill="none" stroke="#007AFF" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${safetyScore * 3.52} 352`} />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center"><AnimatedCounter value={safetyScore} className="text-4xl font-bold text-sky-600" /></div>
+            <div className="absolute inset-0 flex items-center justify-center"><AnimatedCounter value={safetyScore} className="text-4xl font-bold text-blue-600" /></div>
           </div>
-          <p className="text-slate-600">继续保持，你做得很棒！</p>
+          <p className="text-gray-600">继续保持，你做得很棒！</p>
         </div>
       </ScrollReveal>
       <ScrollReveal delay={0.1}>
-        <div className="p-5 rounded-2xl bg-white border border-slate-100">
-          <h2 className="text-lg font-semibold text-slate-800 mb-4">今日安全任务</h2>
+        <div className="p-5 rounded-lg bg-white border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">今日安全任务</h2>
           <div className="space-y-3">
             {[{ icon: BookOpenIcon, title: '学习：识别网络诈骗', progress: 60 }, { icon: PlayIcon, title: '观看：游戏充值安全', progress: 30 }].map((task, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center"><task.icon className="w-6 h-6 text-teal-600" /></div>
-                <div className="flex-1"><div className="font-medium text-slate-800 text-sm">{task.title}</div><div className="progress-bar mt-2"><div className="progress-bar-fill" style={{ width: `${task.progress}%` }} /></div></div>
+              <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-gray-50 border border-gray-100">
+                <div className="w-12 h-12 rounded-lg bg-teal-100 flex items-center justify-center"><task.icon className="w-6 h-6 text-teal-600" /></div>
+                <div className="flex-1"><div className="font-medium text-gray-800 text-sm">{task.title}</div><div className="progress-bar mt-2"><div className="progress-bar-fill" style={{ width: `${task.progress}%` }} /></div></div>
                 <span className="text-sm text-teal-600 font-medium">{task.progress}%</span>
               </div>
             ))}
@@ -392,9 +388,9 @@ function MinorDashboard() {
         {[{ to: '/detection', icon: MagnifyingGlassIcon, label: '安全检测', desc: '检查消息安全' }, { to: '/knowledge', icon: BookOpenIcon, label: '安全课堂', desc: '学习网络安全' }].map((item, i) => (
           <StaggerItem key={i}>
             <Link to={item.to}>
-              <div className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-slate-100 hover:border-sky-200 hover:shadow-sm transition-all cursor-pointer group">
-                <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center group-hover:bg-teal-200 transition-colors"><item.icon className="w-5 h-5 text-teal-600" /></div>
-                <div><div className="font-semibold text-slate-800 text-sm">{item.label}</div><div className="text-xs text-slate-500">{item.desc}</div></div>
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-white border border-gray-200 hover:border-blue-200 hover:shadow-sm transition-all cursor-pointer group">
+                <div className="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center group-hover:bg-teal-200 transition-colors"><item.icon className="w-5 h-5 text-teal-600" /></div>
+                <div><div className="font-semibold text-gray-800 text-sm">{item.label}</div><div className="text-xs text-gray-500">{item.desc}</div></div>
               </div>
             </Link>
           </StaggerItem>

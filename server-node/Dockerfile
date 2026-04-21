@@ -7,8 +7,8 @@ WORKDIR /app
 # 复制依赖文件
 COPY package*.json ./
 
-# 安装生产依赖
-RUN npm ci --only=production && npm cache clean --force
+# 安装生产依赖 (使用 --omit=dev 而不是已弃用的 --only=production)
+RUN npm ci --omit=dev && npm cache clean --force
 
 # 复制应用代码
 COPY . .

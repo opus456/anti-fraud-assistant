@@ -1,5 +1,7 @@
 # 反诈智能体助手 - 生产环境 Docker Compose
 # 使用方法: docker compose -f docker-compose.prod.yml up -d
+# 查看日志: docker compose -f docker-compose.prod.yml logs -f [service-name]
+# 停止服务: docker compose -f docker-compose.prod.yml down
 
 services:
   # ==================== 基础设施 ====================
@@ -11,6 +13,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-antifraud}
       POSTGRES_USER: ${POSTGRES_USER:-antifraud}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-antifraud123}
+      POSTGRES_INITDB_ARGS: "-c max_connections=200 -c shared_buffers=256MB"
       TZ: Asia/Shanghai
     ports:
       - "5432:5432"
@@ -24,12 +27,17 @@ services:
       retries: 5
     networks:
       - antifraud-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   redis:
     image: redis:7-alpine
     container_name: antifraud-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
     ports:
       - "6379:6379"
     volumes:
@@ -41,18 +49,25 @@ services:
       retries: 5
     networks:
       - antifraud-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # ==================== 应用服务 ====================
   python-backend:
     build:
       context: ./server-python
       dockerfile: Dockerfile
+      cache_from:
+        - python:3.11-slim
     container_name: antifraud-python
     restart: unless-stopped
     environment:
       # 数据库
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-antifraud}:${POSTGRES_PASSWORD:-antifraud123}@postgres:5432/${POSTGRES_DB:-antifraud}
-      REDIS_URL: redis://redis:6379/0
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redis123}@redis:6379/0
       # 安全
       SECRET_KEY: ${SECRET_KEY:-change-this-in-production-please}
       DEBUG: ${DEBUG:-false}
@@ -69,6 +84,9 @@ services:
       NODE_GATEWAY_URL: http://gateway:3001
       # 时区
       TZ: Asia/Shanghai
+      # Python 优化
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
     ports:
       - "8000:8000"
     volumes:
@@ -88,19 +106,28 @@ services:
       start_period: 30s
     networks:
       - antifraud-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
 
   gateway:
     build:
       context: ./server-node
       dockerfile: Dockerfile
+      cache_from:
+        - node:20-alpine
     container_name: antifraud-gateway
     restart: unless-stopped
     environment:
       PORT: 3001
-      PYTHON_API_URL: http://python-backend:8000
+      PYTHON_API: http://python-backend:8000
       JWT_SECRET: ${SECRET_KEY:-change-this-in-production-please}
       NODE_ENV: production
       TZ: Asia/Shanghai
+      # Node.js 优化
+      NODE_OPTIONS: "--max-old-space-size=512"
     ports:
       - "3001:3001"
     depends_on:
@@ -114,11 +141,19 @@ services:
       start_period: 10s
     networks:
       - antifraud-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
 
   frontend:
     build:
       context: ./client-react
       dockerfile: Dockerfile
+      cache_from:
+        - node:20-alpine
+        - nginx:alpine
     container_name: antifraud-frontend
     restart: unless-stopped
     ports:
@@ -133,15 +168,23 @@ services:
       retries: 3
     networks:
       - antifraud-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 # ==================== 数据卷 ====================
 volumes:
   pgdata:
     name: antifraud-pgdata
+    driver: local
   redisdata:
     name: antifraud-redisdata
+    driver: local
   python-uploads:
     name: antifraud-uploads
+    driver: local
 
 # ==================== 网络 ====================
 networks:

@@ -30,6 +30,13 @@ async def lifespan(app: FastAPI):
         await init_db()
         app.state.db_ready = True
         logger.info("数据库初始化完成")
+
+        # 插入演示数据（仅在数据库为空时生效）
+        try:
+            from app.seed_data import seed_demo_data
+            await seed_demo_data()
+        except Exception as e:
+            logger.warning(f"种子数据初始化失败: {e}")
     else:
         logger.warning("数据库未就绪，服务将以降级模式启动；部分接口不可用")
 

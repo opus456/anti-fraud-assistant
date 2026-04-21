@@ -112,10 +112,13 @@ export default function Login() {
             transition={{ duration: 0.8, delay: 0.5 }}
           >
             <h1 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
-              御见<br />识破每一次骗局
+              御见
             </h1>
-            <p className="text-white/50 text-lg max-w-md leading-relaxed mb-8">
-              用AI守护，让诈骗无所遁形 · 全链路感知 · 智能决策 · 实时干预
+            <h1 className="text-2xl xl:text-3xl font-bold text-white mb-4 leading-tight">
+              让每一次诈骗都被防御, 每一次守护都被看见
+            </h1>
+            <p className="text-white/50 text-lg  leading-relaxed mb-8">
+              ai守护, 让诈骗无所遁形 · 全链路感知 · 智能决策 · 实时干预
             </p>
             <div className="flex gap-3">
               {['文本分析', '语音检测', '图片识别', '诈骗预警'].map((tag, i) => (

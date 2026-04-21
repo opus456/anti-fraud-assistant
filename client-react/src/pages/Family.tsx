@@ -133,10 +133,15 @@ export default function Family() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [chargesRes, guardiansRes] = await Promise.all([api.get('/guardians/charges'), api.get('/guardians/')]);
+      const [chargesRes, guardiansRes, statsRes] = await Promise.all([
+        api.get('/guardians/charges'),
+        api.get('/guardians/'),
+        api.get('/alerts/stats').catch(() => null),
+      ]);
       setCharges(chargesRes.data || []); setGuardians(guardiansRes.data || []);
-      const totalFraudHits = chargesRes.data?.reduce((acc: number, c: ChargeUser) => acc + c.fraud_hits, 0) || 0;
-      setAlertStats({ pending: Math.floor(totalFraudHits * 0.3), resolved: Math.floor(totalFraudHits * 0.7), total: totalFraudHits });
+      if (statsRes?.data) {
+        setAlertStats({ pending: statsRes.data.pending || 0, resolved: statsRes.data.resolved || 0, total: statsRes.data.total || 0 });
+      }
     } catch (err) { console.error('加载守护数据失败:', err); }
     finally { setLoading(false); }
   };

@@ -1,12 +1,15 @@
 """
 多模态处理服务 - 支持文本、图片、音频的统一处理
 提供本地Ollama多模态模型和远程API的双重支持
+增强：OCR文字识别 + SpeechRecognition语音转写 兜底
 """
 from __future__ import annotations
 
 import base64
 import logging
 import asyncio
+import tempfile
+import os
 from typing import Optional
 from pathlib import Path
 
@@ -22,11 +25,32 @@ logger = logging.getLogger(__name__)
 class MultimodalService:
     """多模态处理服务 - 图像理解、语音转文字"""
     
+    _ocr_engine = None  # 类级缓存 RapidOCR 引擎
+    _ocr_init_failed = False  # 标记 OCR 初始化是否失败过
+
     def __init__(self):
         self.ollama_base_url = getattr(settings, 'OLLAMA_BASE_URL', 'http://localhost:11434')
         self.vision_model = getattr(settings, 'VISION_MODEL', 'llava')  # 或 qwen2-vl
         self.audio_model = getattr(settings, 'AUDIO_MODEL', 'whisper')
         self._http_client: Optional[httpx.AsyncClient] = None
+
+    @classmethod
+    def _get_ocr_engine(cls):
+        """获取缓存的 RapidOCR 引擎实例"""
+        if cls._ocr_init_failed:
+            return None
+        if cls._ocr_engine is None:
+            try:
+                from rapidocr_onnxruntime import RapidOCR
+                cls._ocr_engine = RapidOCR()
+                logger.info("RapidOCR 引擎已初始化并缓存")
+            except ImportError:
+                cls._ocr_init_failed = True
+                logger.info("RapidOCR 未安装")
+            except Exception as e:
+                cls._ocr_init_failed = True
+                logger.warning(f"RapidOCR 初始化失败: {e}")
+        return cls._ocr_engine
     
     @property
     def http_client(self) -> httpx.AsyncClient:
@@ -41,21 +65,11 @@ class MultimodalService:
     async def analyze_image(
         self, 
         image_base64: str, 
-        prompt: str = "请详细描述这张图片的内容，特别关注是否有涉及金钱交易、转账、个人信息、可疑链接等内容。如果图片中有文字，请提取出来。"
+        prompt: str = ""
     ) -> str:
         """
-        使用视觉模型分析图片内容
-        优先使用本地Ollama，失败后使用简单OCR
+        从图片中提取文字和特征（纯 OCR，不再重复调用 Ollama）
         """
-        try:
-            # 尝试使用Ollama多模态模型
-            result = await self._analyze_with_ollama_vision(image_base64, prompt)
-            if result:
-                return result
-        except Exception as e:
-            logger.warning(f"Ollama视觉分析失败: {e}")
-        
-        # 降级：尝试提取图片中的文字特征
         try:
             return await self._extract_image_features(image_base64)
         except Exception as e:
@@ -106,31 +120,48 @@ class MultimodalService:
         return None
     
     async def _extract_image_features(self, image_base64: str) -> str:
-        """从图片中提取基本特征（简化的OCR替代）"""
+        """从图片中提取文字和特征 - 优先使用 RapidOCR，降级 pytesseract"""
         try:
-            # 解码图片
             image_data = base64.b64decode(image_base64)
             image = Image.open(io.BytesIO(image_data))
             
-            # 提取基本信息
+            # 尝试 OCR 文字识别
+            ocr_text = ""
+
+            # 方案1: RapidOCR（纯 Python，支持中文，推荐，引擎已缓存）
+            engine = self._get_ocr_engine()
+            if engine and not ocr_text:
+                try:
+                    import numpy as np
+                    img_array = np.array(image.convert('RGB'))
+                    result, _ = engine(img_array)
+                    if result:
+                        ocr_text = " ".join([line[1] for line in result])
+                        ocr_text = ocr_text.strip()
+                        if ocr_text:
+                            logger.info(f"RapidOCR识别文字: {ocr_text[:200]}")
+                except Exception as e:
+                    logger.warning(f"RapidOCR识别失败: {e}")
+
+            # 方案2: pytesseract 降级
+            if not ocr_text:
+                try:
+                    import pytesseract
+                    gray = image.convert('L')
+                    ocr_text = pytesseract.image_to_string(gray, lang='chi_sim+eng')
+                    ocr_text = ocr_text.strip()
+                    if ocr_text:
+                        logger.info(f"pytesseract识别文字: {ocr_text[:200]}")
+                except ImportError:
+                    logger.info("pytesseract未安装，跳过OCR")
+                except Exception as e:
+                    logger.warning(f"pytesseract识别失败: {e}")
+
+            if ocr_text:
+                return f"识别到的文字内容: {ocr_text}"
+
             width, height = image.size
-            mode = image.mode
-            
-            features = [
-                f"[图片分析]",
-                f"尺寸: {width}x{height}",
-                f"模式: {mode}",
-            ]
-            
-            # 分析颜色分布（检测是否有红色警告等）
-            if mode in ('RGB', 'RGBA'):
-                # 简单的颜色分析
-                pixels = list(image.getdata())
-                red_count = sum(1 for p in pixels if len(p) >= 3 and p[0] > 200 and p[1] < 100 and p[2] < 100)
-                if red_count > len(pixels) * 0.1:
-                    features.append("检测到大量红色元素（可能是警告或紧急信息）")
-            
-            return " | ".join(features)
+            return f"[图片分析] 尺寸: {width}x{height}，未识别到文字"
             
         except Exception as e:
             logger.error(f"图片特征提取异常: {e}")
@@ -139,18 +170,72 @@ class MultimodalService:
     async def transcribe_audio(self, audio_data: bytes, audio_format: str = "mp3") -> str:
         """
         将音频转换为文字
-        优先使用本地Whisper模型，失败后返回占位符
+        优先使用本地Whisper模型，其次SpeechRecognition，最后降级
         """
+        # 1. 尝试 Whisper
         try:
-            # 尝试使用Ollama的whisper模型（如果可用）
             result = await self._transcribe_with_local_whisper(audio_data)
             if result:
                 return result
         except Exception as e:
-            logger.warning(f"本地语音转写失败: {e}")
+            logger.warning(f"本地Whisper转写失败: {e}")
         
-        # 降级提示
-        return "[音频内容待转写 - 请确保安装了Whisper模型或配置了语音识别API]"
+        # 2. 尝试 SpeechRecognition
+        try:
+            result = await self._transcribe_with_speech_recognition(audio_data)
+            if result:
+                return result
+        except Exception as e:
+            logger.warning(f"SpeechRecognition转写失败: {e}")
+        
+        # 3. 降级提示
+        return "[音频内容待转写 - 请确保安装了语音识别依赖]"
+    
+    async def _transcribe_with_speech_recognition(self, audio_data: bytes) -> Optional[str]:
+        """使用 SpeechRecognition 库进行语音转写"""
+        try:
+            import speech_recognition as sr
+            
+            # 保存临时文件
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                # 尝试用 pydub 转换格式
+                try:
+                    from pydub import AudioSegment
+                    audio_io = io.BytesIO(audio_data)
+                    # 自动检测格式
+                    for fmt in ['mp3', 'wav', 'ogg', 'm4a', 'webm']:
+                        try:
+                            audio_io.seek(0)
+                            audio = AudioSegment.from_file(audio_io, format=fmt)
+                            audio.export(f.name, format="wav")
+                            break
+                        except Exception:
+                            continue
+                    else:
+                        # 直接写原始数据
+                        f.write(audio_data)
+                except ImportError:
+                    f.write(audio_data)
+                temp_path = f.name
+            
+            try:
+                recognizer = sr.Recognizer()
+                with sr.AudioFile(temp_path) as source:
+                    audio = recognizer.record(source)
+                
+                # 使用 Google 免费 API 识别
+                text = recognizer.recognize_google(audio, language="zh-CN")
+                logger.info(f"SpeechRecognition转写成功: {text[:100]}")
+                return text
+            finally:
+                Path(temp_path).unlink(missing_ok=True)
+                
+        except ImportError:
+            logger.info("SpeechRecognition未安装")
+            return None
+        except Exception as e:
+            logger.debug(f"SpeechRecognition转写异常: {e}")
+            return None
     
     async def _transcribe_with_local_whisper(self, audio_data: bytes) -> Optional[str]:
         """
