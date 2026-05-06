@@ -195,15 +195,15 @@ export default function UserConsole() {
   }, []);
 
   const getRiskColor = (score: number) => {
-    if (score >= 0.7) return 'text-red-600';
+    if (score >= 0.7) return 'text-rose-600';
     if (score >= 0.4) return 'text-amber-600';
-    return 'text-green-600';
+    return 'text-emerald-600';
   };
 
   const getRiskBg = (score: number) => {
-    if (score >= 0.7) return 'bg-red-50 border-red-200';
+    if (score >= 0.7) return 'bg-rose-50 border-rose-200';
     if (score >= 0.4) return 'bg-amber-50 border-amber-200';
-    return 'bg-green-50 border-green-200';
+    return 'bg-emerald-50 border-emerald-200';
   };
 
   const getRiskGradient = (score: number) => {
@@ -228,14 +228,14 @@ export default function UserConsole() {
                   <AlertTriangle className="w-12 h-12 lg:w-16 lg:h-16 text-white" />
                 </div>
                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center animate-ping">
-                  <span className="text-red-600 font-black text-sm">!</span>
+                  <span className="text-rose-600 font-black text-sm">!</span>
                 </div>
               </div>
               
               {/* 警告内容 */}
               <div className="flex-1 text-center lg:text-left">
                 <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
-                  <span className="px-4 py-1.5 bg-red-500/30 border border-red-400/50 rounded-full text-red-200 text-sm font-semibold animate-pulse">
+                  <span className="px-4 py-1.5 bg-rose-500/30 border border-red-400/50 rounded-full text-red-200 text-sm font-semibold animate-pulse">
                     ⚠️ 检测到风险
                   </span>
                   <span className="text-red-300 text-sm">
@@ -256,7 +256,7 @@ export default function UserConsole() {
                   {Math.round(result.risk_score * 100)}
                 </div>
                 <div className="text-red-300 text-sm font-medium -mt-1">风险指数</div>
-                <div className="mt-3 px-4 py-1.5 bg-red-500 rounded-full text-white text-sm font-bold animate-pulse">
+                <div className="mt-3 px-4 py-1.5 bg-rose-500 rounded-full text-white text-sm font-bold animate-pulse">
                   {result.risk_level || '高风险'}
                 </div>
               </div>
@@ -276,7 +276,7 @@ export default function UserConsole() {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-1">
                   <h2 className="text-2xl font-bold text-white">当前内容安全</h2>
-                  <span className="px-3 py-1 bg-green-500/30 border border-green-400/50 rounded-full text-green-200 text-sm font-medium">
+                  <span className="px-3 py-1 bg-emerald-500/30 border border-green-400/50 rounded-full text-green-200 text-sm font-medium">
                     ✓ 已验证
                   </span>
                 </div>
@@ -304,7 +304,7 @@ export default function UserConsole() {
               {monitoring && (
                 <>
                   <div className="absolute inset-0 rounded-full border-4 border-green-400/50 animate-ping" />
-                  <div className="absolute -inset-2 rounded-full border-2 border-green-300/30 animate-pulse" />
+                  <div className="absolute -inset-2 rounded-full border-2 border-emerald-300/30 animate-pulse" />
                 </>
               )}
             </div>
@@ -312,7 +312,7 @@ export default function UserConsole() {
             <h3 className="text-xl font-bold text-white mb-1">
               {monitoring ? '正在监控中' : '监控已停止'}
             </h3>
-            <p className="text-slate-400 text-sm mb-6">
+            <p className="text-slate-500 text-sm mb-6">
               {monitoring ? '实时分析屏幕内容，守护您的安全' : '启动监控以检测可疑内容'}
             </p>
             
@@ -330,30 +330,30 @@ export default function UserConsole() {
           
           {/* 状态指示器 */}
           <div className="mt-6 space-y-3">
-            <div className={`flex items-center justify-between p-3 rounded-xl transition-all ${connected ? 'bg-green-500/10 border border-green-500/30' : 'bg-slate-700/50 border border-slate-600/30'}`}>
+            <div className={`flex items-center justify-between p-3 rounded-xl transition-all ${connected ? 'bg-emerald-50 border border-green-500/30' : 'bg-slate-700/50 border border-slate-600/30'}`}>
               <div className="flex items-center gap-3">
                 {connected ? <Wifi className="w-5 h-5 text-green-400" /> : <WifiOff className="w-5 h-5 text-slate-500" />}
-                <span className={connected ? 'text-green-300' : 'text-slate-400'}>服务连接</span>
+                <span className={connected ? 'text-green-300' : 'text-slate-500'}>服务连接</span>
               </div>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${connected ? 'bg-green-500/20 text-green-300' : 'bg-slate-600 text-slate-400'}`}>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${connected ? 'bg-emerald-500/20 text-green-300' : 'bg-slate-600 text-slate-500'}`}>
                 {connected ? '在线' : '离线'}
               </span>
             </div>
-            <div className={`flex items-center justify-between p-3 rounded-xl transition-all ${pluginReady ? 'bg-blue-500/10 border border-blue-500/30' : 'bg-slate-700/50 border border-slate-600/30'}`}>
+            <div className={`flex items-center justify-between p-3 rounded-xl transition-all ${pluginReady ? 'bg-accent-50 border border-accent-300' : 'bg-slate-700/50 border border-slate-600/30'}`}>
               <div className="flex items-center gap-3">
                 <PlugZap className={`w-5 h-5 ${pluginReady ? 'text-blue-400' : 'text-slate-500'}`} />
-                <span className={pluginReady ? 'text-blue-300' : 'text-slate-400'}>浏览器插件</span>
+                <span className={pluginReady ? 'text-blue-300' : 'text-slate-500'}>浏览器插件</span>
               </div>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${pluginReady ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-600 text-slate-400'}`}>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${pluginReady ? 'bg-accent-500/20 text-blue-300' : 'bg-slate-600 text-slate-500'}`}>
                 {pluginReady ? '就绪' : '未检测'}
               </span>
             </div>
-            <div className={`flex items-center justify-between p-3 rounded-xl transition-all ${screenGranted ? 'bg-purple-500/10 border border-purple-500/30' : 'bg-slate-700/50 border border-slate-600/30'}`}>
+            <div className={`flex items-center justify-between p-3 rounded-xl transition-all ${screenGranted ? 'bg-purple-50 border border-purple-500/30' : 'bg-slate-700/50 border border-slate-600/30'}`}>
               <div className="flex items-center gap-3">
-                <ScreenShare className={`w-5 h-5 ${screenGranted ? 'text-purple-400' : 'text-slate-500'}`} />
-                <span className={screenGranted ? 'text-purple-300' : 'text-slate-400'}>屏幕权限</span>
+                <ScreenShare className={`w-5 h-5 ${screenGranted ? 'text-purple-600' : 'text-slate-500'}`} />
+                <span className={screenGranted ? 'text-purple-300' : 'text-slate-500'}>屏幕权限</span>
               </div>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${screenGranted ? 'bg-purple-500/20 text-purple-300' : 'bg-slate-600 text-slate-400'}`}>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${screenGranted ? 'bg-purple-500/20 text-purple-300' : 'bg-slate-600 text-slate-500'}`}>
                 {screenGranted ? '已授权' : '未授权'}
               </span>
             </div>
@@ -365,23 +365,23 @@ export default function UserConsole() {
           <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-lg hover:shadow-xl transition-shadow group">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <TrendingUp className="w-6 h-6 text-slate-600" />
+                <TrendingUp className="w-6 h-6 text-slate-500" />
               </div>
-              <span className="text-xs text-slate-400">今日</span>
+              <span className="text-xs text-slate-500">今日</span>
             </div>
             <p className="text-4xl font-black text-slate-800 mb-1">{stats.total}</p>
             <p className="text-sm text-slate-500">总检测次数</p>
           </div>
           
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200/80 p-5 shadow-lg hover:shadow-xl transition-shadow group">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-emerald-200/80 p-5 shadow-lg hover:shadow-xl transition-shadow group">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-green-500/30">
                 <CheckCircle2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xs text-green-600">安全</span>
+              <span className="text-xs text-emerald-600">安全</span>
             </div>
-            <p className="text-4xl font-black text-green-700 mb-1">{stats.safe}</p>
-            <p className="text-sm text-green-600">安全通过</p>
+            <p className="text-4xl font-black text-emerald-600 mb-1">{stats.safe}</p>
+            <p className="text-sm text-emerald-600">安全通过</p>
           </div>
           
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200/80 p-5 shadow-lg hover:shadow-xl transition-shadow group">
@@ -391,20 +391,20 @@ export default function UserConsole() {
               </div>
               <span className="text-xs text-amber-600">警告</span>
             </div>
-            <p className="text-4xl font-black text-amber-700 mb-1">{stats.warning}</p>
+            <p className="text-4xl font-black text-amber-600 mb-1">{stats.warning}</p>
             <p className="text-sm text-amber-600">低风险提醒</p>
           </div>
           
-          <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl border border-red-200/80 p-5 shadow-lg hover:shadow-xl transition-shadow group relative overflow-hidden">
-            {stats.danger > 0 && <div className="absolute inset-0 bg-red-500/5 animate-pulse" />}
+          <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl border border-rose-200/80 p-5 shadow-lg hover:shadow-xl transition-shadow group relative overflow-hidden">
+            {stats.danger > 0 && <div className="absolute inset-0 bg-rose-500/5 animate-pulse" />}
             <div className="flex items-center justify-between mb-3 relative">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-red-500/30">
                 <XCircle className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xs text-red-600">危险</span>
+              <span className="text-xs text-rose-600">危险</span>
             </div>
             <p className="text-4xl font-black text-red-700 mb-1 relative">{stats.danger}</p>
-            <p className="text-sm text-red-600 relative">高危拦截</p>
+            <p className="text-sm text-rose-600 relative">高危拦截</p>
           </div>
         </div>
       </div>
@@ -413,19 +413,19 @@ export default function UserConsole() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* 屏幕预览 */}
         <div className="lg:col-span-3 bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-lg">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
                 <ScreenShare className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="font-bold text-slate-800">屏幕采集预览</h3>
-                <p className="text-xs text-slate-400">实时捕获内容分析</p>
+                <p className="text-xs text-slate-500">实时捕获内容分析</p>
               </div>
             </div>
             {monitoring && (
-              <span className="flex items-center gap-2 text-sm font-medium text-green-600 bg-green-50 px-4 py-2 rounded-full border border-green-200">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="flex items-center gap-2 text-sm font-medium text-emerald-600 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-200">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                 实时采集中
               </span>
             )}
@@ -443,20 +443,20 @@ export default function UserConsole() {
 
         {/* 检测消息流 */}
         <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-lg flex flex-col">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white flex-shrink-0">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="font-bold text-slate-800">检测消息流</h3>
-                <p className="text-xs text-slate-400">最近 {detectionLogs.length} 条记录</p>
+                <p className="text-xs text-slate-500">最近 {detectionLogs.length} 条记录</p>
               </div>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto max-h-[400px]">
             {detectionLogs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+              <div className="flex flex-col items-center justify-center py-16 text-slate-500">
                 <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
                   <Zap className="w-8 h-8 opacity-50" />
                 </div>
@@ -468,7 +468,7 @@ export default function UserConsole() {
                 {detectionLogs.map((log, index) => (
                   <div 
                     key={log.id} 
-                    className={`px-5 py-4 hover:bg-slate-50 transition-all ${index === 0 ? 'animate-slide-down' : ''} ${getRiskBg(log.result.risk_score)}`}
+                    className={`px-5 py-4 hover:bg-slate-200 transition-all ${index === 0 ? 'animate-slide-down' : ''} ${getRiskBg(log.result.risk_score)}`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md
@@ -485,16 +485,16 @@ export default function UserConsole() {
                             {log.result.is_fraud ? log.result.fraud_type_label : '内容安全'}
                           </span>
                           <span className={`px-2 py-0.5 text-xs rounded-full font-bold
-                                          ${log.result.risk_score >= 0.7 ? 'bg-red-500 text-white' : 
+                                          ${log.result.risk_score >= 0.7 ? 'bg-rose-500 text-white' : 
                                             log.result.risk_score >= 0.4 ? 'bg-amber-500 text-white' : 
-                                            'bg-green-500 text-white'}`}>
+                                            'bg-emerald-500 text-white'}`}>
                             {Math.round(log.result.risk_score * 100)}%
                           </span>
                         </div>
                         {log.result.analysis && (
-                          <p className="text-sm text-slate-600 line-clamp-2">{log.result.analysis}</p>
+                          <p className="text-sm text-slate-500 line-clamp-2">{log.result.analysis}</p>
                         )}
-                        <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-400">
+                        <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-500">
                           <Clock className="w-3.5 h-3.5" />
                           {log.timestamp.toLocaleTimeString()}
                         </div>

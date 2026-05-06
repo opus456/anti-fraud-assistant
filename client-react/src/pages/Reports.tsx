@@ -134,12 +134,12 @@ export default function Reports() {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         {/* 返回按钮 */}
-        <button onClick={() => setViewMode('list')} className="flex items-center gap-1 text-sm text-slate-500 hover:text-[#007AFF] transition-colors">
+        <button onClick={() => setViewMode('list')} className="flex items-center gap-1 text-sm text-slate-500 hover:text-[#0D9488] transition-colors">
           <ArrowLeft className="w-4 h-4" /> 返回列表
         </button>
 
         {/* 报告头部 */}
-        <div className="rounded-2xl bg-white border border-slate-100 overflow-hidden shadow-sm">
+        <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
           <div className="bg-gradient-to-r from-[#0e7490] to-[#0891b2] p-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4" />
             <div className="absolute bottom-0 left-1/3 w-32 h-32 bg-white/5 rounded-full translate-y-1/2" />
@@ -166,13 +166,13 @@ export default function Reports() {
         {/* 数据概览卡片 */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: '检测总数', value: selectedReport.total_detections || 0, icon: Activity, color: 'from-blue-500 to-cyan-500', bg: 'bg-blue-50', text: 'text-blue-600' },
+            { label: '检测总数', value: selectedReport.total_detections || 0, icon: Activity, color: 'from-blue-500 to-cyan-500', bg: 'bg-accent-50', text: 'text-accent-600' },
             { label: '风险拦截', value: selectedReport.fraud_detected || 0, icon: AlertTriangle, color: 'from-orange-500 to-red-500', bg: 'bg-orange-50', text: 'text-orange-600' },
             { label: '安全放行', value: safeCount, icon: CheckCircle2, color: 'from-emerald-500 to-green-500', bg: 'bg-emerald-50', text: 'text-emerald-600' },
-            { label: '安全率', value: `${safeRate}%`, icon: Shield, color: 'from-violet-500 to-purple-500', bg: 'bg-violet-50', text: 'text-violet-600' },
+            { label: '安全率', value: `${safeRate}%`, icon: Shield, color: 'from-teal-500 to-teal-600', bg: 'bg-accent-50', text: 'text-accent-600' },
           ].map((card, i) => (
             <motion.div key={card.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-              className="rounded-xl bg-white border border-slate-100 p-4 hover:shadow-md transition-shadow">
+              className="rounded-xl bg-white border border-slate-200 p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-2 mb-3">
                 <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${card.color} flex items-center justify-center shadow-sm`}>
                   <card.icon className="w-4 h-4 text-white" />
@@ -188,9 +188,9 @@ export default function Reports() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* 安全率仪表盘 */}
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}
-            className="rounded-xl bg-white border border-slate-100 p-4 shadow-sm">
+            className="rounded-xl bg-white border border-slate-200 p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
-              <Shield className="w-4 h-4 text-emerald-500" />
+              <Shield className="w-4 h-4 text-emerald-600" />
               <h3 className="text-sm font-semibold text-slate-700">安全评估</h3>
             </div>
             <ReactECharts option={safetyGaugeOption} style={{ height: 200 }} />
@@ -198,7 +198,7 @@ export default function Reports() {
 
           {/* 风险等级分布 */}
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}
-            className="rounded-xl bg-white border border-slate-100 p-4 shadow-sm">
+            className="rounded-xl bg-white border border-slate-200 p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <PieChart className="w-4 h-4 text-cyan-500" />
               <h3 className="text-sm font-semibold text-slate-700">风险等级分布</h3>
@@ -208,7 +208,7 @@ export default function Reports() {
 
           {/* 诈骗类型分布 */}
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}
-            className="rounded-xl bg-white border border-slate-100 p-4 shadow-sm">
+            className="rounded-xl bg-white border border-slate-200 p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="w-4 h-4 text-orange-500" />
               <h3 className="text-sm font-semibold text-slate-700">诈骗类型TOP</h3>
@@ -216,7 +216,7 @@ export default function Reports() {
             {typeSorted.length > 0 ? (
               <ReactECharts option={typeBarOption} style={{ height: 200 }} />
             ) : (
-              <div className="h-[200px] flex flex-col items-center justify-center text-slate-300">
+              <div className="h-[200px] flex flex-col items-center justify-center text-slate-700">
                 <CheckCircle2 className="w-10 h-10 mb-2" />
                 <span className="text-sm">未检出诈骗类型</span>
               </div>
@@ -237,7 +237,7 @@ export default function Reports() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {suggestions.map((s: string, i: number) => (
                 <div key={i} className="flex items-start gap-2 text-sm text-amber-900/80">
-                  <span className="mt-0.5 w-5 h-5 rounded-full bg-amber-200/60 text-amber-700 flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</span>
+                  <span className="mt-0.5 w-5 h-5 rounded-full bg-amber-200/60 text-amber-600 flex items-center justify-center text-xs font-bold flex-shrink-0">{i + 1}</span>
                   <span>{s}</span>
                 </div>
               ))}
@@ -248,7 +248,7 @@ export default function Reports() {
         {/* 风险详情指标列表 */}
         {Object.keys(riskSummary).length > 0 && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
-            className="rounded-xl bg-white border border-slate-100 p-5 shadow-sm">
+            className="rounded-xl bg-white border border-slate-200 p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="w-4 h-4 text-indigo-500" />
               <h3 className="text-sm font-bold text-slate-700">风险等级明细</h3>
@@ -258,7 +258,7 @@ export default function Reports() {
                 const pct = selectedReport.total_detections > 0 ? (count / selectedReport.total_detections) * 100 : 0;
                 return (
                   <div key={level} className="flex items-center gap-3">
-                    <span className="text-sm text-slate-600 w-16 text-right font-medium">{riskLabels[level] || level}</span>
+                    <span className="text-sm text-slate-500 w-16 text-right font-medium">{riskLabels[level] || level}</span>
                     <div className="flex-1 h-5 bg-slate-100 rounded-full overflow-hidden">
                       <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, delay: 0.6 }}
                         className="h-full rounded-full" style={{ backgroundColor: riskColors[level] || '#94a3b8' }} />
@@ -273,12 +273,12 @@ export default function Reports() {
 
         {/* Markdown 报告正文 */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
-          className="rounded-xl bg-white border border-slate-100 overflow-hidden shadow-sm">
-          <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-slate-400" />
+          className="rounded-xl bg-white border border-slate-200 overflow-hidden shadow-sm">
+          <div className="px-5 py-3 border-b border-slate-200 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-slate-500" />
             <h3 className="text-sm font-semibold text-slate-700">详细分析报告</h3>
           </div>
-          <div className="p-6 prose prose-sm max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-strong:text-slate-700 prose-li:text-slate-600">
+          <div className="p-6 prose prose-sm max-w-none prose-headings:text-slate-800 prose-p:text-slate-500 prose-strong:text-slate-700 prose-li:text-slate-500">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
@@ -288,16 +288,16 @@ export default function Reports() {
                   </div>
                 ),
                 thead: ({ children, ...props }) => (
-                  <thead className="bg-slate-50" {...props}>{children}</thead>
+                  <thead className="bg-white" {...props}>{children}</thead>
                 ),
                 th: ({ children, ...props }) => (
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200" {...props}>{children}</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200" {...props}>{children}</th>
                 ),
                 td: ({ children, ...props }) => (
-                  <td className="px-4 py-2 text-slate-600 border-b border-slate-100" {...props}>{children}</td>
+                  <td className="px-4 py-2 text-slate-500 border-b border-slate-200" {...props}>{children}</td>
                 ),
                 tr: ({ children, ...props }) => (
-                  <tr className="hover:bg-slate-50/60 transition-colors" {...props}>{children}</tr>
+                  <tr className="hover:bg-white/60 transition-colors" {...props}>{children}</tr>
                 ),
               }}
             >
@@ -313,7 +313,7 @@ export default function Reports() {
     <div className="space-y-6">
       {/* Hero Banner - 青色 */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#134e4a] via-[#0e7490] to-[#155e75] p-6 sm:p-8">
-        <div className="absolute top-0 right-0 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute top-0 right-0 w-72 h-72 bg-cyan-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
         <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-40 h-40 sm:w-52 sm:h-52 text-white/[0.03]" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
           <div className="flex-1">
@@ -329,12 +329,12 @@ export default function Reports() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-slate-400">加载中...</div>
+        <div className="text-center py-12 text-slate-500">加载中...</div>
       ) : reports.length === 0 ? (
         <div className="text-center py-16">
-          <FileText className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+          <FileText className="w-16 h-16 text-slate-800 mx-auto mb-4" />
           <p className="text-slate-500 mb-1">暂无安全报告</p>
-          <p className="text-slate-400 text-sm">点击上方按钮生成您的第一份安全报告</p>
+          <p className="text-slate-500 text-sm">点击上方按钮生成您的第一份安全报告</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -342,11 +342,11 @@ export default function Reports() {
             const fraudRate = report.total_detections > 0 ? ((report.fraud_detected / report.total_detections) * 100).toFixed(0) : '0';
             const safeRate = report.total_detections > 0 ? (100 - parseFloat(fraudRate)).toFixed(0) : '100';
             const riskLevel = parseFloat(safeRate) >= 80 ? 'safe' : parseFloat(safeRate) >= 50 ? 'warn' : 'danger';
-            const riskConfig = { safe: { color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', label: '安全' }, warn: { color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', label: '注意' }, danger: { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', label: '警告' } }[riskLevel];
+            const riskConfig = { safe: { color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', label: '安全' }, warn: { color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', label: '注意' }, danger: { color: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-200', label: '警告' } }[riskLevel];
             return (
             <motion.div key={report.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
               onClick={() => openDetail(report)}
-              className="flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-white border border-slate-100 hover:border-cyan-200 hover:shadow-md transition-all cursor-pointer group"
+              className="flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 hover:border-cyan-200 hover:shadow-md transition-all cursor-pointer group"
             >
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-md group-hover:shadow-lg transition-shadow">
                 <FileText className="w-6 h-6 text-white" />
@@ -354,11 +354,11 @@ export default function Reports() {
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-slate-800 group-hover:text-cyan-700 truncate transition-colors">{report.title}</h3>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <span className="text-xs text-slate-400">{new Date(report.created_at).toLocaleString()}</span>
+                  <span className="text-xs text-slate-500">{new Date(report.created_at).toLocaleString()}</span>
                   <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs rounded-full">{report.report_type === 'weekly' ? '周报' : report.report_type === 'monthly' ? '月报' : '报告'}</span>
                   {report.total_detections > 0 && (
                     <>
-                      <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded-full">
+                      <span className="flex items-center gap-1 px-2 py-0.5 bg-accent-50 text-accent-600 text-xs rounded-full">
                         <Activity className="w-3 h-3" /> {report.total_detections}次检测
                       </span>
                       {report.fraud_detected > 0 && (
@@ -385,7 +385,7 @@ export default function Reports() {
                 </svg>
                 <span className={`text-[10px] font-bold mt-0.5 ${riskConfig.color}`}>{safeRate}%</span>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-cyan-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+              <ChevronRight className="w-5 h-5 text-slate-700 group-hover:text-cyan-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
             </motion.div>
             );
           })}

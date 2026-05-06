@@ -3,10 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   UserGroupIcon, UserPlusIcon, PhoneIcon, BellAlertIcon,
   ShieldCheckIcon, ExclamationTriangleIcon, CheckCircleIcon,
-  XMarkIcon, ClipboardDocumentIcon, MagnifyingGlassIcon,
+  XMarkIcon, MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import api from '../api';
-import { useAuthStore } from '../store';
 import toast from 'react-hot-toast';
 import { ScrollReveal, StaggerContainer, StaggerItem, HoverCard } from '../components/motion';
 import { Link } from 'react-router-dom';
@@ -15,108 +14,125 @@ interface ChargeUser { relation_id: number; user_id: number; username: string; n
 interface Guardian { id: number; guardian_id: number; guardian_username: string; guardian_nickname: string; relationship: string; is_primary: boolean; created_at: string; }
 interface AlertStats { pending: number; resolved: number; total: number; }
 
+interface RelationshipNode {
+  id: string;
+  name: string;
+  relation: string;
+  meta: string;
+  tone: 'charge' | 'guardian';
+}
+
 // 关系图谱组件
 function RelationshipGraph({ charges, guardians }: { charges: ChargeUser[]; guardians: Guardian[] }) {
   const hasData = charges.length > 0 || guardians.length > 0;
-  const nodes = hasData
-    ? [
-        ...charges.map((c, i) => ({ name: c.nickname || c.username, type: 'charge' as const, color: 'from-orange-400 to-pink-400', angle: (i * 360) / Math.max(charges.length + guardians.length, 1) })),
-        ...guardians.map((g, i) => ({ name: g.guardian_nickname || g.guardian_username, type: 'guardian' as const, color: 'from-green-400 to-emerald-500', angle: ((charges.length + i) * 360) / Math.max(charges.length + guardians.length, 1) })),
-      ]
+  const chargeNodes: RelationshipNode[] = hasData
+    ? charges.map((charge) => ({
+        id: `charge-${charge.relation_id}`,
+        name: charge.nickname || charge.username,
+        relation: charge.relationship || '被守护者',
+        meta: `${charge.total_detections} 次检测 · ${charge.fraud_hits} 次命中`,
+        tone: 'charge',
+      }))
     : [
-        { name: '父亲', type: 'charge' as const, color: 'from-blue-400 to-sky-500', angle: 0 },
-        { name: '母亲', type: 'charge' as const, color: 'from-pink-400 to-rose-400', angle: 72 },
-        { name: '子女', type: 'guardian' as const, color: 'from-green-400 to-emerald-500', angle: 144 },
-        { name: '配偶', type: 'charge' as const, color: 'from-purple-400 to-violet-500', angle: 216 },
-        { name: '朋友', type: 'guardian' as const, color: 'from-amber-400 to-orange-400', angle: 288 },
+        { id: 'sample-charge-father', name: '父亲', relation: '被守护者', meta: '12 次检测 · 1 次命中', tone: 'charge' },
+        { id: 'sample-charge-mother', name: '母亲', relation: '被守护者', meta: '8 次检测 · 0 次命中', tone: 'charge' },
       ];
 
-  const radius = 100;
+  const guardianNodes: RelationshipNode[] = hasData
+    ? guardians.map((guardian) => ({
+        id: `guardian-${guardian.id}`,
+        name: guardian.guardian_nickname || guardian.guardian_username,
+        relation: guardian.relationship || '监护人',
+        meta: guardian.is_primary ? '主要监护人 · 实时联动' : '协同监护 · 已连接',
+        tone: 'guardian',
+      }))
+    : [
+        { id: 'sample-guardian-child', name: '子女', relation: '监护人', meta: '主要监护人 · 实时联动', tone: 'guardian' },
+        { id: 'sample-guardian-friend', name: '朋友', relation: '协同监护', meta: '辅助守护 · 已连接', tone: 'guardian' },
+      ];
+
+  const renderNode = (node: RelationshipNode, align: 'left' | 'right') => {
+    const accentClass = node.tone === 'charge'
+      ? 'border-amber-200 bg-white/90 shadow-[0_12px_32px_rgba(245,158,11,0.10)]'
+      : 'border-emerald-200 bg-white/90 shadow-[0_12px_32px_rgba(16,185,129,0.10)]';
+    const badgeClass = node.tone === 'charge'
+      ? 'bg-amber-50 text-amber-700'
+      : 'bg-emerald-50 text-emerald-700';
+    const dotClass = node.tone === 'charge' ? 'bg-amber-400' : 'bg-emerald-400';
+
+    return (
+      <motion.div
+        key={node.id}
+        initial={{ opacity: 0, x: align === 'left' ? -12 : 12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.35 }}
+        className={`relative rounded-2xl border p-4 ${accentClass}`}
+      >
+        <div className={`absolute top-1/2 hidden h-px w-6 -translate-y-1/2 bg-slate-300 lg:block ${align === 'left' ? '-right-6' : '-left-6'}`} />
+        <div className="flex items-start gap-3">
+          <div className={`mt-1 h-2.5 w-2.5 rounded-full ${dotClass}`} />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <p className="truncate text-sm font-semibold text-slate-800">{node.name}</p>
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${badgeClass}`}>{node.relation}</span>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-slate-500">{node.meta}</p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
-    <div className="relative w-[280px] h-[280px] mx-auto">
-      {/* 连接线 */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 280 280">
-        {nodes.map((node, i) => {
-          const x = 140 + Math.cos((node.angle - 90) * Math.PI / 180) * radius;
-          const y = 140 + Math.sin((node.angle - 90) * Math.PI / 180) * radius;
-          return (
-            <motion.line key={i} x1="140" y1="140" x2={x} y2={y}
-              stroke={node.type === 'charge' ? 'rgba(251,146,60,0.3)' : 'rgba(52,211,153,0.3)'}
-              strokeWidth="2" strokeDasharray="4 4"
-              initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-              transition={{ duration: 1, delay: i * 0.15 }}
-            />
-          );
-        })}
-      </svg>
-      {/* 中心节点 */}
-      <motion.div className="node-center absolute" style={{ left: 'calc(50% - 32px)', top: 'calc(50% - 32px)' }}
-        animate={{ y: [0, -4, 0] }} transition={{ duration: 3, repeat: Infinity }}
-      >我</motion.div>
-      {/* 外围节点 */}
-      {nodes.map((node, i) => {
-        const x = 140 + Math.cos((node.angle - 90) * Math.PI / 180) * radius - 24;
-        const y = 140 + Math.sin((node.angle - 90) * Math.PI / 180) * radius - 24;
-        return (
-          <motion.div key={i} className={`node-family absolute bg-gradient-to-br ${node.color} text-white`}
-            style={{ left: x, top: y }}
-            initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1, y: [0, -4, 0] }}
-            transition={{ duration: 0.5, delay: 0.3 + i * 0.1, y: { duration: 3, repeat: Infinity, delay: i * 0.5 } }}
-          >
-            {node.name.charAt(0)}
-          </motion.div>
-        );
-      })}
-      {/* 节点标签 */}
-      {nodes.map((node, i) => {
-        const labelX = 140 + Math.cos((node.angle - 90) * Math.PI / 180) * (radius + 30);
-        const labelY = 140 + Math.sin((node.angle - 90) * Math.PI / 180) * (radius + 30);
-        return (
-          <motion.span key={`label-${i}`} className="absolute text-xs text-slate-500 font-medium whitespace-nowrap"
-            style={{ left: labelX, top: labelY, transform: 'translate(-50%, -50%)' }}
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 + i * 0.1 }}
-          >{node.name}</motion.span>
-        );
-      })}
+    <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.10),_transparent_34%),linear-gradient(180deg,_rgba(255,255,255,0.94),_rgba(248,250,252,0.96))] p-5 sm:p-6">
+      <div className="pointer-events-none absolute inset-y-8 left-1/2 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-slate-200 to-transparent lg:block" />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px_minmax(0,1fr)] lg:items-center">
+        <div className="space-y-3 lg:pr-8">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">被守护者</p>
+            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">{charges.length} 人</span>
+          </div>
+          <div className="space-y-3">
+            {chargeNodes.map((node) => renderNode(node, 'left'))}
+          </div>
+        </div>
+
+        <div className="relative mx-auto flex h-[280px] w-full max-w-[280px] items-center justify-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 16, repeat: Infinity, ease: 'linear' }}
+            className="absolute h-[220px] w-[220px] rounded-full border border-dashed border-sky-200/80"
+          />
+          <motion.div
+            animate={{ scale: [1, 1.03, 1] }}
+            transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute h-[168px] w-[168px] rounded-full bg-[radial-gradient(circle,_rgba(14,165,233,0.12),_rgba(255,255,255,0.0)_70%)]"
+          />
+          <div className="relative flex h-40 w-40 flex-col items-center justify-center rounded-[32px] border border-sky-200 bg-white/95 text-center shadow-[0_24px_60px_rgba(14,165,233,0.12)]">
+            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-500/20">
+              <ShieldCheckIcon className="h-7 w-7" />
+            </div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-sky-600">守护中枢</p>
+            <p className="mt-1 text-xl font-black tracking-tight text-slate-900">我</p>
+            <p className="mt-2 max-w-[120px] text-xs leading-5 text-slate-500">连接家庭成员、同步预警、分发通知</p>
+          </div>
+        </div>
+
+        <div className="space-y-3 lg:pl-8">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">监护人</p>
+            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">{guardians.length} 人</span>
+          </div>
+          <div className="space-y-3">
+            {guardianNodes.map((node) => renderNode(node, 'right'))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-// 邀请码特权卡
-function InviteTicket({ code, onCopy }: { code: string; onCopy: () => void }) {
-  return (
-    <motion.div className="ticket-card p-0 relative" whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
-      <div className="flex items-stretch min-h-[90px]">
-        {/* 左侧标签区 */}
-        <div className="flex flex-col items-center justify-center px-5 py-4 bg-white/10">
-          <ShieldCheckIcon className="w-7 h-7 text-white/90 mb-1" />
-          <span className="text-[10px] text-white/70 font-medium">INVITE</span>
-        </div>
-        {/* 虚线分割 */}
-        <div className="w-px bg-white/20 my-3" style={{ borderLeft: '2px dashed rgba(255,255,255,0.25)' }} />
-        {/* 右侧邀请码 */}
-        <div className="flex-1 flex items-center justify-between px-5 py-4">
-          <div>
-            <p className="text-[10px] text-white/60 mb-1 uppercase tracking-wider">我的邀请码</p>
-            <p className="text-lg font-mono font-bold text-white tracking-widest">{code}</p>
-          </div>
-          <motion.button onClick={onCopy}
-            className="w-10 h-10 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
-            whileTap={{ scale: 0.9 }}
-          >
-            <ClipboardDocumentIcon className="w-5 h-5 text-white" />
-          </motion.button>
-        </div>
-      </div>
-      {/* 装饰光条 */}
-      <div className="absolute top-0 right-0 w-24 h-full bg-gradient-to-l from-white/5 to-transparent" />
-    </motion.div>
-  );
-}
-
 export default function Family() {
-  const { user } = useAuthStore();
   const [charges, setCharges] = useState<ChargeUser[]>([]);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [alertStats, setAlertStats] = useState<AlertStats>({ pending: 0, resolved: 0, total: 0 });
@@ -126,7 +142,6 @@ export default function Family() {
   const [searchUsername, setSearchUsername] = useState('');
   const [relationship, setRelationship] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const inviteCode = user?.username ? `INV-${user.username.toUpperCase().slice(0, 4)}-${user.id}` : '';
 
   useEffect(() => { loadData(); }, []);
 
@@ -171,9 +186,9 @@ export default function Family() {
     try { await api.post('/guardians/emergency').catch(() => {}); toast.success('已向所有监护人发送紧急通报'); } catch { toast.error('通报失败'); }
   };
 
-  const copyInviteCode = () => { navigator.clipboard.writeText(inviteCode); toast.success('邀请码已复制'); };
-  const getRiskColor = (s: number) => { if (s >= 0.7) return 'text-red-600 bg-red-100'; if (s >= 0.4) return 'text-amber-600 bg-amber-100'; return 'text-green-600 bg-green-100'; };
+  const getRiskColor = (s: number) => { if (s >= 0.7) return 'text-rose-600 bg-rose-50'; if (s >= 0.4) return 'text-amber-600 bg-amber-50'; return 'text-emerald-600 bg-emerald-50'; };
   const getRiskLabel = (s: number) => { if (s >= 0.7) return '高风险'; if (s >= 0.4) return '中风险'; return '安全'; };
+  const alertHandlingRate = alertStats.total > 0 ? Math.round((alertStats.resolved / alertStats.total) * 100) : 100;
 
   if (loading) return (
     <div className="space-y-6">
@@ -184,16 +199,15 @@ export default function Family() {
 
   return (
     <div className="space-y-6">
-      {/* 标题 + 邀请码特权卡 */}
+      {/* 页面标题 */}
       <ScrollReveal>
         <div className="card-glass bg-gradient-to-r from-sky-50/80 to-blue-50/80 border-sky-200">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">家庭守护</h1>
-              <p className="text-slate-600 text-sm sm:text-base">管理守护关系，保护家人安全</p>
+              <p className="text-slate-500 text-sm sm:text-base">管理守护关系，按用户名添加成员并同步家庭安全状态。</p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-              <div className="w-full sm:w-72"><InviteTicket code={inviteCode} onCopy={copyInviteCode} /></div>
+            <div className="flex w-full lg:w-auto">
               <button onClick={() => { setAddType('charge'); setShowAddModal(true); }} className="btn btn-primary text-sm whitespace-nowrap">
                 <UserPlusIcon className="w-4 h-4" />添加被守护者
               </button>
@@ -202,24 +216,66 @@ export default function Family() {
         </div>
       </ScrollReveal>
 
-      {/* 关系图谱 */}
+      {/* 守护网络概览 */}
       <ScrollReveal delay={0.1}>
-        <div className="card-glass">
-          <h2 className="text-lg font-semibold text-slate-800 mb-4 text-center">守护关系图谱</h2>
-          <RelationshipGraph charges={charges} guardians={guardians} />
+        <div className="card-glass overflow-hidden">
+          <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-800">守护关系图谱</h2>
+                <p className="mt-1 text-sm text-slate-500">用更清晰的网络视图查看谁在守护你、你在守护谁。</p>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-700">{charges.length || 2} 个被守护者节点</span>
+                <span className="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">{guardians.length || 2} 个监护人节点</span>
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-6 px-5 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+            <RelationshipGraph charges={charges} guardians={guardians} />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="rounded-3xl border border-sky-100 bg-gradient-to-br from-sky-50 to-cyan-50 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">守护覆盖</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-slate-900">{charges.length + guardians.length}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">当前已建立 {charges.length} 条下行守护关系和 {guardians.length} 条上行监护关系。</p>
+              </div>
+              <div className="rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 to-orange-50 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">预警处置率</p>
+                <p className="mt-3 text-3xl font-black tracking-tight text-slate-900">{alertHandlingRate}%</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">累计 {alertStats.total} 条家庭相关预警，已完成 {alertStats.resolved} 条处理。</p>
+              </div>
+              <div className="rounded-3xl border border-slate-200 bg-white/85 p-5 sm:col-span-2 lg:col-span-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">网络状态</p>
+                <div className="mt-4 space-y-3 text-sm">
+                  <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="text-slate-600">高风险成员</span>
+                    <span className="font-semibold text-rose-600">{charges.filter((charge) => charge.risk_score >= 0.7).length}</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="text-slate-600">主要监护人</span>
+                    <span className="font-semibold text-emerald-600">{guardians.filter((guardian) => guardian.is_primary).length}</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="text-slate-600">待处理预警</span>
+                    <span className="font-semibold text-amber-600">{alertStats.pending}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           {charges.length === 0 && guardians.length === 0 && (
-            <p className="text-center text-slate-400 text-sm mt-4">以上为示例关系 · 添加成员后将显示真实图谱</p>
+            <div className="border-t border-slate-200 px-5 py-4 text-center text-sm text-slate-500 sm:px-6">当前展示的是示意网络。添加家庭成员后，这里会自动切换成真实守护关系。</div>
           )}
         </div>
       </ScrollReveal>
 
-      {/* 统计卡片 */}
+      {/* 家庭守护指标 */}
       <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { icon: UserGroupIcon, color: 'bg-sky-100', iconColor: 'text-sky-600', value: charges.length, label: '被守护者' },
-          { icon: ShieldCheckIcon, color: 'bg-green-100', iconColor: 'text-green-600', value: guardians.length, label: '我的监护人' },
-          { icon: BellAlertIcon, color: 'bg-amber-100', iconColor: 'text-amber-600', value: alertStats.pending, label: '待处理预警', link: '/alerts?filter=pending', highlight: true },
-          { icon: CheckCircleIcon, color: 'bg-purple-100', iconColor: 'text-purple-600', value: alertStats.resolved, label: '已处理' },
+          { icon: ShieldCheckIcon, color: 'bg-emerald-50', iconColor: 'text-emerald-600', value: guardians.length, label: '我的监护人' },
+          { icon: BellAlertIcon, color: 'bg-amber-50', iconColor: 'text-amber-600', value: alertStats.pending, label: '待处理预警', link: '/alerts?filter=pending', highlight: true },
+          { icon: CheckCircleIcon, color: 'bg-purple-500/15', iconColor: 'text-purple-600', value: alertStats.resolved, label: '已处理预警' },
         ].map((s, i) => (
           <StaggerItem key={i}>
             {s.link ? (
@@ -240,21 +296,21 @@ export default function Family() {
           </div>
           {charges.length === 0 ? (
             <div className="text-center py-12">
-              <UserGroupIcon className="w-16 h-16 mx-auto text-slate-200 mb-4" />
+              <UserGroupIcon className="w-16 h-16 mx-auto text-slate-800 mb-4" />
               <p className="text-slate-500 mb-4">还没有被守护者</p>
               <button onClick={() => { setAddType('charge'); setShowAddModal(true); }} className="btn btn-outline"><UserPlusIcon className="w-4 h-4" />添加被守护者</button>
             </div>
           ) : (
             <div className="space-y-3">
               {charges.map(charge => (
-                <motion.div key={charge.relation_id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl bg-slate-50/80 hover:bg-slate-100 transition-colors"
+                <motion.div key={charge.relation_id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl bg-white/80 hover:bg-slate-100 transition-colors"
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 >
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">{charge.nickname?.charAt(0) || charge.username?.charAt(0) || '?'}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-slate-800">{charge.nickname || charge.username}</span>
-                      <span className="text-xs text-slate-400">@{charge.username}</span>
+                      <span className="text-xs text-slate-500">@{charge.username}</span>
                       {charge.relationship && <span className="text-xs px-2 py-0.5 rounded-full bg-sky-100 text-sky-600">{charge.relationship}</span>}
                     </div>
                     <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
@@ -265,7 +321,7 @@ export default function Family() {
                   <div className="flex gap-2 w-full sm:w-auto">
                     <button onClick={() => handleNotify(charge)} className="flex-1 sm:flex-none btn btn-outline text-sm py-2"><BellAlertIcon className="w-4 h-4" /><span className="sm:hidden md:inline">通知</span></button>
                     <a href={`tel:${charge.username}`} className="flex-1 sm:flex-none btn btn-ghost text-sm py-2"><PhoneIcon className="w-4 h-4" /></a>
-                    <button onClick={() => handleUnbind(charge.relation_id, charge.nickname || charge.username)} className="btn btn-ghost text-red-500 hover:bg-red-50 text-sm py-2"><XMarkIcon className="w-4 h-4" /></button>
+                    <button onClick={() => handleUnbind(charge.relation_id, charge.nickname || charge.username)} className="btn btn-ghost text-rose-600 hover:bg-rose-50 text-sm py-2"><XMarkIcon className="w-4 h-4" /></button>
                   </div>
                 </motion.div>
               ))}
@@ -278,21 +334,21 @@ export default function Family() {
       <ScrollReveal delay={0.3}>
         <div className="card-glass">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2"><ShieldCheckIcon className="w-5 h-5 text-green-500" />守护我的人</h2>
+            <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2"><ShieldCheckIcon className="w-5 h-5 text-emerald-600" />守护我的人</h2>
             <button onClick={() => { setAddType('guardian'); setShowAddModal(true); }} className="text-sm text-sky-600 hover:text-sky-700">+ 添加监护人</button>
           </div>
           {guardians.length === 0 ? (
-            <div className="text-center py-8 text-slate-500"><p>还没有监护人</p><p className="text-sm mt-1">让家人输入你的邀请码来成为你的监护人</p></div>
+            <div className="text-center py-8 text-slate-500"><p>还没有监护人</p><p className="text-sm mt-1">点击上方添加监护人，输入对方用户名后即可建立守护关系</p></div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {guardians.map(g => (
-                <div key={g.id} className="flex items-center gap-3 p-3 rounded-xl bg-green-50/80 border border-green-200 backdrop-blur">
-                  <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">{g.guardian_nickname?.charAt(0) || '?'}</div>
+                <div key={g.id} className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50/80 border border-emerald-200 backdrop-blur">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold">{g.guardian_nickname?.charAt(0) || '?'}</div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-slate-800 truncate">{g.guardian_nickname || g.guardian_username}</div>
                     <div className="text-xs text-slate-500">{g.relationship || '监护人'}{g.is_primary && ' · 主要监护人'}</div>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 flex items-center gap-1">
+                  <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-600 flex items-center gap-1">
                     <div className="breathing-dot breathing-dot-safe" style={{width:5,height:5}} /> 守护中
                   </span>
                 </div>
@@ -305,11 +361,11 @@ export default function Family() {
       {/* 紧急通报 */}
       {guardians.length > 0 && (
         <ScrollReveal delay={0.4}>
-          <div className="card-glass bg-gradient-to-r from-red-50/80 to-orange-50/80 border-red-200">
+          <div className="card-glass bg-gradient-to-r from-red-50/80 to-orange-50/80 border-rose-200">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0"><ExclamationTriangleIcon className="w-8 h-8 text-red-500" /></div>
-              <div className="flex-1"><h3 className="font-semibold text-red-700 mb-1">一键紧急通报</h3><p className="text-slate-600 text-sm">立即通知所有监护人（{guardians.length}人），发送紧急求助信息</p></div>
-              <button onClick={handleEmergency} className="w-full sm:w-auto btn bg-red-500 hover:bg-red-600 text-white py-3 px-6">🆘 一键求助</button>
+              <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0"><ExclamationTriangleIcon className="w-8 h-8 text-rose-600" /></div>
+              <div className="flex-1"><h3 className="font-semibold text-red-700 mb-1">一键紧急通报</h3><p className="text-slate-500 text-sm">立即通知所有监护人（{guardians.length}人），发送紧急求助信息</p></div>
+              <button onClick={handleEmergency} className="w-full sm:w-auto btn bg-rose-500 hover:bg-rose-600 text-white py-3 px-6">🆘 一键求助</button>
             </div>
           </div>
         </ScrollReveal>
@@ -324,7 +380,7 @@ export default function Family() {
             <motion.div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden"
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={e => e.stopPropagation()}
             >
-              <div className="p-6 border-b border-slate-100">
+              <div className="p-6 border-b border-slate-200">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-slate-800">{addType === 'guardian' ? '添加监护人' : '添加被守护者'}</h3>
                   <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 rounded-full"><XMarkIcon className="w-5 h-5 text-slate-500" /></button>
@@ -333,7 +389,7 @@ export default function Family() {
               <div className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">输入对方的用户名</label>
-                  <div className="relative"><MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" /><input type="text" value={searchUsername} onChange={e => setSearchUsername(e.target.value)} placeholder="请输入用户名..." className="input pl-10" /></div>
+                  <div className="relative"><MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" /><input type="text" value={searchUsername} onChange={e => setSearchUsername(e.target.value)} placeholder="请输入用户名..." className="input pl-10" /></div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">关系（可选）</label>

@@ -115,7 +115,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-primary-800 text-white p-6">
         <div className="max-w-6xl mx-auto">
@@ -150,14 +150,14 @@ export default function AdminDashboard() {
 
         {/* Review table */}
         <div className="bg-white rounded-xl shadow-sm border p-6">
-          <h2 className="font-semibold text-gray-800 mb-4">待审核未知风险事件 ({pending.length})</h2>
+          <h2 className="font-semibold text-slate-800 mb-4">待审核未知风险事件 ({pending.length})</h2>
           {pending.length === 0 ? (
-            <p className="text-gray-400 text-center py-8 text-sm">暂无待审核内容</p>
+            <p className="text-slate-500 text-center py-8 text-sm">暂无待审核内容</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-gray-500">
+                  <tr className="border-b text-left text-slate-500">
                     <th className="pb-3 pr-4">ID</th>
                     <th className="pb-3 pr-4">标题</th>
                     <th className="pb-3 pr-4">内容</th>
@@ -171,25 +171,25 @@ export default function AdminDashboard() {
                 <tbody>
                   {pending.map((item) => (
                     <tr key={item.id} className="border-b last:border-0">
-                      <td className="py-3 pr-4 text-gray-400">{item.id}</td>
-                      <td className="py-3 pr-4 text-gray-700 max-w-[180px] truncate">{item.title}</td>
+                      <td className="py-3 pr-4 text-slate-500">{item.id}</td>
+                      <td className="py-3 pr-4 text-slate-700 max-w-[180px] truncate">{item.title}</td>
                       <td className="py-3 pr-4 max-w-[200px] truncate">{item.content}</td>
-                      <td className="py-3 pr-4 text-gray-500">{item.source}</td>
+                      <td className="py-3 pr-4 text-slate-500">{item.source}</td>
                       <td className="py-3 pr-4">
-                        <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">{item.fraud_type}</span>
+                        <span className="px-2 py-0.5 bg-slate-100 rounded text-xs">{item.fraud_type}</span>
                       </td>
-                      <td className="py-3 pr-4 text-gray-500">{item.submitted_by}</td>
-                      <td className="py-3 pr-4 text-gray-400 text-xs">
+                      <td className="py-3 pr-4 text-slate-500">{item.submitted_by}</td>
+                      <td className="py-3 pr-4 text-slate-500 text-xs">
                         {new Date(item.created_at).toLocaleString()}
                       </td>
                       <td className="py-3">
                         <div className="flex gap-2">
                           <button onClick={() => handleReview(item.id, 'approve')}
-                            className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200">
+                            className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-green-200">
                             <CheckCircle className="w-4 h-4" />
                           </button>
                           <button onClick={() => handleReview(item.id, 'reject')}
-                            className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
+                            className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-red-200">
                             <XCircle className="w-4 h-4" />
                           </button>
                         </div>

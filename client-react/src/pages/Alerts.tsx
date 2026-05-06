@@ -273,8 +273,8 @@ export default function Alerts() {
     switch (numLevel) {
       case 3:
         return {
-          badge: 'bg-red-100 text-red-700 border-red-200',
-          icon: 'bg-red-100 border-red-200 text-red-600',
+          badge: 'bg-rose-50 text-red-700 border-rose-200',
+          icon: 'bg-rose-50 border-rose-200 text-rose-600',
           border: 'border-l-red-500',
           label: '极高风险',
         };
@@ -287,15 +287,15 @@ export default function Alerts() {
         };
       case 1:
         return {
-          badge: 'bg-amber-100 text-amber-700 border-amber-200',
-          icon: 'bg-amber-100 border-amber-200 text-amber-600',
+          badge: 'bg-amber-50 text-amber-600 border-amber-200',
+          icon: 'bg-amber-50 border-amber-200 text-amber-600',
           border: 'border-l-amber-500',
           label: '中风险',
         };
       default:
         return {
-          badge: 'bg-green-100 text-green-700 border-green-200',
-          icon: 'bg-green-100 border-green-200 text-green-600',
+          badge: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+          icon: 'bg-emerald-50 border-emerald-200 text-emerald-600',
           border: 'border-l-green-500',
           label: '安全',
         };
@@ -333,7 +333,7 @@ export default function Alerts() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">预警中心</h1>
-              <p className="text-slate-600 text-sm sm:text-base">管理被守护者的风险预警工单</p>
+              <p className="text-slate-500 text-sm sm:text-base">管理被守护者的风险预警工单</p>
             </div>
             <button
               onClick={loadAlerts}
@@ -350,7 +350,7 @@ export default function Alerts() {
       <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StaggerItem>
           <div onClick={() => handleFilterChange('pending')} className="cursor-pointer group">
-            <div className={`relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border transition-all duration-300 transform group-hover:-translate-y-1 ${filter === 'pending' ? 'border-amber-400 shadow-lg shadow-amber-500/10' : 'border-slate-100/60 hover:shadow-xl hover:border-amber-200'}`}>
+            <div className={`relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border transition-all duration-300 transform group-hover:-translate-y-1 ${filter === 'pending' ? 'border-amber-400 shadow-lg shadow-amber-500/10' : 'border-slate-200/60 hover:shadow-xl hover:border-amber-200'}`}>
                <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-amber-400/20 blur-xl group-hover:scale-150 transition-transform"></div>
                <div className="flex flex-col gap-2 relative z-10">
                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center border border-amber-200/50 shadow-inner">
@@ -364,7 +364,7 @@ export default function Alerts() {
         </StaggerItem>
         <StaggerItem>
           <div onClick={() => handleFilterChange('resolved')} className="cursor-pointer group">
-            <div className={`relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border transition-all duration-300 transform group-hover:-translate-y-1 ${filter === 'resolved' ? 'border-emerald-400 shadow-lg shadow-emerald-500/10' : 'border-slate-100/60 hover:shadow-xl hover:border-emerald-200'}`}>
+            <div className={`relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border transition-all duration-300 transform group-hover:-translate-y-1 ${filter === 'resolved' ? 'border-emerald-400 shadow-lg shadow-emerald-500/10' : 'border-slate-200/60 hover:shadow-xl hover:border-emerald-200'}`}>
                <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-emerald-400/20 blur-xl group-hover:scale-150 transition-transform"></div>
                <div className="flex flex-col gap-2 relative z-10">
                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center border border-emerald-200/50 shadow-inner">
@@ -378,7 +378,7 @@ export default function Alerts() {
         </StaggerItem>
         <StaggerItem>
           <div className="group">
-            <div className="relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border border-slate-100/60 hover:shadow-xl hover:border-rose-200 transition-all duration-300 transform group-hover:-translate-y-1">
+            <div className="relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border border-slate-200/60 hover:shadow-xl hover:border-rose-200 transition-all duration-300 transform group-hover:-translate-y-1">
                <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-rose-400/20 blur-xl group-hover:scale-150 transition-transform"></div>
                <div className="flex flex-col gap-2 relative z-10">
                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center border border-rose-200/50 shadow-inner">
@@ -392,7 +392,7 @@ export default function Alerts() {
         </StaggerItem>
         <StaggerItem>
           <div onClick={() => handleFilterChange('all')} className="cursor-pointer group">
-            <div className={`relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border transition-all duration-300 transform group-hover:-translate-y-1 ${filter === 'all' ? 'border-sky-400 shadow-lg shadow-sky-500/10' : 'border-slate-100/60 hover:shadow-xl hover:border-sky-200'}`}>
+            <div className={`relative overflow-hidden p-5 rounded-2xl bg-white/70 backdrop-blur-md border transition-all duration-300 transform group-hover:-translate-y-1 ${filter === 'all' ? 'border-sky-400 shadow-lg shadow-sky-500/10' : 'border-slate-200/60 hover:shadow-xl hover:border-sky-200'}`}>
                <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-sky-400/20 blur-xl group-hover:scale-150 transition-transform"></div>
                <div className="flex flex-col gap-2 relative z-10">
                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center border border-sky-200/50 shadow-inner">
@@ -412,7 +412,7 @@ export default function Alerts() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
             {/* 筛选标签 */}
             <div className="flex items-center gap-2">
-              <FunnelIcon className="w-5 h-5 text-slate-400" />
+              <FunnelIcon className="w-5 h-5 text-slate-500" />
               <div className="flex gap-2">
                 {[
                   { id: 'all', label: '全部', count: stats.total },
@@ -425,7 +425,7 @@ export default function Alerts() {
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       filter === item.id
                         ? 'bg-sky-500 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                     }`}
                   >
                     {item.label}
@@ -437,7 +437,7 @@ export default function Alerts() {
             
             {/* 搜索框 */}
             <div className="relative flex-1 w-full sm:w-auto sm:max-w-xs ml-auto">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
                 type="text"
                 value={searchQuery}
@@ -457,7 +457,7 @@ export default function Alerts() {
                   animate={{ opacity: 1 }}
                   className="text-center py-12"
                 >
-                  <ShieldCheckIcon className="w-16 h-16 mx-auto text-slate-200 mb-4" />
+                  <ShieldCheckIcon className="w-16 h-16 mx-auto text-slate-800 mb-4" />
                   <p className="text-slate-500">
                     {filter === 'pending' ? '没有待处理的预警' : 
                      filter === 'resolved' ? '没有已处理的预警' :
@@ -486,11 +486,11 @@ export default function Alerts() {
                       exit={{ opacity: 0, scale: 0.95 }}
                       whileHover={{ scale: 1.01, translateY: -2 }}
                       transition={{ duration: 0.2 }}
-                      className={`relative overflow-hidden p-5 sm:p-6 rounded-[20px] bg-white border border-slate-100/80 shadow-[0_4px_24px_rgba(0,122,255,0.04)] hover:shadow-[0_12px_40px_rgba(0,122,255,0.08)] transition-all flex flex-col sm:flex-row gap-5 ${levelStyles.border.replace('border-l-','border-l-[6px] ')}`}
+                      className={`relative overflow-hidden p-5 sm:p-6 rounded-[20px] bg-white border border-slate-200/80 shadow-[0_4px_24px_rgba(0,122,255,0.04)] hover:shadow-[0_12px_40px_rgba(0,122,255,0.08)] transition-all flex flex-col sm:flex-row gap-5 ${levelStyles.border.replace('border-l-','border-l-[6px] ')}`}
                     >
                       {/* 背景高亮 */}
                       {alert.risk_level >= 2 && !alert.is_resolved && (
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-2xl pointer-events-none animate-pulse-soft" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full blur-2xl pointer-events-none animate-pulse-soft" />
                       )}
                       
                       {/* 侧边高亮边条 */}
@@ -498,7 +498,7 @@ export default function Alerts() {
                         {/* 炫酷动画图标 */}
                         <div className={`relative w-14 h-14 rounded-[16px] flex items-center justify-center flex-shrink-0 shadow-sm ${levelStyles.icon.replace('border','border border-white/50 bg-gradient-to-br from-white to-')}`}>
                           <SourceIcon className="w-6 h-6" />
-                          {!alert.is_resolved && <span className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white animate-pulse ${alert.risk_level >= 2 ? 'bg-red-500' : 'bg-amber-500'}`} />}
+                          {!alert.is_resolved && <span className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white animate-pulse ${alert.risk_level >= 2 ? 'bg-rose-500' : 'bg-amber-500'}`} />}
                         </div>
                         
                         {/* 内容排版 */}
@@ -526,18 +526,18 @@ export default function Alerts() {
                           {/* 用户信息 */}
                           {(alert.nickname || alert.username) && (
                             <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-slate-500">
-                              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-400"><UserIcon className="w-3 h-3" /></div>
+                              <div className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-500"><UserIcon className="w-3 h-3" /></div>
                               <span className="text-slate-700">守护对象: <span className="text-slate-900">{alert.nickname || alert.username}</span></span>
                             </div>
                           )}
                           
                           {/* 消息内容 - 更强的排版结构 */}
-                          <div className="bg-slate-50/50 border border-slate-100 p-3.5 rounded-xl mb-4">
+                          <div className="bg-white/50 border border-slate-200 p-3.5 rounded-xl mb-4">
                             <p className="text-slate-800 text-sm sm:text-base font-medium leading-relaxed">{alert.message}</p>
                           </div>
                           
                           {/* 时间信息 */}
-                          <div className="flex flex-wrap items-center gap-4 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                          <div className="flex flex-wrap items-center gap-4 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                             <span className="flex items-center gap-1.5 opacity-80">
                               <ClockIcon className="w-4 h-4" />
                               {formatTime(alert.created_at)}
@@ -552,7 +552,7 @@ export default function Alerts() {
                         </div>
 
                         {/* 操作按钮组 (移动端全宽，PC列排) */}
-                        <div className="flex flex-row sm:flex-col gap-2.5 w-full sm:w-32 mt-2 sm:mt-0 relative z-10 shrink-0 border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 sm:pl-5">
+                        <div className="flex flex-row sm:flex-col gap-2.5 w-full sm:w-32 mt-2 sm:mt-0 relative z-10 shrink-0 border-t sm:border-t-0 sm:border-l border-slate-200 pt-4 sm:pt-0 sm:pl-5">
                           {!alert.is_resolved && (
                             <>
                               <button
@@ -581,7 +581,7 @@ export default function Alerts() {
                               <button
                                 onClick={() => handleDismiss(alert.id)}
                                 disabled={processing === alert.id}
-                                className="sm:mt-auto flex items-center justify-center py-2.5 px-4 rounded-xl font-bold text-xs text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                                className="sm:mt-auto flex items-center justify-center py-2.5 px-4 rounded-xl font-bold text-xs text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-colors"
                               >
                                 忽略此条
                               </button>
@@ -614,7 +614,7 @@ export default function Alerts() {
               <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-amber-800 text-sm font-medium">有 {stats.pending} 条待处理预警</p>
-                <p className="text-amber-700 text-xs mt-1">请及时处理高风险预警，保护被守护者的财产安全。</p>
+                <p className="text-amber-600 text-xs mt-1">请及时处理高风险预警，保护被守护者的财产安全。</p>
               </div>
             </div>
           </div>

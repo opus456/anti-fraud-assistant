@@ -90,7 +90,7 @@ export default function Monitor() {
             </div>
             <div className="flex items-center justify-center gap-2 mb-1">
               <h3 className="font-semibold text-text-title text-sm">通话监控</h3>
-              <Equalizer active={isCallMonitoring} color="bg-green-500" />
+              <Equalizer active={isCallMonitoring} color="bg-emerald-500" />
             </div>
             <p className="text-xs text-text-muted mb-3">{isCallMonitoring ? '监控中' : '已暂停'}</p>
             <button onClick={() => setIsCallMonitoring(!isCallMonitoring)}
@@ -141,8 +141,8 @@ export default function Monitor() {
               <h3 className="font-semibold text-purple-800">AI 语音合成检测 (Deepfake)</h3>
               <p className="text-sm text-purple-600">系统已启用 AI 合成语音识别，可检测深度伪造音频</p>
             </div>
-            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium flex items-center gap-1">
-              <div className="breathing-dot breathing-dot-safe" style={{ width: 6, height: 6, background: '#8B5CF6', boxShadow: '0 0 6px rgba(139,92,246,0.6)' }} />
+            <span className="px-3 py-1 bg-purple-500/15 text-purple-700 rounded-full text-xs font-medium flex items-center gap-1">
+              <div className="breathing-dot breathing-dot-safe" style={{ width: 6, height: 6, background: '#0D9488', boxShadow: '0 0 6px rgba(139,92,246,0.6)' }} />
               已启用
             </span>
           </div>
@@ -184,7 +184,7 @@ export default function Monitor() {
                       <span className="font-medium text-text-title">{call.contact || call.number}</span>
                       {getRiskIcon(call.riskLevel)}
                       {call.isAiVoice && (
-                        <span className="px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded text-xs flex items-center gap-1"><SparklesIcon className="w-3 h-3" />疑似AI语音</span>
+                        <span className="px-1.5 py-0.5 bg-purple-500/15 text-purple-600 rounded text-xs flex items-center gap-1"><SparklesIcon className="w-3 h-3" />疑似AI语音</span>
                       )}
                     </div>
                     <div className="text-sm text-text-muted flex items-center gap-3"><span>{call.number}</span><span>·</span><span>{call.duration}</span></div>
@@ -212,24 +212,24 @@ export default function Monitor() {
             </div>
             <div className="space-y-3">
               {mockSms.map(sms => (
-                <div key={sms.id} className={`p-4 rounded-xl transition-all ${sms.riskLevel === 'danger' ? 'bg-red-50 border border-red-200' : sms.riskLevel === 'warning' ? 'bg-amber-50 border border-amber-200' : 'bg-surface-50/80'}`}>
+                <div key={sms.id} className={`p-4 rounded-xl transition-all ${sms.riskLevel === 'danger' ? 'bg-rose-50 border border-rose-200' : sms.riskLevel === 'warning' ? 'bg-amber-50 border border-amber-200' : 'bg-surface-50/80'}`}>
                   <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${sms.riskLevel === 'danger' ? 'bg-red-100' : sms.riskLevel === 'warning' ? 'bg-amber-100' : 'bg-slate-100'}`}>
-                      <ChatBubbleLeftIcon className={`w-5 h-5 ${sms.riskLevel === 'danger' ? 'text-red-500' : sms.riskLevel === 'warning' ? 'text-amber-500' : 'text-slate-500'}`} />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${sms.riskLevel === 'danger' ? 'bg-rose-50' : sms.riskLevel === 'warning' ? 'bg-amber-50' : 'bg-slate-100'}`}>
+                      <ChatBubbleLeftIcon className={`w-5 h-5 ${sms.riskLevel === 'danger' ? 'text-rose-600' : sms.riskLevel === 'warning' ? 'text-amber-500' : 'text-slate-500'}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="font-medium text-text-title">{sms.sender}</span>
                         {getRiskIcon(sms.riskLevel)}
-                        {sms.fraudType && <span className={`px-2 py-0.5 rounded text-xs font-medium ${sms.riskLevel === 'danger' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{sms.fraudType}</span>}
+                        {sms.fraudType && <span className={`px-2 py-0.5 rounded text-xs font-medium ${sms.riskLevel === 'danger' ? 'bg-rose-50 text-red-700' : 'bg-amber-50 text-amber-600'}`}>{sms.fraudType}</span>}
                         <span className="text-xs text-text-muted ml-auto">{sms.time}</span>
                       </div>
                       <p className={`text-sm ${sms.riskLevel === 'danger' ? 'text-red-800' : sms.riskLevel === 'warning' ? 'text-amber-800' : 'text-text-body'}`}>{sms.content}</p>
                       {sms.riskLevel !== 'safe' && (
                         <div className="mt-2 flex items-center gap-2">
-                          <span className={`text-xs font-medium ${sms.riskLevel === 'danger' ? 'text-red-600' : 'text-amber-600'}`}>风险值: {sms.riskScore}</span>
+                          <span className={`text-xs font-medium ${sms.riskLevel === 'danger' ? 'text-rose-600' : 'text-amber-600'}`}>风险值: {sms.riskScore}</span>
                           <span className="text-xs text-text-muted">|</span>
-                          <span className="text-xs text-green-600">已自动标记</span>
+                          <span className="text-xs text-emerald-600">已自动标记</span>
                         </div>
                       )}
                     </div>

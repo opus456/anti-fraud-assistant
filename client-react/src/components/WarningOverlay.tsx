@@ -127,7 +127,7 @@ export default function WarningOverlay({ visible, alertData, onClose }: WarningO
         {/* 卡片主体 */}
         <div className="bg-white rounded-b-3xl shadow-2xl shadow-red-500/30 overflow-hidden">
           {/* 风险分数展示 */}
-          <div className="bg-gradient-to-r from-red-50 to-red-100 px-8 py-6 border-b border-red-200">
+          <div className="bg-gradient-to-r from-red-50 to-red-100 px-8 py-6 border-b border-rose-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 
@@ -136,14 +136,14 @@ export default function WarningOverlay({ visible, alertData, onClose }: WarningO
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-red-700">检测到高危诈骗</h2>
-                  <p className="text-red-500 font-medium mt-1">
+                  <p className="text-rose-600 font-medium mt-1">
                     {alertData.fraud_type_label || '可疑诈骗行为'}
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-5xl font-black text-red-600">{riskScore}</div>
-                <div className="text-sm text-red-500 font-medium">风险指数</div>
+                <div className="text-5xl font-black text-rose-600">{riskScore}</div>
+                <div className="text-sm text-rose-600 font-medium">风险指数</div>
               </div>
             </div>
           </div>
@@ -152,24 +152,24 @@ export default function WarningOverlay({ visible, alertData, onClose }: WarningO
           <div className="p-6 space-y-4">
             {/* AI分析结果 */}
             {(alertData.reason || alertData.cot_reasoning) && (
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+              <div className="bg-white rounded-2xl p-4 border border-slate-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <ShieldAlert className="w-5 h-5 text-slate-600" />
+                  <ShieldAlert className="w-5 h-5 text-slate-500" />
                   <span className="font-semibold text-slate-700">AI 智能分析</span>
                 </div>
-                <p className="text-slate-600 leading-relaxed">
+                <p className="text-slate-500 leading-relaxed">
                   {alertData.reason || alertData.cot_reasoning}
                 </p>
               </div>
             )}
 
             {/* 警告信息 */}
-            <div className="bg-red-50 rounded-2xl p-4 border-2 border-red-200">
+            <div className="bg-rose-50 rounded-2xl p-4 border-2 border-rose-200">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                <AlertTriangle className="w-6 h-6 text-rose-600 flex-shrink-0 mt-0.5" />
                 <div className="space-y-2">
                   <p className="font-bold text-red-700">请立即停止当前操作！</p>
-                  <ul className="text-sm text-red-600 space-y-1">
+                  <ul className="text-sm text-rose-600 space-y-1">
                     <li>• 不要向任何人转账汇款</li>
                     <li>• 不要透露个人银行卡、密码等信息</li>
                     <li>• 不要点击任何可疑链接</li>
@@ -201,14 +201,14 @@ export default function WarningOverlay({ visible, alertData, onClose }: WarningO
             <label className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all
                             ${acknowledged 
                               ? 'bg-safe-50 border-safe-300' 
-                              : 'bg-slate-50 border-slate-200 hover:border-slate-300'}`}>
+                              : 'bg-white border-slate-200 hover:border-slate-300'}`}>
               <input
                 type="checkbox"
                 checked={acknowledged}
                 onChange={(e) => setAcknowledged(e.target.checked)}
                 className="w-5 h-5 rounded border-slate-300 text-safe-600 focus:ring-safe-500"
               />
-              <span className={`font-medium ${acknowledged ? 'text-safe-700' : 'text-slate-600'}`}>
+              <span className={`font-medium ${acknowledged ? 'text-safe-700' : 'text-slate-500'}`}>
                 我已了解风险，并将谨慎处理
               </span>
             </label>
@@ -221,8 +221,8 @@ export default function WarningOverlay({ visible, alertData, onClose }: WarningO
                 className={`flex-1 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2
                           transition-all duration-300
                           ${canClose && acknowledged
-                            ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer'
-                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                            ? 'bg-slate-100 hover:bg-slate-100 text-slate-700 cursor-pointer'
+                            : 'bg-slate-100 text-slate-500 cursor-not-allowed'}`}
               >
                 {!canClose ? (
                   <>

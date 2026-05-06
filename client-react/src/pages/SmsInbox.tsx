@@ -113,11 +113,11 @@ export default function SmsInbox() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 min-w-[240px]">
-              <div className="rounded-2xl bg-white/10 border border-white/10 p-4 backdrop-blur">
+              <div className="rounded-2xl bg-white/10 border border-slate-200 p-4 backdrop-blur">
                 <div className="text-xs text-white/60">平台</div>
                 <div className="mt-1 font-semibold">{platformSupported ? 'Android' : 'Web / iOS'}</div>
               </div>
-              <div className="rounded-2xl bg-white/10 border border-white/10 p-4 backdrop-blur">
+              <div className="rounded-2xl bg-white/10 border border-slate-200 p-4 backdrop-blur">
                 <div className="text-xs text-white/60">权限</div>
                 <div className="mt-1 font-semibold">{permissionGranted ? '已授权' : '未授权'}</div>
               </div>
@@ -148,7 +148,7 @@ export default function SmsInbox() {
             />
           </div>
 
-          <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 text-sm text-slate-600 space-y-2">
+          <div className="rounded-2xl bg-white border border-slate-200 p-4 text-sm text-slate-500 space-y-2">
             <div className="flex items-center gap-2 font-medium text-slate-800">
               <Lock className="w-4 h-4 text-warning-600" />
               权限说明
@@ -224,7 +224,7 @@ export default function SmsInbox() {
 
             <div className="space-y-4">
               {results.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
                   还没有扫描结果。先申请权限，再执行扫描。
                 </div>
               ) : (
@@ -235,7 +235,7 @@ export default function SmsInbox() {
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <div className="flex items-center gap-2 text-sm text-slate-500">
                           <span className="font-semibold text-slate-900">{item.message.address || '未知号码'}</span>
                           <span>·</span>
                           <span>{new Date(item.message.date).toLocaleString()}</span>
@@ -245,7 +245,7 @@ export default function SmsInbox() {
                       <div className="shrink-0 text-right">
                         <div className="text-xs text-slate-500">风险评分</div>
                         <div className="text-xl font-black text-slate-900">{Math.round(item.risk_score * 100)}%</div>
-                        <div className="text-xs font-medium text-slate-600 mt-1">{item.fraud_type_label}</div>
+                        <div className="text-xs font-medium text-slate-500 mt-1">{item.fraud_type_label}</div>
                       </div>
                     </div>
                     <div className="mt-4 rounded-xl bg-white/80 border border-white/70 p-4 text-sm text-slate-700">

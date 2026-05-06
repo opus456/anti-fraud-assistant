@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 // --------------- 设置类型定义 ---------------
-export type Theme = 'light' | 'dark' | 'system';
+export type Theme = 'light';
 export type Language = 'zh' | 'en';
 export type FontSize = 'normal' | 'large' | 'xlarge';
 export type Sensitivity = 'low' | 'medium' | 'high';
@@ -60,7 +60,7 @@ interface SettingsStore {
   resetSettings: () => void;
   
   // 获取实际主题（处理 system 选项）
-  getEffectiveTheme: () => 'light' | 'dark';
+  getEffectiveTheme: () => 'light';
 }
 
 // --------------- 创建 Store ---------------
@@ -101,13 +101,7 @@ export const useSettingsStore = create<SettingsStore>()(
         applyFontSize(DEFAULT_SETTINGS.fontSize);
       },
       
-      getEffectiveTheme: () => {
-        const { theme } = get().settings;
-        if (theme === 'system') {
-          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        return theme;
-      },
+      getEffectiveTheme: () => get().settings.theme,
     }),
     {
       name: 'anti-fraud-settings',
@@ -125,19 +119,13 @@ export const useSettingsStore = create<SettingsStore>()(
 // --------------- 主题应用函数 ---------------
 function applyTheme(theme: Theme) {
   const root = document.documentElement;
-  const effectiveTheme = theme === 'system'
-    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-    : theme;
-  
-  // 目前只实现浅色主题，深色主题暂时不可用
-  // 移除所有主题类
+
   root.classList.remove('theme-light', 'theme-dark');
-  root.classList.add(`theme-${effectiveTheme}`);
-  
-  // 更新 meta theme-color
+  root.classList.add(`theme-${theme}`);
+
   const metaThemeColor = document.querySelector('meta[name="theme-color"]');
   if (metaThemeColor) {
-    metaThemeColor.setAttribute('content', effectiveTheme === 'dark' ? '#0f172a' : '#f0f9ff');
+    metaThemeColor.setAttribute('content', '#f0f9ff');
   }
 }
 

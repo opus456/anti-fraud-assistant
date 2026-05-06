@@ -243,7 +243,7 @@ export default function Visualization() {
       borderColor: '#e2e8f0',
       textStyle: { color: '#334155' },
     },
-    color: ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6'],
+    color: ['#6366f1', '#0D9488', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6'],
     series: [{
       type: 'pie',
       radius: ['20%', '75%'],
@@ -401,9 +401,9 @@ export default function Visualization() {
   };
 
   const riskColor = (score: number) => {
-    if (score >= 70) return 'text-red-500 bg-red-500/10';
-    if (score >= 40) return 'text-amber-500 bg-amber-500/10';
-    return 'text-green-500 bg-green-500/10';
+    if (score >= 70) return 'text-rose-600 bg-rose-50';
+    if (score >= 40) return 'text-amber-500 bg-amber-50';
+    return 'text-emerald-600 bg-emerald-50';
   };
 
   return (
@@ -510,12 +510,12 @@ export default function Visualization() {
           transition={{ delay: 0.2 }}
           className="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
         >
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
+              <BarChart3 className="w-5 h-5 text-accent-600" />
               <h3 className="font-semibold text-slate-800">全国省份诈骗案件TOP15</h3>
             </div>
-            <span className="text-xs text-slate-400 flex items-center gap-1">
+            <span className="text-xs text-slate-500 flex items-center gap-1">
               <Activity className="w-3 h-3" /> 实时更新
             </span>
           </div>
@@ -531,7 +531,7 @@ export default function Visualization() {
           transition={{ delay: 0.3 }}
           className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
         >
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2">
             <Shield className="w-5 h-5 text-emerald-600" />
             <h3 className="font-semibold text-slate-800">风险指数</h3>
           </div>
@@ -539,7 +539,7 @@ export default function Visualization() {
             <ReactECharts option={riskGaugeOption} style={{ height: 200 }} />
             <div className="grid grid-cols-2 gap-3 mt-4">
               {data.riskDistribution.slice(0, 4).map((item, idx) => (
-                <div key={idx} className="text-center p-3 bg-slate-50 rounded-xl">
+                <div key={idx} className="text-center p-3 bg-white rounded-xl">
                   <div className="text-lg font-bold text-slate-800">{item.value.toLocaleString()}</div>
                   <div className="text-xs text-slate-500">{item.name}</div>
                 </div>
@@ -558,12 +558,12 @@ export default function Visualization() {
           transition={{ delay: 0.4 }}
           className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
         >
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-indigo-600" />
               <h3 className="font-semibold text-slate-800">检测趋势</h3>
             </div>
-            <span className="text-xs text-slate-400">最近30天</span>
+            <span className="text-xs text-slate-500">最近30天</span>
           </div>
           <div className="p-4">
             <ReactECharts option={trendAreaOption} style={{ height: 240 }} />
@@ -577,7 +577,7 @@ export default function Visualization() {
           transition={{ delay: 0.5 }}
           className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
         >
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2">
             <PieChart className="w-5 h-5 text-pink-600" />
             <h3 className="font-semibold text-slate-800">诈骗类型分布</h3>
           </div>
@@ -593,7 +593,7 @@ export default function Visualization() {
           transition={{ delay: 0.6 }}
           className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
         >
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2">
             <Users className="w-5 h-5 text-amber-600" />
             <h3 className="font-semibold text-slate-800">受害者年龄分布</h3>
           </div>
@@ -610,26 +610,26 @@ export default function Visualization() {
         transition={{ delay: 0.7 }}
         className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
       >
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-slate-600" />
+            <Activity className="w-5 h-5 text-slate-500" />
             <h3 className="font-semibold text-slate-800">实时检测记录</h3>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-xs text-slate-400">实时更新</span>
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-xs text-slate-500">实时更新</span>
           </div>
         </div>
         <div className="overflow-x-auto">
           {data.recentDetections.length === 0 ? (
-            <div className="text-center py-12 text-slate-400">
+            <div className="text-center py-12 text-slate-500">
               <Activity className="w-10 h-10 mx-auto mb-3 opacity-50" />
               <p>暂无检测记录</p>
             </div>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="bg-slate-50 text-left text-sm text-slate-500">
+                <tr className="bg-white text-left text-sm text-slate-500">
                   <th className="px-6 py-3 font-medium">ID</th>
                   <th className="px-6 py-3 font-medium">风险等级</th>
                   <th className="px-6 py-3 font-medium">风险分数</th>
@@ -643,9 +643,9 @@ export default function Visualization() {
                     key={d.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="hover:bg-slate-50 transition-colors"
+                    className="hover:bg-slate-200 transition-colors"
                   >
-                    <td className="px-6 py-3 text-sm text-slate-600 font-mono">#{d.id}</td>
+                    <td className="px-6 py-3 text-sm text-slate-500 font-mono">#{d.id}</td>
                     <td className="px-6 py-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${riskColor(d.risk_score)}`}>
                         {d.text}
@@ -659,15 +659,15 @@ export default function Visualization() {
                             animate={{ width: `${d.risk_score}%` }}
                             transition={{ duration: 1, ease: 'easeOut' }}
                             className={`h-full rounded-full ${
-                              d.risk_score >= 70 ? 'bg-red-500' : d.risk_score >= 40 ? 'bg-amber-500' : 'bg-green-500'
+                              d.risk_score >= 70 ? 'bg-rose-500' : d.risk_score >= 40 ? 'bg-amber-500' : 'bg-emerald-500'
                             }`}
                           />
                         </div>
-                        <span className="text-sm font-medium text-slate-600 w-10">{d.risk_score}%</span>
+                        <span className="text-sm font-medium text-slate-500 w-10">{d.risk_score}%</span>
                       </div>
                     </td>
-                    <td className="px-6 py-3 text-sm text-slate-600">{d.fraud_type_label}</td>
-                    <td className="px-6 py-3 text-sm text-slate-400">
+                    <td className="px-6 py-3 text-sm text-slate-500">{d.fraud_type_label}</td>
+                    <td className="px-6 py-3 text-sm text-slate-500">
                       {new Date(d.created_at).toLocaleString('zh-CN', {
                         month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
                       })}

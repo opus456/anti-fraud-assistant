@@ -307,7 +307,7 @@ interface SkeletonProps {
 export function Skeleton({ className = '', width, height }: SkeletonProps) {
   return (
     <motion.div
-      className={`bg-gray-200 rounded-lg ${className}`}
+      className={`bg-slate-100 rounded-lg ${className}`}
       style={{ width, height }}
       animate={{
         backgroundPosition: ['200% 0', '-200% 0']
@@ -318,7 +318,7 @@ export function Skeleton({ className = '', width, height }: SkeletonProps) {
         ease: 'linear'
       }}
       initial={{
-        background: 'linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)',
+        background: 'linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%)',
         backgroundSize: '200% 100%'
       }}
     />

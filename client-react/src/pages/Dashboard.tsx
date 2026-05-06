@@ -6,8 +6,8 @@ import {
   StaggerContainer, StaggerItem, ScrollReveal, AnimatedCounter, 
 } from '../components/motion';
 import {
-  ShieldCheckIcon, MagnifyingGlassIcon, BellAlertIcon, ClockIcon,
-  BookOpenIcon, UserGroupIcon, PhoneIcon, ExclamationTriangleIcon,
+  MagnifyingGlassIcon, BellAlertIcon,
+  BookOpenIcon, UserGroupIcon, PhoneIcon,
   CheckCircleIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon,
   PlayIcon, CpuChipIcon, ServerIcon, SignalIcon,
 } from '@heroicons/react/24/outline';
@@ -25,36 +25,58 @@ interface RecentAlert {
   level: 'high' | 'medium' | 'low' | 'danger' | 'warning' | 'safe'; created_at: string;
 }
 
-const quickActions = [
-  { label: '智能检测', icon: MagnifyingGlassIcon, path: '/detection', desc: '文本/图片/音频', color: 'bg-blue-500', bg: 'bg-blue-50' },
-  { label: '实时监控', icon: ShieldCheckIcon, path: '/monitor', desc: '通话与消息监测', color: 'bg-emerald-500', bg: 'bg-emerald-50' },
-  { label: '预警中心', icon: BellAlertIcon, path: '/alerts', desc: '安全提醒', color: 'bg-amber-500', bg: 'bg-amber-50' },
-  { label: '知识库', icon: BookOpenIcon, path: '/knowledge', desc: '反诈案例', color: 'bg-violet-500', bg: 'bg-violet-50' },
-  { label: '检测记录', icon: ClockIcon, path: '/history', desc: '历史记录', color: 'bg-cyan-500', bg: 'bg-cyan-50' },
-  { label: '家庭守护', icon: UserGroupIcon, path: '/family', desc: '成员管理', color: 'bg-pink-500', bg: 'bg-pink-50' },
-];
 
-// 安全评分环形图
-function SafetyRing({ score, size = 96 }: { score: number; size?: number }) {
-  const r = (size - 10) / 2;
+// 中心雷达环形仪表 - 沉浸式
+function RadarRing({ score, threatCount, size = 280 }: { score: number; threatCount: number; size?: number }) {
+  const r = (size - 20) / 2;
   const circumference = 2 * Math.PI * r;
   const offset = circumference - (score / 100) * circumference;
-  const color = score >= 80 ? '#10B981' : score >= 50 ? '#F59E0B' : '#F43F5E';
+  // 色彩梯度：红到绿
+  const getGradientId = () => score >= 70 ? 'ring-safe' : score >= 50 ? 'ring-warn' : 'ring-danger';
   return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="transform -rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#E2E8F0" strokeWidth="6" />
+    <div className="radar-container" style={{ width: size, height: size }}>
+      {/* 扫描线动画 */}
+      <div className="radar-scan">
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <defs>
+            <linearGradient id="sweep-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(44,197,189,0)" />
+              <stop offset="100%" stopColor="rgba(44,197,189,0.3)" />
+            </linearGradient>
+          </defs>
+          <path d={`M ${size/2} ${size/2} L ${size/2} 10 A ${size/2-10} ${size/2-10} 0 0 1 ${size-20} ${size/2} Z`} fill="url(#sweep-grad)" />
+        </svg>
+      </div>
+      <svg width={size} height={size} className="transform -rotate-90 absolute inset-0">
+        <defs>
+          <linearGradient id="ring-safe" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#10B981" /><stop offset="100%" stopColor="#2CC5BD" /></linearGradient>
+          <linearGradient id="ring-warn" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#F59E0B" /><stop offset="100%" stopColor="#FBBF24" /></linearGradient>
+          <linearGradient id="ring-danger" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#F43F5E" /><stop offset="100%" stopColor="#FB7185" /></linearGradient>
+        </defs>
+        {/* 背景环 */}
+        <circle cx={size/2} cy={size/2} r={r} fill="none" className="radar-ring-bg" strokeWidth="4" />
+        {/* 外装饰环 */}
+        <circle cx={size/2} cy={size/2} r={r+6} fill="none" stroke="rgba(44,197,189,0.04)" strokeWidth="1" />
+        <circle cx={size/2} cy={size/2} r={r-8} fill="none" stroke="rgba(44,197,189,0.06)" strokeWidth="1" strokeDasharray="4 8" />
+        {/* 分数环 */}
         <motion.circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="6"
-          strokeLinecap="round" strokeDasharray={circumference}
+          cx={size/2} cy={size/2} r={r} fill="none" stroke={`url(#${getGradientId()})`} strokeWidth="4"
+          strokeLinecap="round" strokeDasharray={circumference} className="radar-ring-value"
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.5, delay: 0.3, ease: 'easeOut' }}
+          transition={{ duration: 2, delay: 0.5, ease: 'easeOut' }}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-black text-gray-800 tracking-tighter">{score}</span>
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">安全跑分</span>
+      {/* 中心内容 */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+        <motion.div className="text-center" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.8, duration: 0.5 }}>
+          <div className="text-6xl font-black text-slate-800 tracking-tighter font-mono leading-none">
+            <AnimatedCounter value={threatCount} />
+          </div>
+          <div className="text-[10px] font-bold text-accent-600 uppercase tracking-[0.2em] mt-2">threats blocked</div>
+          <div className="h-px w-16 bg-accent-600/20 mx-auto my-3" />
+          <div className="text-sm text-slate-500">安全评分 <span className={`font-bold ${score >= 70 ? 'text-emerald-600' : score >= 50 ? 'text-amber-600' : 'text-rose-600'}`}>{score}</span></div>
+        </motion.div>
       </div>
     </div>
   );
@@ -116,173 +138,132 @@ function StandardDashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="h-40 bg-gray-100 rounded-lg animate-pulse" />
-        <div className="grid grid-cols-3 gap-4">{[1,2,3].map(i => <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />)}</div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full border-2 border-accent-400/20 border-t-accent-400 animate-spin mx-auto mb-4" />
+          <p className="text-slate-600 text-sm font-mono">LOADING SYSTEMS...</p>
+        </div>
       </div>
     );
   }
 
+  const riskPercent = ((stats?.today_fraud || 0) / (stats?.today_detections || 1) * 100).toFixed(1);
+
   return (
     <div className="space-y-6">
-      {/* ====== Hero Section: 核心态势感知 (浅色高亮高反差版) ====== */}
-      <ScrollReveal>
-        <div className="relative overflow-hidden rounded-lg bg-white border border-gray-200 p-8 sm:p-10 z-10">
-          {/* 柔和背景点缀 */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 relative z-20">
-            <div className="flex-1 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold tracking-wide uppercase">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                </span>
-                AI Agent 实时防护中
+      {/* ====== 中心雷达仪表台 + 非对称数据 ====== */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 items-start">
+        
+        {/* 左侧：浮动数据面板 */}
+        <div className="space-y-4 lg:pt-8">
+          <ScrollReveal>
+            <motion.div className="data-widget" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
+              <div className="data-label">今日检测</div>
+              <div className="data-value"><AnimatedCounter value={stats?.today_detections || 0} /></div>
+              <div className="data-change text-emerald-600 flex items-center gap-1"><ArrowTrendingUpIcon className="w-3.5 h-3.5" /> +12.5% vs 昨日</div>
+            </motion.div>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <motion.div className="data-widget" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+              <div className="data-label">风险占比</div>
+              <div className="data-value">{riskPercent}<span className="text-lg text-slate-500">%</span></div>
+              <div className="data-change text-emerald-600 flex items-center gap-1"><ArrowTrendingDownIcon className="w-3.5 h-3.5" /> -2.1% 风险下降</div>
+            </motion.div>
+          </ScrollReveal>
+          <ScrollReveal delay={0.2}>
+            <motion.div className="data-widget" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 }}>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="data-label">守护网络</div>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
-                您好，{userName}！<br className="hidden sm:block" />
-                系统已成功拦截 <br className="sm:hidden" />
-                <span className="inline-block text-blue-600 text-5xl sm:text-6xl font-black mt-2">
-                  <AnimatedCounter value={todayFraud} />
-                </span>
-                次风险
-              </h1>
-              <p className="text-gray-500 text-sm sm:text-base font-medium max-w-lg">
-                大模型驱动的多模态意图识别正在为您的每一次通信保驾护航。守护 <span className="font-bold text-gray-700">{stats?.guard_count || 0}</span> 人，累计检测 <span className="font-bold text-gray-700">{stats?.total_detections || 0}</span> 次。
-              </p>
-            </div>
-            
-            {/* 安全分展示 */}
-            <div className="relative shrink-0 flex flex-col items-center p-6 rounded-lg bg-gray-50 border border-gray-200">
-              <SafetyRing score={safetyScore} size={140} />
-              <div className={`mt-4 flex items-center justify-center gap-2 h-8 px-4 rounded-md text-xs font-bold ${safetyScore >= 70 ? 'bg-green-50 text-green-700' : safetyScore >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}>
-                {safetyScore >= 70 ? '环境安全' : safetyScore >= 50 ? '存在风险' : '需要关注'}
+              <div className="flex items-baseline gap-3">
+                <span className="text-2xl font-bold text-accent-600 font-mono">{stats?.guard_count || 0}</span>
+                <span className="text-xs text-slate-500">人 · 已守护</span>
               </div>
-            </div>
-          </div>
+              <div className="flex items-baseline gap-3 mt-1">
+                <span className="text-2xl font-bold text-slate-700 font-mono"><AnimatedCounter value={stats?.total_detections || 0} /></span>
+                <span className="text-xs text-slate-500">次 · 累计检测</span>
+              </div>
+            </motion.div>
+          </ScrollReveal>
         </div>
-      </ScrollReveal>
 
-      {/* ====== 数据看板：全玻璃通透面板 ====== */}
-      <StaggerContainer className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[
-          { label: '今日检测', value: stats?.today_detections || 0, icon: MagnifyingGlassIcon, change: '+12.5%', up: true, color: 'blue' },
-          { label: '风险占比', value: ((stats?.today_fraud || 0) / (stats?.today_detections || 1) * 100).toFixed(1) + '%', icon: ShieldCheckIcon, change: '-2.1%', up: true, color: 'emerald' },
-          { label: '待处理预警', value: stats?.alerts_pending || 0, icon: BellAlertIcon, change: stats?.alerts_pending ? `需立即跟进` : '全部已处理', up: (stats?.alerts_pending || 0) === 0, color: 'amber' },
-        ].map((stat, idx) => {
-          const isWarning = stat.color === 'amber' && !stat.up;
-          return (
-            <StaggerItem key={idx}>
-              <Link to={idx === 2 ? '/alerts?filter=pending' : '/history'}>
-                <div className={`relative overflow-hidden p-6 rounded-lg bg-white border hover:shadow-md transition-all duration-200 cursor-pointer group ${isWarning ? 'border-amber-200' : 'border-gray-200 hover:border-blue-300'}`}>
-                  <div className="flex items-center justify-between mb-4 relative z-10">
-                    <div className={`flex items-center justify-center w-12 h-12 rounded-lg bg-${stat.color}-50 border border-${stat.color}-100`}>
-                      <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
-                    </div>
-                    {isWarning && <span className="absolute top-0 right-0 w-3 h-3 bg-amber-500 rounded-full animate-ping" />}
+        {/* 中心：雷达环形仪表盘 */}
+        <div className="flex flex-col items-center justify-center lg:py-4">
+          <ScrollReveal>
+            <div className="relative">
+              {/* 外围光晕 */}
+              <div className="absolute inset-0 bg-glow-cyan scale-150 opacity-30 pointer-events-none" />
+              <RadarRing score={safetyScore} threatCount={todayFraud} size={260} />
+            </div>
+            <motion.div className="text-center mt-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
+              <p className="text-slate-500 text-xs">您好，<span className="text-slate-700 font-medium">{userName}</span></p>
+              <p className="text-[10px] text-slate-400 font-mono mt-1">AI MULTI-MODAL GUARDIAN ACTIVE</p>
+            </motion.div>
+          </ScrollReveal>
+        </div>
+
+        {/* 右侧：实时日志流 + 待处理 */}
+        <div className="space-y-4 lg:pt-8">
+          <ScrollReveal delay={0.15}>
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
+              <Link to="/alerts?filter=pending">
+                <div className="data-widget group cursor-pointer hover:border-accent-200">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="data-label">待处理预警</div>
+                    {(stats?.alerts_pending || 0) > 0 && <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />}
                   </div>
-                  
-                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider relative z-10">{stat.label}</p>
-                  <h3 className="text-4xl font-extrabold text-gray-900 mt-2 mb-1 relative z-10 tracking-tight">
-                    {typeof stat.value === 'number' ? <AnimatedCounter value={stat.value} /> : stat.value}
-                  </h3>
-                  
-                  <div className={`flex items-center gap-1.5 text-xs font-bold relative z-10 ${stat.up ? 'text-emerald-500' : 'text-rose-500'}`}>
-                    {stat.up ? <ArrowTrendingUpIcon className="w-4 h-4" /> : <ArrowTrendingDownIcon className="w-4 h-4" />}
-                    {stat.change}
+                  <div className="data-value text-amber-600"><AnimatedCounter value={stats?.alerts_pending || 0} /></div>
+                  <div className="data-change text-slate-400 group-hover:text-accent-600 transition-colors">
+                    {(stats?.alerts_pending || 0) > 0 ? '需立即跟进 →' : '全部已处理 ✓'}
                   </div>
                 </div>
               </Link>
-            </StaggerItem>
-          );
-        })}
-      </StaggerContainer>
+            </motion.div>
+          </ScrollReveal>
 
-      {/* ====== 快捷入口：轻量级图标网格 ====== */}
-      <ScrollReveal delay={0.15}>
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">快捷入口</h2>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-          {quickActions.map((action, idx) => (
-            <Link to={action.path} key={idx}>
-              <motion.div
-                className="flex flex-col items-center text-center p-3 sm:p-4 rounded-lg hover:bg-white hover:shadow-sm transition-all group cursor-pointer"
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-lg ${action.color} flex items-center justify-center mb-2.5`}>
-                  <action.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                </div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{action.label}</span>
-                <span className="text-[11px] text-gray-400 mt-0.5 hidden sm:block">{action.desc}</span>
-              </motion.div>
-            </Link>
-          ))}
+          {/* 实时日志流 */}
+          <ScrollReveal delay={0.25}>
+            <motion.div className="data-widget" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 }}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="data-label">实时风险捕获</div>
+                <Link to="/alerts" className="text-[10px] text-accent-600 hover:text-accent-700 font-mono transition-colors">LIVE →</Link>
+              </div>
+              <div className="log-stream" style={{ maxHeight: '160px' }}>
+                {recentAlerts.map((alert, idx) => (
+                  <motion.div key={alert.id} className={`log-entry ${alert.level}`}
+                    initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8 + idx * 0.15 }}>
+                    <span className="log-time">{alert.time}</span>
+                    <span className={`log-type ${
+                      alert.level === 'danger' ? 'text-rose-600' : alert.level === 'warning' ? 'text-amber-600' : 'text-emerald-600'
+                    }`}>{alert.level === 'danger' ? 'HIGH' : alert.level === 'warning' ? 'MED' : 'LOW'}</span>
+                    <span className="log-msg">{alert.type} · {alert.message}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </ScrollReveal>
         </div>
-      </ScrollReveal>
-
-      {/* ====== 双列：预警 + 系统状态 ====== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <ScrollReveal delay={0.25}>
-          <div className="p-5 sm:p-6 rounded-lg bg-white border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-gray-800">最近预警</h2>
-              <Link to="/alerts" className="text-xs text-blue-500 hover:text-blue-600 transition-colors font-medium">查看全部 →</Link>
-            </div>
-            <div className="space-y-2.5">
-              {recentAlerts.map(alert => (
-                <Link to={`/alerts?id=${alert.id}`} key={alert.id}>
-                  <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all cursor-pointer group">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      alert.level === 'danger' ? 'bg-red-100' : alert.level === 'warning' ? 'bg-amber-100' : 'bg-green-100'
-                    }`}>
-                      {alert.level === 'safe' ? <CheckCircleIcon className="w-4 h-4 text-green-600" /> : <ExclamationTriangleIcon className={`w-4 h-4 ${alert.level === 'danger' ? 'text-red-600' : 'text-amber-600'}`} />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-700 truncate">{alert.type}</p>
-                      <p className="text-xs text-gray-400 truncate">{alert.message}</p>
-                    </div>
-                    <span className="text-[10px] text-gray-300 flex-shrink-0">{alert.time}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal delay={0.3}>
-          <div className="p-5 sm:p-6 rounded-lg bg-white border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-gray-800">系统状态</h2>
-              <span className="flex items-center gap-1.5 text-xs text-emerald-500 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />运行中
-              </span>
-            </div>
-            <div className="space-y-1">
-              {[
-                { icon: CpuChipIcon, color: 'text-sky-500', label: 'AI 检测引擎', status: '在线' },
-                { icon: ServerIcon, color: 'text-blue-500', label: '知识库同步', status: '已更新' },
-                { icon: SignalIcon, color: 'text-purple-500', label: '实时监控', status: '运行中' },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
-                  <div className="flex items-center gap-2.5">
-                    <item.icon className={`w-4 h-4 ${item.color}`} />
-                    <span className="text-sm text-gray-600">{item.label}</span>
-                  </div>
-                  <span className="text-xs text-emerald-500 font-medium">{item.status}</span>
-                </div>
-              ))}
-              <Link to="/family" className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors">
-                <div className="flex items-center gap-2.5">
-                  <UserGroupIcon className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm text-gray-600">家庭守护</span>
-                </div>
-                <span className="text-xs text-blue-500 font-medium">{stats?.guard_count || 0} 人守护</span>
-              </Link>
-            </div>
-          </div>
-        </ScrollReveal>
       </div>
+
+      {/* ====== 系统状态条 ====== */}
+      <ScrollReveal delay={0.3}>
+        <div className="glass-card p-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {[
+              { icon: CpuChipIcon, label: 'AI 检测引擎', status: '在线', ok: true },
+              { icon: ServerIcon, label: '知识库同步', status: '已更新', ok: true },
+              { icon: SignalIcon, label: '实时监控', status: '运行中', ok: true },
+              { icon: UserGroupIcon, label: '家庭守护', status: `${stats?.guard_count || 0} 人`, ok: true },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-2.5">
+                <item.icon className="w-4 h-4 text-slate-400" />
+                <span className="text-xs text-slate-500">{item.label}</span>
+                <span className={`text-xs font-mono font-medium ${item.ok ? 'text-emerald-600' : 'text-rose-600'}`}>{item.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </ScrollReveal>
     </div>
   );
 }
@@ -300,49 +281,49 @@ function ElderDashboard() {
   return (
     <div className="space-y-8">
       <ScrollReveal>
-        <div className="rounded-lg bg-green-50 border border-green-200 text-center py-12 px-6">
-          <div className="w-24 h-24 rounded-lg bg-green-100 border border-green-300 flex items-center justify-center mx-auto mb-4">
-            <CheckCircleIcon className="w-14 h-14 text-green-600" />
+        <div className="glass-card text-center py-12 px-6">
+          <div className="w-24 h-24 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-4">
+            <CheckCircleIcon className="w-14 h-14 text-emerald-600" />
           </div>
-          <h1 className="text-elder-2xl font-bold text-gray-800">{userName}，当前安全</h1>
-          <p className="text-elder-base mt-2 text-gray-600">系统正在保护您的通话和消息安全</p>
+          <h1 className="text-elder-2xl font-bold text-slate-800">{userName}，当前安全</h1>
+          <p className="text-elder-base mt-2 text-slate-500">系统正在保护您的通话和消息安全</p>
         </div>
       </ScrollReveal>
       <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StaggerItem>
-          <Link to="/monitor" className="block p-8 bg-white rounded-lg border border-blue-200 hover:border-blue-300 transition-all text-center group">
-            <div className="w-20 h-20 rounded-lg bg-blue-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-100 transition-colors"><PhoneIcon className="w-10 h-10 text-blue-600" /></div>
-            <div className="text-elder-xl font-bold text-gray-800">通话监测</div>
-            <div className="text-elder-base text-gray-500 mt-2">实时保护您的通话安全</div>
+          <Link to="/monitor" className="block p-8 glass-card text-center group">
+            <div className="w-20 h-20 rounded-2xl bg-accent-50 border border-accent-200 flex items-center justify-center mx-auto mb-4 group-hover:bg-accent-100 transition-colors"><PhoneIcon className="w-10 h-10 text-accent-600" /></div>
+            <div className="text-elder-xl font-bold text-slate-800">通话监测</div>
+            <div className="text-elder-base text-slate-500 mt-2">实时保护您的通话安全</div>
           </Link>
         </StaggerItem>
         <StaggerItem>
-          <Link to="/family" className="block p-8 bg-white rounded-lg border border-red-200 hover:border-red-300 transition-all text-center group">
-            <div className="w-20 h-20 rounded-lg bg-red-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-red-100 transition-colors"><BellAlertIcon className="w-10 h-10 text-red-600" /></div>
-            <div className="text-elder-xl font-bold text-gray-800">一键求助</div>
-            <div className="text-elder-base text-gray-500 mt-2">遇到可疑情况立即求助</div>
+          <Link to="/family" className="block p-8 glass-card text-center group">
+            <div className="w-20 h-20 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center mx-auto mb-4 group-hover:bg-rose-100 transition-colors"><BellAlertIcon className="w-10 h-10 text-rose-600" /></div>
+            <div className="text-elder-xl font-bold text-slate-800">一键求助</div>
+            <div className="text-elder-base text-slate-500 mt-2">遇到可疑情况立即求助</div>
           </Link>
         </StaggerItem>
       </StaggerContainer>
       <ScrollReveal delay={0.2}>
-        <div className="card">
-          <h2 className="text-elder-xl font-bold text-gray-800 mb-6 text-center">家人守护</h2>
+        <div className="glass-card p-6">
+          <h2 className="text-elder-xl font-bold text-slate-800 mb-6 text-center">家人守护</h2>
           {guardians.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-8">
               {guardians.map((g, idx) => (
                 <div key={idx} className="text-center">
-                  <div className="w-20 h-20 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center mx-auto mb-3">
-                    <span className="text-2xl font-bold text-blue-600">{g.nickname?.charAt(0) || g.username?.charAt(0) || '?'}</span>
+                  <div className="w-20 h-20 rounded-2xl bg-accent-50 border border-accent-200 flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl font-bold text-accent-600">{g.nickname?.charAt(0) || g.username?.charAt(0) || '?'}</span>
                   </div>
-                  <div className="text-elder-base font-medium text-gray-800">{g.nickname || g.username}</div>
-                  <div className="text-green-600 text-sm flex items-center justify-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> 在线守护中
+                  <div className="text-elder-base font-medium text-slate-800">{g.nickname || g.username}</div>
+                  <div className="text-emerald-600 text-sm flex items-center justify-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> 在线守护中
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8"><UserGroupIcon className="w-16 h-16 mx-auto text-gray-200 mb-4" /><p className="text-gray-500 text-elder-base">暂无守护者</p><Link to="/family" className="inline-block mt-4 text-blue-600 hover:text-blue-700">去添加守护者 →</Link></div>
+            <div className="text-center py-8"><UserGroupIcon className="w-16 h-16 mx-auto text-slate-300 mb-4" /><p className="text-slate-500 text-elder-base">暂无守护者</p><Link to="/family" className="inline-block mt-4 text-accent-600 hover:text-accent-700">去添加守护者 →</Link></div>
           )}
         </div>
       </ScrollReveal>
@@ -358,27 +339,30 @@ function MinorDashboard() {
   return (
     <div className="space-y-6">
       <ScrollReveal>
-        <div className="p-8 text-center rounded-lg bg-teal-50 border border-teal-200">
-          <h1 className="text-xl font-bold text-gray-800 mb-4">{userName}的安全分数</h1>
+        <div className="p-8 text-center glass-card">
+          <h1 className="text-xl font-bold text-slate-800 mb-4">{userName}的安全分数</h1>
           <div className="relative w-32 h-32 mx-auto mb-4">
             <svg className="w-full h-full transform -rotate-90">
-              <circle cx="64" cy="64" r="56" fill="none" stroke="#E0F2FE" strokeWidth="8" />
-              <circle cx="64" cy="64" r="56" fill="none" stroke="#007AFF" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${safetyScore * 3.52} 352`} />
+              <circle cx="64" cy="64" r="56" fill="none" stroke="#E2E8F0" strokeWidth="8" />
+              <circle cx="64" cy="64" r="56" fill="none" stroke="#0D9488" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${safetyScore * 3.52} 352`} />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center"><AnimatedCounter value={safetyScore} className="text-4xl font-bold text-blue-600" /></div>
+            <div className="absolute inset-0 flex items-center justify-center"><AnimatedCounter value={safetyScore} className="text-4xl font-bold text-accent-600" /></div>
           </div>
-          <p className="text-gray-600">继续保持，你做得很棒！</p>
+          <p className="text-slate-500">继续保持，你做得很棒！</p>
         </div>
       </ScrollReveal>
       <ScrollReveal delay={0.1}>
-        <div className="p-5 rounded-lg bg-white border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">今日安全任务</h2>
+        <div className="p-5 glass-card">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">今日安全任务</h2>
           <div className="space-y-3">
             {[{ icon: BookOpenIcon, title: '学习：识别网络诈骗', progress: 60 }, { icon: PlayIcon, title: '观看：游戏充值安全', progress: 30 }].map((task, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-gray-50 border border-gray-100">
-                <div className="w-12 h-12 rounded-lg bg-teal-100 flex items-center justify-center"><task.icon className="w-6 h-6 text-teal-600" /></div>
-                <div className="flex-1"><div className="font-medium text-gray-800 text-sm">{task.title}</div><div className="progress-bar mt-2"><div className="progress-bar-fill" style={{ width: `${task.progress}%` }} /></div></div>
-                <span className="text-sm text-teal-600 font-medium">{task.progress}%</span>
+              <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-200">
+                <div className="w-12 h-12 rounded-lg bg-accent-50 flex items-center justify-center"><task.icon className="w-6 h-6 text-accent-600" /></div>
+                <div className="flex-1">
+                  <div className="font-medium text-slate-700 text-sm">{task.title}</div>
+                  <div className="w-full h-1.5 bg-slate-200 rounded-full mt-2"><div className="h-full bg-accent-500 rounded-full" style={{ width: `${task.progress}%` }} /></div>
+                </div>
+                <span className="text-sm text-accent-600 font-medium font-mono">{task.progress}%</span>
               </div>
             ))}
           </div>
@@ -388,9 +372,9 @@ function MinorDashboard() {
         {[{ to: '/detection', icon: MagnifyingGlassIcon, label: '安全检测', desc: '检查消息安全' }, { to: '/knowledge', icon: BookOpenIcon, label: '安全课堂', desc: '学习网络安全' }].map((item, i) => (
           <StaggerItem key={i}>
             <Link to={item.to}>
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-white border border-gray-200 hover:border-blue-200 hover:shadow-sm transition-all cursor-pointer group">
-                <div className="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center group-hover:bg-teal-200 transition-colors"><item.icon className="w-5 h-5 text-teal-600" /></div>
-                <div><div className="font-semibold text-gray-800 text-sm">{item.label}</div><div className="text-xs text-gray-500">{item.desc}</div></div>
+              <div className="flex items-center gap-3 p-4 glass-card cursor-pointer group">
+                <div className="w-10 h-10 rounded-lg bg-accent-50 flex items-center justify-center group-hover:bg-accent-100 transition-colors"><item.icon className="w-5 h-5 text-accent-600" /></div>
+                <div><div className="font-semibold text-slate-800 text-sm">{item.label}</div><div className="text-xs text-slate-500">{item.desc}</div></div>
               </div>
             </Link>
           </StaggerItem>

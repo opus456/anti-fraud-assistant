@@ -47,12 +47,12 @@ export default function RiskWarningModal({
   const theme = isHighRisk
     ? {
         bgGradient: 'from-red-600 via-red-700 to-red-800',
-        iconBg: 'bg-red-500',
+        iconBg: 'bg-rose-500',
         borderColor: 'border-red-400',
         textColor: 'text-red-100',
-        badgeBg: 'bg-red-500/30',
-        actionBg: 'bg-red-500/20',
-        buttonBg: 'bg-white text-red-700 hover:bg-red-50',
+        badgeBg: 'bg-rose-500/30',
+        actionBg: 'bg-rose-500/20',
+        buttonBg: 'bg-white text-red-700 hover:bg-rose-50',
       }
     : {
         bgGradient: 'from-amber-500 via-orange-600 to-red-600',
@@ -166,7 +166,7 @@ export default function RiskWarningModal({
             {/* 警告脚本 */}
             {warningScripts.length > 0 && (
               <motion.div
-                className="mx-6 mb-6 p-4 rounded-2xl bg-black/20 border border-white/10"
+                className="mx-6 mb-6 p-4 rounded-2xl bg-black/20 border border-slate-200"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
@@ -218,7 +218,7 @@ export default function RiskWarningModal({
                 {protectionActions.map((action, idx) => (
                   <motion.div
                     key={idx}
-                    className={`flex items-center gap-3 p-3 rounded-xl ${theme.actionBg} border border-white/10`}
+                    className={`flex items-center gap-3 p-3 rounded-xl ${theme.actionBg} border border-slate-200`}
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: 0.4 + idx * 0.1 }}
@@ -267,7 +267,7 @@ export default function RiskWarningModal({
             >
               <a
                 href="tel:96110"
-                className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-white text-red-700 font-bold text-lg hover:bg-red-50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-white text-red-700 font-bold text-lg hover:bg-rose-50 transition-colors"
               >
                 <PhoneIcon className="w-6 h-6" />
                 拨打96110反诈热线

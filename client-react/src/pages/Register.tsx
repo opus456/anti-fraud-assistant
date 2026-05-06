@@ -5,7 +5,7 @@ import api from '../api';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import shieldBg from '../assets/shield-bg.png';
-import logo from '../assets/logo.png';
+import logo from '../assets/logo_new.png';
 
 const provinces = [
   '北京', '上海', '广东', '浙江', '江苏', '四川', '湖北', '山东',
@@ -94,32 +94,32 @@ export default function Register() {
     }
   };
 
-  const inputClass = "w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all";
-  const selectClass = "w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all appearance-none";
+  const inputClass = "w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all";
+  const selectClass = "w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all appearance-none";
 
   return (
     <div className="min-h-screen flex relative overflow-hidden">
       {/* 左侧沉浸式背景 */}
-      <div className="hidden lg:block lg:w-[55%] relative bg-[#0a1628]">
+      <div className="hidden lg:block lg:w-[55%] relative bg-slate-50">
         <motion.div className="absolute inset-0" initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.5 }}>
-          <img src={shieldBg} alt="" className="w-full h-full object-cover" style={{ filter: 'brightness(0.6) saturate(1.3)' }} />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#0a1628]/80" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/60 via-transparent to-[#0a1628]/40" />
+          <img src={shieldBg} alt="" className="w-full h-full object-cover" style={{ filter: 'brightness(0.85) saturate(1.1)' }} />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-stone-900/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-900/50 via-transparent to-stone-900/30" />
         </motion.div>
         <div className="absolute inset-0 flex flex-col justify-end p-12 z-10">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <h1 className="text-4xl font-bold text-white mb-4">加入御见行列</h1>
-            <p className="text-white/50 text-lg max-w-md">注册成为守护者，让 AI 为您和家人构建全方位反诈防线，识破每一次骗局</p>
+            <h1 className="text-4xl font-bold text-white mb-4">加入聆析护盾</h1>
+            <p className="text-white/70 text-lg max-w-md">注册成为守护者，让 AI 为您和家人构建全方位反诈防线，识破每一次骗局</p>
           </motion.div>
         </div>
-        <div className="absolute bottom-6 left-12 text-white/20 text-xs z-10">© 2026 御见 · 识破每一次骗局</div>
+        <div className="absolute bottom-6 left-12 text-slate-500 text-xs z-10">© 2026 聆析护盾 · 识破每一次骗局</div>
       </div>
 
       {/* 右侧注册表单 */}
       <div className="w-full lg:w-[45%] flex items-center justify-center bg-white relative">
         <div className="absolute inset-0 lg:hidden">
-          <img src={shieldBg} alt="" className="w-full h-full object-cover opacity-10" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/95 to-white/98" />
+          <img src={shieldBg} alt="" className="w-full h-full object-cover opacity-5" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/95 to-white" />
         </div>
 
         <motion.div className="w-full max-w-md px-6 sm:px-8 py-8 relative z-10"
@@ -128,22 +128,22 @@ export default function Register() {
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-6">
               <div className="logo-mark logo-mark-lg">
-                <img src={logo} alt="御见" className="logo-mark-img" />
+                <img src={logo} alt="聆析护盾" className="logo-mark-img" />
               </div>
               <div className="leading-none">
-                <span className="text-xl font-black text-slate-900 tracking-tight"><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500"></span>御见</span>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">创建账号</div>
+                <span className="text-xl font-black text-slate-900 tracking-tight">聆析护盾</span>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1.5">创建账号</div>
               </div>
             </div>
             {/* 步骤指示器 */}
             <div className="flex items-center gap-0 mb-2">
               {[1, 2].map((s) => (
                 <div key={s} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${step >= s ? 'bg-[#007AFF] text-white shadow-md shadow-blue-500/30' : 'bg-slate-100 text-slate-400'}`}>{s}</div>
-                  {s < 2 && <div className={`w-16 h-0.5 transition-colors ${step >= 2 ? 'bg-[#007AFF]' : 'bg-slate-200'}`} />}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${step >= s ? 'bg-gradient-to-r from-teal-600 to-teal-500 text-white shadow-md shadow-teal-500/20' : 'bg-slate-100 text-slate-500'}`}>{s}</div>
+                  {s < 2 && <div className={`w-16 h-0.5 transition-colors ${step >= 2 ? 'bg-gradient-to-r from-teal-600 to-teal-500' : 'bg-slate-200'}`} />}
                 </div>
               ))}
-              <span className="ml-3 text-sm text-slate-400">第 {step}/2 步</span>
+              <span className="ml-3 text-sm text-slate-500">第 {step}/2 步</span>
             </div>
           </div>
 
@@ -155,7 +155,7 @@ export default function Register() {
                 <div><label className="block text-sm font-medium text-slate-700 mb-1.5">密码 *</label><input type="password" value={form.password} onChange={e => update('password', e.target.value)} className={inputClass} placeholder="至少6位" /></div>
                 <div><label className="block text-sm font-medium text-slate-700 mb-1.5">确认密码 *</label><input type="password" value={form.confirmPassword} onChange={e => update('confirmPassword', e.target.value)} className={inputClass} placeholder="再次输入密码" /></div>
                 <div><label className="block text-sm font-medium text-slate-700 mb-1.5">角色</label><select value={form.role} onChange={e => update('role', e.target.value)} className={selectClass}><option value="user">普通用户</option><option value="guardian">监护人</option></select></div>
-                <button type="button" onClick={() => validateStep1() && setStep(2)} className="w-full py-3.5 rounded-xl bg-[#007AFF] hover:bg-[#0063D1] text-white font-semibold text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2">下一步 <ArrowRightIcon className="w-4 h-4" /></button>
+                <button type="button" onClick={() => validateStep1() && setStep(2)} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white font-semibold text-sm shadow-lg shadow-teal-500/20 transition-all flex items-center justify-center gap-2">下一步 <ArrowRightIcon className="w-4 h-4" /></button>
               </motion.div>
             )}
             {step === 2 && (
@@ -172,14 +172,14 @@ export default function Register() {
                   <div><label className="block text-sm font-medium text-slate-700 mb-1.5">城市</label><input type="text" value={form.city} onChange={e => update('city', e.target.value)} className={inputClass} placeholder="城市" /></div>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-medium text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2"><ArrowLeftIcon className="w-4 h-4" />上一步</button>
-                  <button type="submit" disabled={loading} className="flex-1 py-3 rounded-xl bg-[#007AFF] hover:bg-[#0063D1] text-white font-semibold text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50"><UserPlusIcon className="w-4 h-4" />{loading ? '注册中...' : '注册'}</button>
+                  <button type="button" onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-500 font-medium text-sm hover:bg-slate-200 transition-all flex items-center justify-center gap-2"><ArrowLeftIcon className="w-4 h-4" />上一步</button>
+                  <button type="submit" disabled={loading} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-500 hover:to-teal-400 text-white font-semibold text-sm shadow-lg shadow-teal-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"><UserPlusIcon className="w-4 h-4" />{loading ? '注册中...' : '注册'}</button>
                 </div>
               </motion.div>
             )}
           </form>
 
-          <p className="text-center text-sm text-slate-400 mt-6">已有账号？<Link to="/login" className="text-[#007AFF] hover:text-[#0063D1] ml-1 font-medium transition-colors">去登录</Link></p>
+          <p className="text-center text-sm text-slate-500 mt-6">已有账号？<Link to="/login" className="text-accent-600 hover:text-accent-700 ml-1 font-medium transition-colors">去登录</Link></p>
         </motion.div>
       </div>
     </div>

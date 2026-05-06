@@ -136,7 +136,7 @@ export default function History() {
       {/* Hero Banner - 靛蓝色 */}
       <ScrollReveal>
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#312e81] via-[#3730a3] to-[#1e1b4b] p-6 sm:p-8">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+          <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
           <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-40 h-40 sm:w-52 sm:h-52 text-white/[0.03]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
             <div className="flex-1">
@@ -204,7 +204,7 @@ export default function History() {
             <div className="text-center py-12">
               <ClockIcon className="w-16 h-16 mx-auto text-surface-300 mb-4" />
               <p className="text-text-muted">暂无检测记录</p>
-              <p className="text-sm text-slate-400 mt-2">使用检测功能后，记录会显示在这里</p>
+              <p className="text-sm text-slate-500 mt-2">使用检测功能后，记录会显示在这里</p>
             </div>
           ) : (
             <StaggerContainer className="space-y-3">
@@ -215,7 +215,7 @@ export default function History() {
                   <StaggerItem key={item.id}>
                     <div
                       onClick={() => openDetailModal(item)}
-                      className="flex items-center gap-4 p-4 rounded-card transition-all hover:shadow-md cursor-pointer bg-white border-l-4 border-l-primary-500 hover:bg-slate-50"
+                      className="flex items-center gap-4 p-4 rounded-card transition-all hover:shadow-md cursor-pointer bg-white border-l-4 border-l-primary-500 hover:bg-slate-200"
                     >
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                         item.type === 'text' ? 'bg-primary-100' :
@@ -292,20 +292,20 @@ export default function History() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* 头部 */}
-              <div className="p-6 border-b border-slate-100 flex-shrink-0">
+              <div className="p-6 border-b border-slate-200 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {selectedItem.riskLevel === 'danger' ? (
-                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                        <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
+                      <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center">
+                        <ExclamationTriangleIcon className="w-5 h-5 text-rose-600" />
                       </div>
                     ) : selectedItem.riskLevel === 'warning' ? (
-                      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
                         <ExclamationTriangleIcon className="w-5 h-5 text-amber-600" />
                       </div>
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <ShieldCheckIcon className="w-5 h-5 text-green-600" />
+                      <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
+                        <ShieldCheckIcon className="w-5 h-5 text-emerald-600" />
                       </div>
                     )}
                     <div>
@@ -315,7 +315,7 @@ export default function History() {
                   </div>
                   <button 
                     onClick={() => setShowDetailModal(false)} 
-                    className="text-slate-400 hover:text-slate-600 p-2"
+                    className="text-slate-500 hover:text-slate-500 p-2"
                   >
                     <XMarkIcon className="w-6 h-6" />
                   </button>
@@ -325,11 +325,11 @@ export default function History() {
               {/* 内容区域 - 可滚动 */}
               <div className="p-6 space-y-5 overflow-y-auto flex-1">
                 {/* 风险评估 */}
-                <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
+                <div className="flex items-center gap-4 p-4 bg-white rounded-xl">
                   <div className="text-center">
                     <div className={`text-3xl font-bold ${
-                      selectedItem.riskLevel === 'danger' ? 'text-red-500' :
-                      selectedItem.riskLevel === 'warning' ? 'text-amber-500' : 'text-green-500'
+                      selectedItem.riskLevel === 'danger' ? 'text-rose-600' :
+                      selectedItem.riskLevel === 'warning' ? 'text-amber-500' : 'text-emerald-600'
                     }`}>
                       {selectedItem.riskScore}
                     </div>
@@ -338,19 +338,19 @@ export default function History() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`px-2 py-0.5 rounded text-sm font-medium ${
-                        selectedItem.riskLevel === 'danger' ? 'bg-red-100 text-red-700' :
-                        selectedItem.riskLevel === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                        selectedItem.riskLevel === 'danger' ? 'bg-rose-50 text-red-700' :
+                        selectedItem.riskLevel === 'warning' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
                       }`}>
                         {selectedItem.riskLevel === 'danger' ? '高风险' :
                          selectedItem.riskLevel === 'warning' ? '可疑' : '安全'}
                       </span>
                       {(selectedItem.scamTypeLabel || selectedItem.scamType) && (
-                        <span className="px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-sm">
+                        <span className="px-2 py-0.5 bg-slate-200 text-slate-500 rounded text-sm">
                           {selectedItem.scamTypeLabel || selectedItem.scamType}
                         </span>
                       )}
                     </div>
-                    <div className="text-sm text-slate-600">
+                    <div className="text-sm text-slate-500">
                       检测类型: {selectedItem.type === 'text' ? '文本' : selectedItem.type === 'image' ? '图片' : '音频'}
                     </div>
                   </div>
@@ -362,7 +362,7 @@ export default function History() {
                     <ChatBubbleLeftRightIcon className="w-4 h-4" />
                     检测内容
                   </h3>
-                  <div className="p-4 bg-slate-50 rounded-xl text-sm text-slate-700 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                  <div className="p-4 bg-white rounded-xl text-sm text-slate-700 whitespace-pre-wrap max-h-40 overflow-y-auto">
                     {selectedItem.content || '无内容'}
                   </div>
                 </div>
@@ -374,7 +374,7 @@ export default function History() {
                       <LightBulbIcon className="w-4 h-4" />
                       AI分析结果
                     </h3>
-                    <div className="p-4 bg-blue-50 rounded-xl text-sm text-slate-700 whitespace-pre-wrap">
+                    <div className="p-4 bg-accent-50 rounded-xl text-sm text-slate-700 whitespace-pre-wrap">
                       {selectedItem.analysisResult}
                     </div>
                   </div>
@@ -389,8 +389,8 @@ export default function History() {
                     </h3>
                     <ul className="space-y-2">
                       {selectedItem.suggestions.map((suggestion, idx) => (
-                        <li key={idx} className="flex items-start gap-2 p-3 bg-green-50 rounded-lg text-sm text-slate-700">
-                          <span className="text-green-500 mt-0.5">•</span>
+                        <li key={idx} className="flex items-start gap-2 p-3 bg-emerald-50 rounded-lg text-sm text-slate-700">
+                          <span className="text-emerald-600 mt-0.5">•</span>
                           {suggestion}
                         </li>
                       ))}
@@ -400,7 +400,7 @@ export default function History() {
               </div>
 
               {/* 底部 */}
-              <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end flex-shrink-0">
+              <div className="p-4 bg-white border-t border-slate-200 flex justify-end flex-shrink-0">
                 <button
                   onClick={() => setShowDetailModal(false)}
                   className="btn btn-primary"

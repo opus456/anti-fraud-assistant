@@ -62,8 +62,8 @@ export default function Profile() {
             <p className="text-white/40 text-sm">{profileUser.email} · 加入于 {profileUser.joinDate}</p>
             <div className="flex items-center gap-6 mt-3">
               <div><span className="text-2xl font-bold text-white">{profileUser.stats.detections}</span><span className="text-white/40 text-xs ml-1.5">检测</span></div>
-              <div><span className="text-2xl font-bold text-red-400">{profileUser.stats.blocked}</span><span className="text-white/40 text-xs ml-1.5">拦截</span></div>
-              <div><span className="text-2xl font-bold text-emerald-400">{profileUser.stats.protected}</span><span className="text-white/40 text-xs ml-1.5">守护</span></div>
+              <div><span className="text-2xl font-bold text-red-600">{profileUser.stats.blocked}</span><span className="text-white/40 text-xs ml-1.5">拦截</span></div>
+              <div><span className="text-2xl font-bold text-emerald-600">{profileUser.stats.protected}</span><span className="text-white/40 text-xs ml-1.5">守护</span></div>
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function Profile() {
             <button
               key={idx}
               onClick={() => navigate(item.path)}
-              className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all text-center"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-slate-200 border border-transparent hover:border-slate-200 transition-all text-center"
             >
               <div className="w-12 h-12 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center group-hover:bg-sky-100 transition-colors">
                 <item.icon className="w-6 h-6 text-sky-600" />
@@ -92,13 +92,13 @@ export default function Profile() {
       {/* 退出登录 */}
       <button
         onClick={handleLogout}
-        className="w-full card hover:bg-red-50 hover:border-red-200 transition-all group"
+        className="w-full card hover:bg-rose-50 hover:border-rose-200 transition-all group"
       >
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center">
-            <ArrowRightOnRectangleIcon className="w-5 h-5 text-red-600" />
+          <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center">
+            <ArrowRightOnRectangleIcon className="w-5 h-5 text-rose-600" />
           </div>
-          <span className="font-medium text-red-600">退出登录</span>
+          <span className="font-medium text-rose-600">退出登录</span>
         </div>
       </button>
     </div>

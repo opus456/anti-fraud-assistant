@@ -115,8 +115,8 @@ export default function Settings() {
           onClick={() => setActiveTab('profile')}
           className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all ${
             activeTab === 'profile'
-              ? 'bg-[#007AFF] text-white shadow-md'
-              : 'text-slate-600 hover:text-slate-800'
+              ? 'bg-[#0D9488] text-white shadow-md'
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
           <UserIcon className="w-4 h-4 inline-block mr-2" />
@@ -126,8 +126,8 @@ export default function Settings() {
           onClick={() => setActiveTab('system')}
           className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all ${
             activeTab === 'system'
-              ? 'bg-[#007AFF] text-white shadow-md'
-              : 'text-slate-600 hover:text-slate-800'
+              ? 'bg-[#0D9488] text-white shadow-md'
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
           <Cog6ToothIcon className="w-4 h-4 inline-block mr-2" />
@@ -140,7 +140,7 @@ export default function Settings() {
         <StaggerContainer className="max-w-3xl mx-auto space-y-6">
           <StaggerItem>
             <div className="card">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
                     <UserIcon className="w-5 h-5 text-sky-600" />
@@ -150,7 +150,7 @@ export default function Settings() {
                 {!isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="px-3 py-1.5 bg-[#007AFF] text-white text-sm font-medium rounded-lg hover:bg-[#0063D1] transition-colors"
+                    className="px-3 py-1.5 bg-[#0D9488] text-white text-sm font-medium rounded-lg hover:bg-[#0F766E] transition-colors"
                   >
                     编辑
                   </button>
@@ -165,9 +165,9 @@ export default function Settings() {
                     type="text"
                     value={user?.username || ''}
                     disabled
-                    className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 text-sm cursor-not-allowed"
+                    className="w-full px-4 py-3 rounded-lg bg-white border border-slate-200 text-slate-500 text-sm cursor-not-allowed"
                   />
-                  <p className="text-xs text-slate-400 mt-1">用户名无法修改，如需帮助请联系管理员</p>
+                  <p className="text-xs text-slate-500 mt-1">用户名无法修改，如需帮助请联系管理员</p>
                 </div>
 
                 {/* Nickname */}
@@ -181,8 +181,8 @@ export default function Settings() {
                     className={`w-full px-4 py-3 rounded-lg border ${
                       isEditing
                         ? 'bg-white border-slate-200 text-slate-800'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed'
-                    } text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all`}
+                        : 'bg-white border-slate-200 text-slate-500 cursor-not-allowed'
+                    } text-sm focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/10 transition-all`}
                     placeholder="显示名称"
                   />
                 </div>
@@ -191,7 +191,7 @@ export default function Settings() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">邮箱</label>
                   <div className="flex items-center gap-2">
-                    <EnvelopeIcon className="w-5 h-5 text-slate-400" />
+                    <EnvelopeIcon className="w-5 h-5 text-slate-500" />
                     <input
                       type="email"
                       value={profileForm.email}
@@ -200,8 +200,8 @@ export default function Settings() {
                       className={`flex-1 px-4 py-3 rounded-lg border ${
                         isEditing
                           ? 'bg-white border-slate-200 text-slate-800'
-                          : 'bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed'
-                      } text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all`}
+                          : 'bg-white border-slate-200 text-slate-500 cursor-not-allowed'
+                      } text-sm focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/10 transition-all`}
                       placeholder="邮箱地址"
                     />
                   </div>
@@ -219,8 +219,8 @@ export default function Settings() {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         isEditing
                           ? 'bg-white border-slate-200 text-slate-800'
-                          : 'bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed'
-                      } text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all`}
+                          : 'bg-white border-slate-200 text-slate-500 cursor-not-allowed'
+                      } text-sm focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/10 transition-all`}
                     />
                   </div>
                   <div>
@@ -232,8 +232,8 @@ export default function Settings() {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         isEditing
                           ? 'bg-white border-slate-200 text-slate-800'
-                          : 'bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed'
-                      } text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all`}
+                          : 'bg-white border-slate-200 text-slate-500 cursor-not-allowed'
+                      } text-sm focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/10 transition-all`}
                     >
                       <option value="">选择性别</option>
                       <option value="male">男</option>
@@ -254,8 +254,8 @@ export default function Settings() {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         isEditing
                           ? 'bg-white border-slate-200 text-slate-800'
-                          : 'bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed'
-                      } text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all`}
+                          : 'bg-white border-slate-200 text-slate-500 cursor-not-allowed'
+                      } text-sm focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/10 transition-all`}
                     >
                       <option value="">选择身份</option>
                       <option value="elderly">老年人</option>
@@ -274,8 +274,8 @@ export default function Settings() {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         isEditing
                           ? 'bg-white border-slate-200 text-slate-800'
-                          : 'bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed'
-                      } text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all`}
+                          : 'bg-white border-slate-200 text-slate-500 cursor-not-allowed'
+                      } text-sm focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/10 transition-all`}
                       placeholder="您的职业"
                     />
                   </div>
@@ -293,8 +293,8 @@ export default function Settings() {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         isEditing
                           ? 'bg-white border-slate-200 text-slate-800'
-                          : 'bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed'
-                      } text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all`}
+                          : 'bg-white border-slate-200 text-slate-500 cursor-not-allowed'
+                      } text-sm focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/10 transition-all`}
                       placeholder="学历"
                     />
                   </div>
@@ -307,8 +307,8 @@ export default function Settings() {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         isEditing
                           ? 'bg-white border-slate-200 text-slate-800'
-                          : 'bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed'
-                      } text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all`}
+                          : 'bg-white border-slate-200 text-slate-500 cursor-not-allowed'
+                      } text-sm focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/10 transition-all`}
                     >
                       <option value="">选择省份</option>
                       {provinces.map((p) => (
@@ -331,8 +331,8 @@ export default function Settings() {
                     className={`w-full px-4 py-3 rounded-lg border ${
                       isEditing
                         ? 'bg-white border-slate-200 text-slate-800'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed'
-                    } text-sm focus:outline-none focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/10 transition-all`}
+                        : 'bg-white border-slate-200 text-slate-500 cursor-not-allowed'
+                    } text-sm focus:outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-[#0D9488]/10 transition-all`}
                     placeholder="城市"
                   />
                 </div>
@@ -340,14 +340,14 @@ export default function Settings() {
                 {/* Action Buttons */}
                 {isEditing && (
                   <motion.div
-                    className="flex gap-3 pt-4 border-t border-slate-100"
+                    className="flex gap-3 pt-4 border-t border-slate-200"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
                     <button
                       onClick={handleCancel}
                       disabled={isLoading}
-                      className="flex-1 px-4 py-3 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
+                      className="flex-1 px-4 py-3 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-200 transition-colors disabled:opacity-50"
                     >
                       <XMarkIcon className="w-4 h-4 inline-block mr-2" />
                       取消
@@ -355,7 +355,7 @@ export default function Settings() {
                     <button
                       onClick={handleSaveProfile}
                       disabled={isLoading}
-                      className="flex-1 px-4 py-3 rounded-lg bg-[#007AFF] text-white font-medium hover:bg-[#0063D1] transition-colors disabled:opacity-50 flex items-center justify-center"
+                      className="flex-1 px-4 py-3 rounded-lg bg-[#0D9488] text-white font-medium hover:bg-[#0F766E] transition-colors disabled:opacity-50 flex items-center justify-center"
                     >
                       <CheckIcon className="w-4 h-4 inline-block mr-2" />
                       {isLoading ? '保存中...' : '保存更改'}
@@ -374,7 +374,7 @@ export default function Settings() {
         {/* 通知设置 */}
         <StaggerItem>
           <div className="card">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
               <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
                 <BellIcon className="w-5 h-5 text-sky-600" />
               </div>
@@ -410,7 +410,7 @@ export default function Settings() {
         {/* 安全设置 */}
         <StaggerItem>
           <div className="card">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
               <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
                 <ShieldCheckIcon className="w-5 h-5 text-sky-600" />
               </div>
@@ -450,7 +450,7 @@ export default function Settings() {
         {/* 守护设置 */}
         <StaggerItem>
           <div className="card">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
               <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
                 <UserGroupIcon className="w-5 h-5 text-sky-600" />
               </div>
@@ -479,7 +479,7 @@ export default function Settings() {
         {/* 通用设置 */}
         <StaggerItem>
           <div className="card">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
               <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
                 <Cog6ToothIcon className="w-5 h-5 text-sky-600" />
               </div>
@@ -531,7 +531,7 @@ interface SettingRowProps {
 
 function SettingRow({ label, description, type, value, options, onChange, isLast }: SettingRowProps) {
   return (
-    <div className={`flex items-center justify-between py-4 ${!isLast ? 'border-b border-slate-100' : ''}`}>
+    <div className={`flex items-center justify-between py-4 ${!isLast ? 'border-b border-slate-200' : ''}`}>
       <div className="flex-1">
         <div className="font-medium text-slate-800">{label}</div>
         {description && <div className="text-sm text-slate-500 mt-0.5">{description}</div>}

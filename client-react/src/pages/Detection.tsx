@@ -44,7 +44,7 @@ function NeuralLoading() {
           <CpuChipIcon className="w-8 h-8 text-sky-500" />
         </motion.div>
       </div>
-      <p className="text-gray-500 text-sm">AI 神经网络处理中...</p>
+      <p className="text-slate-500 text-sm">AI 神经网络处理中...</p>
     </div>
   );
 }
@@ -63,13 +63,36 @@ export default function Detection() {
   const [isDragOver, setIsDragOver] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const tabs = [
     { id: 'text' as ModalityTab, label: '文本检测', icon: ChatBubbleLeftRightIcon },
     { id: 'image' as ModalityTab, label: '图片检测', icon: PhotoIcon },
     { id: 'audio' as ModalityTab, label: '音频检测', icon: MicrophoneIcon },
   ];
+  const activeTabMeta: Record<ModalityTab, { eyebrow: string; title: string; description: string; placeholder?: string; emptyHint: string; uploadHint?: string }> = {
+    text: {
+      eyebrow: '文本内容识别',
+      title: '粘贴可疑对话或通知文本',
+      description: '适合检测聊天记录、短信通知、转账提醒和推广文案，系统会提取关键风险话术并给出结论。',
+      placeholder: '请粘贴需要检测的聊天记录、短信内容或通知文案...',
+      emptyHint: '输入文本后即可查看风险判断、关键词和处置建议。',
+    },
+    image: {
+      eyebrow: '图片内容识别',
+      title: '上传聊天截图或转账页面',
+      description: '适合检测聊天截图、付款凭证、二维码页面和伪造通知，系统会自动识别图中风险信息。',
+      emptyHint: '上传图片后即可提取图中文字并生成风险分析。',
+      uploadHint: '支持聊天截图、转账截图、二维码页面等图片内容',
+    },
+    audio: {
+      eyebrow: '语音内容识别',
+      title: '上传语音消息或通话录音',
+      description: '适合检测语音消息、电话录音和疑似合成语音，系统会分析话术风险与诱导行为。',
+      emptyHint: '上传音频后即可查看语义分析和风险提示。',
+      uploadHint: '支持语音消息、通话录音，也可识别疑似 AI 合成语音',
+    },
+  };
 
   useEffect(() => {
     if (isAnalyzing) { timerRef.current = setInterval(() => setElapsedTime(prev => Math.min(prev + 100, 9600)), 100); }
@@ -131,12 +154,12 @@ export default function Detection() {
     <div className="space-y-6">
       {/* Hero Banner */}
       <ScrollReveal>
-        <div className="relative overflow-hidden rounded-lg bg-white border border-gray-200 p-6 sm:p-8">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50 rounded-full -translate-y-1/3 translate-x-1/3 pointer-events-none" />
+        <div className="relative overflow-hidden rounded-lg bg-white border border-slate-200 p-6 sm:p-8">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-accent-50 rounded-full -translate-y-1/3 translate-x-1/3 pointer-events-none" />
           <div className="relative z-10">
-            <p className="text-gray-400 text-sm mb-2 font-medium">AI Detection · 多模态分析</p>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">智能检测</h1>
-            <p className="text-gray-500 text-sm">AI 驱动的多模态反诈检测，支持文本、图片、音频分析</p>
+            <p className="text-sky-600 text-sm mb-2 font-semibold">智能检测中心</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">一处完成文本、图片、音频风险识别</h1>
+            <p className="max-w-2xl text-slate-500 text-sm leading-6">把可疑内容贴进来或上传文件，系统会结合反诈模型、关键词命中和案例比对给出判断结果。</p>
           </div>
         </div>
       </ScrollReveal>
@@ -151,11 +174,17 @@ export default function Detection() {
           {/* 扫描线 */}
           {isAnalyzing && <div className="scan-line" />}
 
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">{activeTabMeta[activeTab].eyebrow}</p>
+            <h2 className="mt-2 text-lg font-semibold text-slate-900">{activeTabMeta[activeTab].title}</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-500">{activeTabMeta[activeTab].description}</p>
+          </div>
+
           {/* Tab */}
-          <div className="flex gap-2 mb-6 p-1 bg-gray-100 rounded-lg">
+          <div className="flex gap-2 mb-6 p-1 bg-slate-100 rounded-lg">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => { setActiveTab(tab.id); setResult(null); }}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-all ${activeTab === tab.id ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-all ${activeTab === tab.id ? 'bg-white shadow-sm text-accent-600' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 <tab.icon className="w-5 h-5" />
                 <span className="hidden sm:inline">{tab.label}</span>
@@ -166,10 +195,10 @@ export default function Detection() {
           {/* 文本输入 */}
           {activeTab === 'text' && (
             <div className="space-y-4">
-              <textarea value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder="请粘贴可疑的聊天记录、短信内容或其他文本..." className="input min-h-[220px] resize-none" disabled={isAnalyzing} />
-              <div className="flex items-center justify-between text-sm text-gray-500">
+              <textarea value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder={activeTabMeta.text.placeholder} className="input min-h-[220px] resize-none" disabled={isAnalyzing} />
+              <div className="flex items-center justify-between text-sm text-slate-500">
                 <span>{textInput.length} 字符</span>
-                <span className="flex items-center gap-1"><CpuChipIcon className="w-4 h-4" />AI 大模型分析</span>
+                <span className="flex items-center gap-1"><CpuChipIcon className="w-4 h-4" />模型将提取风险话术与关键词</span>
               </div>
             </div>
           )}
@@ -179,7 +208,7 @@ export default function Detection() {
             <div className="space-y-4">
               <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
               {imagePreview ? (
-                <div className="relative rounded-lg overflow-hidden bg-gray-100">
+                <div className="relative rounded-lg overflow-hidden bg-slate-100">
                   <img src={imagePreview} alt="预览" className="w-full h-64 object-contain" />
                   <button onClick={clearImage} className="absolute top-3 right-3 p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors">
                     <XMarkIcon className="w-5 h-5" />
@@ -191,12 +220,12 @@ export default function Detection() {
                 >
                   <div className="flex justify-center gap-4 mb-4">
                     <ChatBubbleLeftRightIcon className="w-8 h-8 text-blue-300" />
-                    <PhotoIcon className="w-10 h-10 text-blue-500" />
+                    <PhotoIcon className="w-10 h-10 text-accent-600" />
                     <MicrophoneIcon className="w-8 h-8 text-blue-300" />
                   </div>
                   <ArrowUpTrayIcon className="w-10 h-10 mx-auto text-blue-400 mb-3" />
-                  <p className="text-gray-700 font-medium">点击或拖拽上传文件</p>
-                  <p className="text-sm text-gray-500 mt-2">支持聊天截图、转账截图等</p>
+                  <p className="text-slate-700 font-medium">点击或拖拽上传图片</p>
+                  <p className="text-sm text-slate-500 mt-2">{activeTabMeta.image.uploadHint}</p>
                 </div>
               )}
             </div>
@@ -207,14 +236,14 @@ export default function Detection() {
             <div className="space-y-4">
               <input ref={audioInputRef} type="file" accept="audio/*" onChange={handleAudioSelect} className="hidden" />
               {audioFile ? (
-                <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="p-6 bg-white rounded-lg border border-slate-200">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-lg bg-blue-50 flex items-center justify-center"><MicrophoneIcon className="w-8 h-8 text-blue-600" /></div>
+                    <div className="w-16 h-16 rounded-lg bg-accent-50 flex items-center justify-center"><MicrophoneIcon className="w-8 h-8 text-accent-600" /></div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-800 truncate">{audioFile.name}</p>
-                      <p className="text-sm text-gray-500">{(audioFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                      <p className="font-medium text-slate-800 truncate">{audioFile.name}</p>
+                      <p className="text-sm text-slate-500">{(audioFile.size / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
-                    <button onClick={clearAudio} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><XMarkIcon className="w-5 h-5" /></button>
+                    <button onClick={clearAudio} className="p-2 text-slate-500 hover:text-rose-600 transition-colors"><XMarkIcon className="w-5 h-5" /></button>
                   </div>
                 </div>
               ) : (
@@ -223,12 +252,12 @@ export default function Detection() {
                 >
                   <div className="flex justify-center gap-4 mb-4">
                     <ChatBubbleLeftRightIcon className="w-8 h-8 text-blue-300" />
-                    <MicrophoneIcon className="w-10 h-10 text-blue-500" />
+                    <MicrophoneIcon className="w-10 h-10 text-accent-600" />
                     <PhotoIcon className="w-8 h-8 text-blue-300" />
                   </div>
                   <ArrowUpTrayIcon className="w-10 h-10 mx-auto text-blue-400 mb-3" />
-                  <p className="text-gray-700 font-medium">点击或拖拽上传音频</p>
-                  <p className="text-sm text-gray-500 mt-2">支持语音消息、通话录音（可检测AI合成语音）</p>
+                  <p className="text-slate-700 font-medium">点击或拖拽上传音频</p>
+                  <p className="text-sm text-slate-500 mt-2">{activeTabMeta.audio.uploadHint}</p>
                 </div>
               )}
             </div>
@@ -250,10 +279,10 @@ export default function Detection() {
           <AnimatePresence>
             {isAnalyzing && (
               <motion.div className="mt-4" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <motion.div className="h-full bg-blue-500" initial={{ width: '0%' }} animate={{ width: `${stageProgress[analysisStage]}%` }} transition={{ duration: 0.5 }} />
+                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <motion.div className="h-full bg-accent-500" initial={{ width: '0%' }} animate={{ width: `${stageProgress[analysisStage]}%` }} transition={{ duration: 0.5 }} />
                 </div>
-                <div className="flex justify-between mt-2 text-xs text-gray-500"><span>数据准备</span><span>模型分析</span><span>推理生成</span><span>完成</span></div>
+                <div className="flex justify-between mt-2 text-xs text-slate-500"><span>数据准备</span><span>模型分析</span><span>推理生成</span><span>完成</span></div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -261,33 +290,33 @@ export default function Detection() {
 
         {/* 右侧结果 */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6 flex items-center gap-2">
-            <DocumentTextIcon className="w-5 h-5 text-blue-500" />分析结果
+          <h2 className="text-lg font-semibold text-slate-800 mb-6 flex items-center gap-2">
+            <DocumentTextIcon className="w-5 h-5 text-accent-600" />分析结果
           </h2>
           {isAnalyzing ? (
             <NeuralLoading />
           ) : result ? (
             <motion.div className="space-y-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <div className={`text-center p-6 rounded-lg ${getRiskColor(result.risk_level) === 'danger' ? 'bg-red-50 border border-red-200' : getRiskColor(result.risk_level) === 'warning' ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200'}`}>
+              <div className={`text-center p-6 rounded-lg ${getRiskColor(result.risk_level) === 'danger' ? 'bg-rose-50 border border-rose-200' : getRiskColor(result.risk_level) === 'warning' ? 'bg-amber-50 border border-amber-200' : 'bg-emerald-50 border border-emerald-200'}`}>
                 <div className={`risk-orb risk-orb-${getRiskColor(result.risk_level)} mx-auto mb-4`}><span className="risk-orb-value">{Math.round(result.risk_score * 100)}</span></div>
                 <span className={`status-badge status-${getRiskColor(result.risk_level)} text-base px-4 py-2`}>{getRiskLabel(result.risk_level)}</span>
-                {result.fraud_type_label && <p className="mt-3 text-gray-700 font-semibold text-lg">{result.fraud_type_label}</p>}
-                <p className="text-sm text-gray-500 mt-2">响应时间: {Math.min(result.response_time_ms, 9999)}ms</p>
+                {result.fraud_type_label && <p className="mt-3 text-slate-700 font-semibold text-lg">{result.fraud_type_label}</p>}
+                <p className="text-sm text-slate-500 mt-2">响应时间: {Math.min(result.response_time_ms, 9999)}ms</p>
               </div>
               {result.analysis && (
-                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <h3 className="font-medium text-gray-800 mb-2 flex items-center gap-2"><CpuChipIcon className="w-5 h-5 text-blue-500" />AI 分析结论</h3>
-                  <p className="text-gray-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: highlightKeywords(result.analysis, result.cot_reasoning?.keywords || []) }} />
+                <div className="p-4 bg-white rounded-lg border border-slate-200">
+                  <h3 className="font-medium text-slate-800 mb-2 flex items-center gap-2"><CpuChipIcon className="w-5 h-5 text-accent-600" />AI 分析结论</h3>
+                  <p className="text-slate-500 leading-relaxed" dangerouslySetInnerHTML={{ __html: highlightKeywords(result.analysis, result.cot_reasoning?.keywords || []) }} />
                 </div>
               )}
               {result.cot_reasoning?.reasoning_chain && result.cot_reasoning.reasoning_chain.length > 0 && (
                 <div>
-                  <h3 className="font-medium text-gray-800 mb-3 flex items-center gap-2"><SparklesIcon className="w-5 h-5 text-purple-500" />思维链推理</h3>
+                  <h3 className="font-medium text-slate-800 mb-3 flex items-center gap-2"><SparklesIcon className="w-5 h-5 text-purple-500" />思维链推理</h3>
                   <div className="space-y-2">
                     {result.cot_reasoning.reasoning_chain.map((step, idx) => (
                       <motion.div key={idx} className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg border border-purple-100" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }}>
                         <span className="w-6 h-6 rounded-full bg-purple-200 text-purple-700 text-xs font-bold flex items-center justify-center flex-shrink-0">{idx + 1}</span>
-                        <p className="text-gray-600 text-sm">{step}</p>
+                        <p className="text-slate-500 text-sm">{step}</p>
                       </motion.div>
                     ))}
                   </div>
@@ -295,30 +324,30 @@ export default function Detection() {
               )}
               {result.cot_reasoning?.risk_factors && result.cot_reasoning.risk_factors.length > 0 && (
                 <div>
-                  <h3 className="font-medium text-gray-800 mb-3 flex items-center gap-2"><ExclamationTriangleIcon className="w-5 h-5 text-amber-500" />风险因素</h3>
-                  <ul className="space-y-2">{result.cot_reasoning.risk_factors.map((f, i) => (<li key={i} className="flex items-start gap-2 text-gray-600"><ExclamationTriangleIcon className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />{f}</li>))}</ul>
+                  <h3 className="font-medium text-slate-800 mb-3 flex items-center gap-2"><ExclamationTriangleIcon className="w-5 h-5 text-amber-500" />风险因素</h3>
+                  <ul className="space-y-2">{result.cot_reasoning.risk_factors.map((f, i) => (<li key={i} className="flex items-start gap-2 text-slate-500"><ExclamationTriangleIcon className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />{f}</li>))}</ul>
                 </div>
               )}
               {result.cot_reasoning?.keywords && result.cot_reasoning.keywords.length > 0 && (
                 <div>
-                  <h3 className="font-medium text-gray-800 mb-3">检测到的诈骗关键词</h3>
-                  <div className="flex flex-wrap gap-2">{result.cot_reasoning.keywords.map((k, i) => (<span key={i} className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium border border-red-200">{k}</span>))}</div>
+                  <h3 className="font-medium text-slate-800 mb-3">检测到的诈骗关键词</h3>
+                  <div className="flex flex-wrap gap-2">{result.cot_reasoning.keywords.map((k, i) => (<span key={i} className="px-3 py-1 rounded-full bg-rose-50 text-red-700 text-sm font-medium border border-rose-200">{k}</span>))}</div>
                 </div>
               )}
               {result.suggestions.length > 0 && (
-                <div className={`p-4 rounded-lg ${getRiskColor(result.risk_level) === 'danger' ? 'bg-red-50 border border-red-200' : getRiskColor(result.risk_level) === 'warning' ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200'}`}>
-                  <h3 className="font-medium text-gray-800 mb-3 flex items-center gap-2"><ShieldCheckIcon className="w-5 h-5 text-green-600" />安全建议</h3>
-                  <ul className="space-y-2">{result.suggestions.map((s, i) => (<li key={i} className="flex items-start gap-2 text-gray-600"><CheckCircleIcon className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />{s}</li>))}</ul>
+                <div className={`p-4 rounded-lg ${getRiskColor(result.risk_level) === 'danger' ? 'bg-rose-50 border border-rose-200' : getRiskColor(result.risk_level) === 'warning' ? 'bg-amber-50 border border-amber-200' : 'bg-emerald-50 border border-emerald-200'}`}>
+                  <h3 className="font-medium text-slate-800 mb-3 flex items-center gap-2"><ShieldCheckIcon className="w-5 h-5 text-emerald-600" />安全建议</h3>
+                  <ul className="space-y-2">{result.suggestions.map((s, i) => (<li key={i} className="flex items-start gap-2 text-slate-500"><CheckCircleIcon className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />{s}</li>))}</ul>
                 </div>
               )}
               {result.matched_cases.length > 0 && (
                 <div>
-                  <h3 className="font-medium text-gray-800 mb-3 flex items-center gap-2"><DocumentTextIcon className="w-5 h-5 text-blue-500" />相似诈骗案例</h3>
+                  <h3 className="font-medium text-slate-800 mb-3 flex items-center gap-2"><DocumentTextIcon className="w-5 h-5 text-accent-600" />相似诈骗案例</h3>
                   <div className="space-y-2">
                     {result.matched_cases.slice(0, 3).map((c, i) => (
-                      <div key={i} className="p-3 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
-                        <span className="text-gray-700 text-sm">{c.title}</span>
-                        <span className="text-xs text-blue-600 font-medium">相似度 {Math.round(c.similarity * 100)}%</span>
+                      <div key={i} className="p-3 bg-accent-50 rounded-lg border border-accent-200 flex items-center justify-between">
+                        <span className="text-slate-700 text-sm">{c.title}</span>
+                        <span className="text-xs text-accent-600 font-medium">相似度 {Math.round(c.similarity * 100)}%</span>
                       </div>
                     ))}
                   </div>
@@ -330,9 +359,9 @@ export default function Detection() {
               <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
                 <ShieldCheckIcon className="w-20 h-20 mx-auto text-gray-200 mb-4" />
               </motion.div>
-              <p className="text-gray-500 text-lg">请输入内容后点击分析</p>
-              <p className="text-gray-400 text-sm mt-2">支持文本、图片、音频多模态检测</p>
-              <p className="text-blue-400 text-xs mt-4">💡 支持拖拽文件到此区域</p>
+              <p className="text-slate-700 text-lg font-medium">结果将在这里显示</p>
+              <p className="text-slate-500 text-sm mt-2">{activeTabMeta[activeTab].emptyHint}</p>
+              <p className="text-sky-600 text-xs mt-4">图片和音频模式支持直接拖拽文件到左侧区域</p>
             </div>
           )}
         </div>
